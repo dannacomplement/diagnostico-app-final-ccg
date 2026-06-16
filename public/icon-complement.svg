@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a2a52"/>
+      <stop offset="45%" stop-color="#2272b8"/>
+      <stop offset="100%" stop-color="#6db8e0"/>
+    </linearGradient>
+  </defs>
+  <!-- Blue C ring — gap at 3 o'clock -->
+  <circle cx="60" cy="60" r="40" fill="none" stroke="url(#blueGrad)" stroke-width="19"
+          stroke-dasharray="186 65" stroke-dashoffset="-32.5" stroke-linecap="round"/>
+  <!-- Orange triangle — starts at ring inner edge, fills gap outward, not touching -->
+  <polygon points="92,60 108,35 108,85" fill="#d4922e"/>
+</svg>
