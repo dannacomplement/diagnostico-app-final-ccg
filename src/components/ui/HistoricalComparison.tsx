@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { SavedDiagnostic } from '../../lib/types';
 
 interface Props {
-  diagnostics: SavedDiagnostic[]; // sorted newest-first
+  diagnostics: SavedDiagnostic[];
 }
 
 interface DataPoint {
@@ -11,131 +11,108 @@ interface DataPoint {
   prof: number;
   inst: number;
   gerencias: number;
+  margenBruto: number | null;
+  margenOperativo: number | null;
+  margenNeto: number | null;
+  size: string;
+  urgencia: string;
 }
 
-/* ── Pure SVG Line Chart ────────────────────────────────── */
+function calcGerenciaScore(d: SavedDiagnostic): number {
+  let score = 0;
+  for (const g of d.gerencias) {
+    if (g.cubierto) score += 15;
+    if (g.cubierto && g.calificado === 'si') score += 5;
+  }
+  return score;
+}
+
+/* ── Analysis text generation ────────────────────────── */
+
+function generateAnalysis(latest: DataPoint, previous: DataPoint): string[] {
+  const insights: string[] = [];
+
+  const profDelta = latest.prof - previous.prof;
+  const instDelta = latest.inst - previous.inst;
+  const gerDelta = latest.gerencias - previous.gerencias;
+
+  if (profDelta > 5) insights.push(`Profesionalización mejoró significativamente (+${profDelta} pts), indicando avance en formalización de procesos.`);
+  else if (profDelta > 0) insights.push(`Profesionalización muestra mejora leve (+${profDelta} pts).`);
+  else if (profDelta < -5) insights.push(`Profesionalización retrocedió (${profDelta} pts) — se recomienda revisar los procesos que perdieron formalidad.`);
+  else if (profDelta < 0) insights.push(`Profesionalización tuvo un ligero descenso (${profDelta} pts).`);
+  else insights.push('Profesionalización se mantuvo estable.');
+
+  if (instDelta > 5) insights.push(`Institucionalización avanzó fuertemente (+${instDelta} pts), reflejando mayor estructura de gobierno.`);
+  else if (instDelta > 0) insights.push(`Institucionalización mejoró ligeramente (+${instDelta} pts).`);
+  else if (instDelta < -5) insights.push(`Institucionalización retrocedió (${instDelta} pts) — verificar si hubo cambios en la estructura de gobierno.`);
+  else if (instDelta < 0) insights.push(`Institucionalización tuvo un descenso leve (${instDelta} pts).`);
+  else insights.push('Institucionalización se mantuvo sin cambios.');
+
+  if (gerDelta > 10) insights.push(`Gerencias mejoraron notablemente (+${gerDelta} pts), con más puestos cubiertos y/o calificados.`);
+  else if (gerDelta > 0) insights.push(`Gerencias mejoraron (+${gerDelta} pts).`);
+  else if (gerDelta < -10) insights.push(`El puntaje de gerencias bajó (${gerDelta} pts) — posible pérdida de personal clave.`);
+  else if (gerDelta < 0) insights.push(`Gerencias tuvieron un ligero retroceso (${gerDelta} pts).`);
+
+  if (latest.margenBruto !== null && previous.margenBruto !== null) {
+    const d = latest.margenBruto - previous.margenBruto;
+    if (Math.abs(d) >= 2) {
+      insights.push(`Margen bruto ${d > 0 ? 'mejoró' : 'disminuyó'} ${d > 0 ? '+' : ''}${d.toFixed(1)}% — ${d > 0 ? 'señal positiva en eficiencia de costos' : 'revisar estructura de costos'}.`);
+    }
+  }
+
+  const overall = profDelta + instDelta + gerDelta;
+  if (overall > 15) insights.push('En general, la empresa muestra una tendencia positiva clara.');
+  else if (overall < -15) insights.push('La tendencia general indica áreas de oportunidad que requieren atención.');
+
+  return insights;
+}
+
+/* ── SVG Line Chart ──────────────────────────────────── */
 
 function LineChart({ data, width, height }: { data: DataPoint[]; width: number; height: number }) {
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; point: DataPoint } | null>(null);
-
   const padding = { top: 24, right: 20, bottom: 40, left: 36 };
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
-  const maxVal = 100; // Scores are 0-100
-  const minVal = 0;
-
   const xScale = (i: number) => padding.left + (i / Math.max(data.length - 1, 1)) * chartW;
-  const yScale = (val: number) => padding.top + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
+  const yScale = (val: number) => padding.top + chartH - (val / 100) * chartH;
 
-  function polyline(key: keyof DataPoint, color: string) {
+  function polyline(key: 'prof' | 'inst' | 'gerencias', color: string) {
     if (data.length < 2) return null;
-    const points = data.map((d, i) => `${xScale(i)},${yScale(d[key] as number)}`).join(' ');
+    const points = data.map((d, i) => `${xScale(i)},${yScale(d[key])}`).join(' ');
     return (
       <g>
-        <polyline
-          points={points}
-          fill="none"
-          stroke={color}
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          style={{ transition: 'all 0.4s ease' }}
-        />
+        <polyline points={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
         {data.map((d, i) => (
-          <circle
-            key={i}
-            cx={xScale(i)}
-            cy={yScale(d[key] as number)}
-            r="4"
-            fill="white"
-            stroke={color}
-            strokeWidth="2"
-            style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-            onMouseEnter={() => setTooltip({ x: xScale(i), y: yScale(d[key] as number) - 10, point: d })}
-            onMouseLeave={() => setTooltip(null)}
-          />
+          <circle key={i} cx={xScale(i)} cy={yScale(d[key])} r="4" fill="white" stroke={color} strokeWidth="2" />
         ))}
       </g>
     );
   }
 
-  // Grid lines
   const gridLines = [0, 25, 50, 75, 100];
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
-      {/* Grid */}
       {gridLines.map(val => (
         <g key={val}>
-          <line
-            x1={padding.left}
-            y1={yScale(val)}
-            x2={width - padding.right}
-            y2={yScale(val)}
-            stroke="#e5e7eb"
-            strokeWidth="1"
-            strokeDasharray={val === 0 ? undefined : '4 3'}
-          />
-          <text x={padding.left - 8} y={yScale(val) + 4} textAnchor="end" fontSize="9" fill="#9ca3af" fontFamily="system-ui">
-            {val}
-          </text>
+          <line x1={padding.left} y1={yScale(val)} x2={width - padding.right} y2={yScale(val)} stroke="#e5e7eb" strokeWidth="1" strokeDasharray={val === 0 ? undefined : '4 3'} />
+          <text x={padding.left - 8} y={yScale(val) + 4} textAnchor="end" fontSize="9" fill="#9ca3af" fontFamily="system-ui">{val}</text>
         </g>
       ))}
-
-      {/* X axis labels */}
       {data.map((d, i) => (
-        <text
-          key={i}
-          x={xScale(i)}
-          y={height - 8}
-          textAnchor="middle"
-          fontSize="9"
-          fill="#6b7280"
-          fontFamily="system-ui"
-        >
-          {d.shortDate}
-        </text>
+        <text key={i} x={xScale(i)} y={height - 8} textAnchor="middle" fontSize="9" fill="#6b7280" fontFamily="system-ui">{d.shortDate}</text>
       ))}
-
-      {/* Data lines */}
       {polyline('prof', '#d4922e')}
       {polyline('inst', '#6366f1')}
       {polyline('gerencias', '#22c55e')}
-
-      {/* Tooltip */}
-      {tooltip && (
-        <g>
-          <rect
-            x={tooltip.x - 70}
-            y={tooltip.y - 60}
-            width="140"
-            height="52"
-            rx="8"
-            fill="#1b2a4a"
-            opacity="0.95"
-          />
-          <text x={tooltip.x} y={tooltip.y - 42} textAnchor="middle" fontSize="9" fill="white" fontWeight="600">
-            {tooltip.point.date}
-          </text>
-          <text x={tooltip.x - 40} y={tooltip.y - 26} fontSize="8" fill="#d4922e" fontWeight="600">
-            Prof: {tooltip.point.prof}
-          </text>
-          <text x={tooltip.x} y={tooltip.y - 26} fontSize="8" fill="#6366f1" fontWeight="600">
-            Inst: {tooltip.point.inst}
-          </text>
-          <text x={tooltip.x + 40} y={tooltip.y - 26} fontSize="8" fill="#22c55e" fontWeight="600">
-            Ger: {tooltip.point.gerencias}
-          </text>
-        </g>
-      )}
     </svg>
   );
 }
 
 /* ── Delta Badge ─────────────────────────────────────── */
 
-function DeltaBadge({ current, previous, label }: { current: number; previous: number; label: string }) {
+function DeltaBadge({ current, previous, label, suffix }: { current: number; previous: number; label: string; suffix?: string }) {
   const delta = current - previous;
   const isUp = delta > 0;
   const isDown = delta < 0;
@@ -145,19 +122,14 @@ function DeltaBadge({ current, previous, label }: { current: number; previous: n
   const arrow = isUp ? '↑' : isDown ? '↓' : '→';
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: '8px',
-      padding: '8px 14px', borderRadius: '10px',
-      background: bgColor, border: `1px solid ${borderColor}`,
-      minWidth: '120px',
-    }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '10px', background: bgColor, border: `1px solid ${borderColor}`, minWidth: '110px' }}>
       <span style={{ fontSize: '16px', fontWeight: 700, color }}>{arrow}</span>
       <div>
         <p style={{ fontSize: '8px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</p>
         <p style={{ fontSize: '14px', fontWeight: 700, color: '#1b2a4a' }}>
-          {current}
+          {current}{suffix || ''}
           <span style={{ fontSize: '11px', fontWeight: 600, color, marginLeft: '4px' }}>
-            {isUp ? '+' : ''}{delta}
+            {isUp ? '+' : ''}{delta}{suffix || ''}
           </span>
         </p>
       </div>
@@ -169,28 +141,30 @@ function DeltaBadge({ current, previous, label }: { current: number; previous: n
 
 export default function HistoricalComparison({ diagnostics }: Props) {
   const data: DataPoint[] = useMemo(() => {
-    // Sort oldest-first for the chart
     const sorted = [...diagnostics].sort((a, b) => new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime());
-    return sorted.map(d => {
-      const totalG = d.gerencias.length || 1;
-      const coveredG = d.gerencias.filter(g => g.cubierto).length;
-      return {
-        date: new Date(d.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }),
-        shortDate: new Date(d.savedAt).toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }),
-        prof: Math.round(d.profesionalizacion.average),
-        inst: Math.round(d.institucionalizacion.average),
-        gerencias: Math.round((coveredG / totalG) * 100),
-      };
-    });
+    return sorted.map(d => ({
+      date: new Date(d.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }),
+      shortDate: new Date(d.savedAt).toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }),
+      prof: Math.round(d.profesionalizacion.average),
+      inst: Math.round(d.institucionalizacion.average),
+      gerencias: calcGerenciaScore(d),
+      margenBruto: d.marginData?.margenBruto ?? null,
+      margenOperativo: d.marginData?.margenOperativo ?? null,
+      margenNeto: d.marginData?.margenNeto ?? null,
+      size: d.companySize?.size ?? '—',
+      urgencia: d.urgenciaLevel ?? '—',
+    }));
   }, [diagnostics]);
 
   if (data.length < 2) return null;
 
   const latest = data[data.length - 1];
   const previous = data[data.length - 2];
+  const analysis = generateAnalysis(latest, previous);
 
   return (
     <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px 28px' }}>
+      {/* Header */}
       <div className="flex items-center justify-between" style={{ marginBottom: '16px' }}>
         <div className="flex items-center" style={{ gap: '10px' }}>
           <div className="inline-flex items-center justify-center rounded-full shrink-0" style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #d4922e15, #6366f115)' }}>
@@ -200,39 +174,93 @@ export default function HistoricalComparison({ diagnostics }: Props) {
           </div>
           <div>
             <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '1px' }}>Comparativa Historica</h3>
-            <p className="text-muted" style={{ fontSize: '10px' }}>{data.length} diagnosticos — evolución en el tiempo</p>
+            <p className="text-muted" style={{ fontSize: '10px' }}>{data.length} radiografías — evolución en el tiempo</p>
           </div>
         </div>
-        <span style={{ fontSize: '9px', padding: '3px 10px', borderRadius: '6px', border: '1px solid #d4922e30', background: '#d4922e08', color: '#d4922e', fontWeight: 700 }}>
-          {data.length} registros
-        </span>
       </div>
 
-      {/* Delta badges — latest vs previous */}
+      {/* Delta badges */}
       <div className="flex flex-wrap" style={{ gap: '10px', marginBottom: '20px' }}>
         <DeltaBadge current={latest.prof} previous={previous.prof} label="Profesionalización" />
         <DeltaBadge current={latest.inst} previous={previous.inst} label="Institucionalización" />
-        <DeltaBadge current={latest.gerencias} previous={previous.gerencias} label="Gerencias %" />
+        <DeltaBadge current={latest.gerencias} previous={previous.gerencias} label="Gerencias" />
       </div>
 
       {/* Chart */}
-      <div style={{ width: '100%', overflowX: 'auto' }}>
+      <div style={{ width: '100%', overflowX: 'auto', marginBottom: '20px' }}>
         <LineChart data={data} width={Math.max(380, data.length * 100)} height={200} />
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center" style={{ gap: '20px', marginTop: '14px' }}>
-        <div className="flex items-center" style={{ gap: '6px' }}>
-          <div style={{ width: '12px', height: '3px', borderRadius: '2px', background: '#d4922e' }} />
-          <span style={{ fontSize: '10px', color: '#6b7280', fontWeight: 500 }}>Profesionalización</span>
-        </div>
-        <div className="flex items-center" style={{ gap: '6px' }}>
-          <div style={{ width: '12px', height: '3px', borderRadius: '2px', background: '#6366f1' }} />
-          <span style={{ fontSize: '10px', color: '#6b7280', fontWeight: 500 }}>Institucionalización</span>
-        </div>
-        <div className="flex items-center" style={{ gap: '6px' }}>
-          <div style={{ width: '12px', height: '3px', borderRadius: '2px', background: '#22c55e' }} />
-          <span style={{ fontSize: '10px', color: '#6b7280', fontWeight: 500 }}>Gerencias</span>
+      <div className="flex items-center justify-center flex-wrap" style={{ gap: '16px', marginBottom: '24px' }}>
+        {[
+          { color: '#d4922e', label: 'Profesionalización' },
+          { color: '#6366f1', label: 'Institucionalización' },
+          { color: '#22c55e', label: 'Gerencias (puntaje)' },
+        ].map(l => (
+          <div key={l.label} className="flex items-center" style={{ gap: '6px' }}>
+            <div style={{ width: '12px', height: '3px', borderRadius: '2px', background: l.color }} />
+            <span style={{ fontSize: '10px', color: '#6b7280', fontWeight: 500 }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Comparison table */}
+      <div style={{ overflowX: 'auto', marginBottom: '20px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+              <th style={{ textAlign: 'left', padding: '8px 10px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>Fecha</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#d4922e', fontWeight: 600, fontSize: '10px' }}>Prof.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6366f1', fontWeight: 600, fontSize: '10px' }}>Inst.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#22c55e', fontWeight: 600, fontSize: '10px' }}>Ger.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>M.Bruto</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>M.Oper.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>M.Neto</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>Tamaño</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((d, i) => {
+              const isLatest = i === data.length - 1;
+              return (
+                <tr key={i} style={{ borderBottom: '1px solid #f3f4f6', background: isLatest ? '#f0f7ff' : undefined }}>
+                  <td style={{ padding: '7px 10px', fontWeight: isLatest ? 700 : 400, color: '#1b2a4a' }}>
+                    {d.date} {isLatest && <span style={{ fontSize: '8px', color: '#0047AB', fontWeight: 700, marginLeft: '4px' }}>ACTUAL</span>}
+                  </td>
+                  <td style={{ textAlign: 'center', padding: '7px 6px', fontWeight: 600, color: '#d4922e' }}>{d.prof}</td>
+                  <td style={{ textAlign: 'center', padding: '7px 6px', fontWeight: 600, color: '#6366f1' }}>{d.inst}</td>
+                  <td style={{ textAlign: 'center', padding: '7px 6px', fontWeight: 600, color: '#22c55e' }}>{d.gerencias}</td>
+                  <td style={{ textAlign: 'center', padding: '7px 6px', color: '#6b7280' }}>{d.margenBruto !== null ? `${d.margenBruto}%` : '—'}</td>
+                  <td style={{ textAlign: 'center', padding: '7px 6px', color: '#6b7280' }}>{d.margenOperativo !== null ? `${d.margenOperativo}%` : '—'}</td>
+                  <td style={{ textAlign: 'center', padding: '7px 6px', color: '#6b7280' }}>{d.margenNeto !== null ? `${d.margenNeto}%` : '—'}</td>
+                  <td style={{ textAlign: 'center', padding: '7px 6px', color: '#6b7280' }}>{d.size}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Gerencias scoring legend */}
+      <div className="rounded-lg bg-pale border border-border/30" style={{ padding: '10px 14px', marginBottom: '20px' }}>
+        <p style={{ fontSize: '9px', color: '#6b7280', fontWeight: 600, marginBottom: '4px' }}>PUNTAJE GERENCIAS (máx. 100)</p>
+        <p style={{ fontSize: '10px', color: '#4b5563' }}>
+          15 pts por gerencia cubierta + 5 pts si está calificada (5 gerencias × 20 pts = 100)
+        </p>
+      </div>
+
+      {/* Analysis */}
+      <div className="rounded-xl border border-accent/20 bg-accent/5" style={{ padding: '16px 20px' }}>
+        <p style={{ fontSize: '10px', fontWeight: 700, color: '#002060', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>
+          Análisis Comparativo
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {analysis.map((text, i) => (
+            <p key={i} style={{ fontSize: '11px', color: '#374151', lineHeight: 1.5 }}>
+              • {text}
+            </p>
+          ))}
         </div>
       </div>
     </div>

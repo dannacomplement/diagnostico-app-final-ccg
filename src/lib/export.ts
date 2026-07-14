@@ -30,15 +30,6 @@ const MARGIN_LEVEL_COLORS: Record<MarginLevel, string> = {
   critico: ERROR,
 };
 
-const FAMILY_ANALYSIS_LABELS: Record<string, string> = {
-  gobiernoFamiliar: 'Gobierno Familiar',
-  planSucesion: 'Plan de Sucesión',
-  protocoloFamiliar: 'Protocolo Familiar',
-  conflictosFamiliares: 'Conflictos Familiares',
-  rolesOperacion: 'Roles en Operación',
-  profesionalizacionFamiliares: 'Profesionalización de Familiares',
-};
-
 /* ── Helpers ──────────────────────────────────────────────── */
 
 function thinBorder(): Partial<ExcelJS.Borders> {
@@ -140,7 +131,7 @@ export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> 
   wb.creator = 'Complement Consulting Group';
   wb.created = new Date();
 
-  const ws = wb.addWorksheet('Diagnóstico', {
+  const ws = wb.addWorksheet('Radiografía', {
     properties: { defaultRowHeight: 18 },
     pageSetup: {
       paperSize: 9, // A4
@@ -584,7 +575,7 @@ export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> 
     if (isZebra) cellA.fill = zebraFill();
 
     const cellB = ws.getCell(r, 2);
-    cellB.value = g.cubierto ? 'Sí' : 'No';
+    cellB.value = g.cubierto ? (g.soyYo ? 'Soy Yo' : 'Sí') : 'No';
     cellB.font = { ...valueFont(), color: { argb: g.cubierto ? SUCCESS : ERROR } };
     cellB.alignment = { vertical: 'middle', horizontal: 'center' };
     cellB.border = thinBorder();
@@ -673,41 +664,6 @@ export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> 
   }
 
   /* ═══════════════════════════════════════════════════════
-     ANÁLISIS FAMILIAR
-     ═══════════════════════════════════════════════════════ */
-  if (diagnostic.analisisFamiliar) {
-    const famEntries = Object.entries(diagnostic.analisisFamiliar).filter(([, value]) => value);
-    if (famEntries.length > 0) {
-      r = addSectionHeader(ws, r, '  ANÁLISIS FAMILIAR', COLS);
-
-      famEntries.forEach(([key, value], idx) => {
-        const isZebra = idx % 2 === 1;
-
-        const cellA = ws.getCell(r, 1);
-        cellA.value = FAMILY_ANALYSIS_LABELS[key] || key;
-        cellA.font = labelFont();
-        cellA.alignment = { vertical: 'middle' };
-        cellA.border = thinBorder();
-        if (isZebra) cellA.fill = zebraFill();
-
-        ws.mergeCells(r, 2, r, COLS);
-        const cellB = ws.getCell(r, 2);
-        cellB.value = value as string;
-        cellB.font = valueFont();
-        cellB.alignment = { vertical: 'middle', wrapText: true };
-        cellB.border = thinBorder();
-        for (let c = 2; c <= COLS; c++) ws.getCell(r, c).border = thinBorder();
-        if (isZebra) { cellB.fill = zebraFill(); }
-
-        ws.getRow(r).height = 28;
-        r++;
-      });
-
-      r = addSpacer(ws, r);
-    }
-  }
-
-  /* ═══════════════════════════════════════════════════════
      DESCRIPCIÓN DEL NEGOCIO
      ═══════════════════════════════════════════════════════ */
   if (diagnostic.descripcionNegocio) {
@@ -732,7 +688,7 @@ export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> 
      ═══════════════════════════════════════════════════════ */
   ws.mergeCells(r, 1, r, COLS);
   const footerCell = ws.getCell(r, 1);
-  footerCell.value = 'Generado por Complement Consulting Group — Diagnóstico Empresarial';
+  footerCell.value = 'Generado por Complement Consulting Group — Radiografía Empresarial';
   footerCell.font = { italic: true, size: 9, color: { argb: MUTED }, name: 'Calibri' };
   footerCell.alignment = { vertical: 'middle', horizontal: 'center' };
   ws.getRow(r).height = 24;
@@ -747,7 +703,7 @@ export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> 
   /* ═══════════════════════════════════════════════════════
      DOWNLOAD
      ═══════════════════════════════════════════════════════ */
-  const safeName = (dg.nombreComercial || 'diagnostico')
+  const safeName = (dg.nombreComercial || 'radiografia')
     .replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '')
     .trim()
     .replace(/\s+/g, '_');

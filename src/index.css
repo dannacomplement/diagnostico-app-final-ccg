@@ -181,3 +181,234 @@ input[type="number"] {
   background-size: 200% 100%;
   animation: shimmer 2.5s ease-in-out infinite;
 }
+
+/* ── Login page ── */
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+.login-bg {
+  background: linear-gradient(135deg, #001845 0%, #002060 25%, #0a3a7a 50%, #002060 75%, #001845 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.07; }
+  90%  { opacity: 0.07; }
+  100% { transform: translateY(-100vh) rotate(180deg); opacity: 0; }
+}
+
+@keyframes floatUpSlow {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.05; }
+  90%  { opacity: 0.05; }
+  100% { transform: translateY(-100vh) rotate(90deg); opacity: 0; }
+}
+
+@keyframes floatLogo {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  8%   { opacity: 0.06; }
+  92%  { opacity: 0.06; }
+  100% { transform: translateY(calc(-100vh - 80px)) rotate(12deg); opacity: 0; }
+}
+
+.floating-logo {
+  position: absolute;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  pointer-events: none;
+  opacity: 0;
+  animation: floatLogo var(--float-duration, 18s) linear var(--float-delay, 0s) infinite backwards;
+}
+
+@keyframes loginCardEntrance {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  animation: loginCardEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+@keyframes logoEntrance {
+  from { opacity: 0; transform: translateY(-20px) scale(0.9); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+.login-logo {
+  animation: logoEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.login-stagger-1 { animation: staggerFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both; }
+.login-stagger-2 { animation: staggerFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both; }
+.login-stagger-3 { animation: staggerFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.7s both; }
+.login-stagger-4 { animation: staggerFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.8s both; }
+.login-stagger-5 { animation: staggerFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both; }
+
+.input-field-login:focus {
+  border-color: var(--color-mid);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.08);
+  transform: translateY(-1px);
+}
+
+.login-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 71, 171, 0.3);
+}
+.login-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 71, 171, 0.2);
+}
+
+@keyframes btnShine {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+.login-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: translateX(-100%);
+}
+.login-btn:hover:not(:disabled)::after {
+  animation: btnShine 0.6s ease-out;
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+.login-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spinLoader 0.6s linear infinite;
+}
+
+/* ── Login transition ── */
+
+@keyframes loginCardExit {
+  from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  to   { opacity: 0; transform: translateY(-10px) scale(0.95); filter: blur(8px); }
+}
+.login-exit-card { animation: loginCardExit 1s cubic-bezier(0.4, 0, 1, 1) forwards; }
+
+@keyframes logoExitUp {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-30px); }
+}
+.login-exit-logo { animation: logoExitUp 0.9s ease-in forwards; }
+
+.login-exit-bg { transition: filter 1s ease-in; filter: brightness(0.5); }
+.login-exit-floats { transition: opacity 0.8s ease-in; opacity: 0 !important; }
+.login-exit-footer { animation: fadeUp 0.7s ease-in reverse forwards; }
+
+@keyframes circleExpand {
+  from { clip-path: circle(0% at var(--cx) var(--cy)); }
+  to   { clip-path: circle(150% at var(--cx) var(--cy)); }
+}
+
+@keyframes overlayLogoIn {
+  from { opacity: 0; transform: scale(0.7); filter: blur(4px); }
+  to   { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes orangeLineGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes overlayDissolve {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ── Mobile responsiveness ── */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  .card {
+    padding: 1.5rem;
+  }
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  .mobile-hide {
+    display: none !important;
+  }
+  .mobile-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .mobile-col {
+    grid-template-columns: 1fr !important;
+  }
+  .mobile-wrap {
+    flex-wrap: wrap !important;
+  }
+  .mobile-gap-sm {
+    gap: 8px !important;
+  }
+  .mobile-px-sm {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .mobile-text-sm {
+    font-size: 11px !important;
+  }
+}
+
+/* Fiscal slider */
+.fiscal-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 28px;
+  background: transparent;
+  margin: 0;
+}
+.fiscal-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-navy);
+  border: 3px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+.fiscal-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-navy);
+  border: 3px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+.fiscal-slider::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 8px;
+}
+.fiscal-slider::-moz-range-track {
+  background: transparent;
+  height: 8px;
+}

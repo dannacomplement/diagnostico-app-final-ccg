@@ -14,7 +14,7 @@ import TechStep7Culture from '../../pages/tech-steps/TechStep7Culture';
 const STEPS = [
   { id: 'tools', label: 'Herramientas', component: TechStep1Tools },
   { id: 'digital', label: 'Presencia Digital', component: TechStep2Digital },
-  { id: 'automation', label: 'Automatizacion', component: TechStep3Automation },
+  { id: 'automation', label: 'Automatización', component: TechStep3Automation },
   { id: 'data', label: 'Datos', component: TechStep4Data },
   { id: 'ai', label: 'IA', component: TechStep5AI },
   { id: 'security', label: 'Seguridad', component: TechStep6Security },
@@ -73,7 +73,7 @@ export default function TechWizardShell() {
     <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '36px 24px' }}>
       <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
         <span className="text-muted" style={{ fontSize: '11px' }}>
-          Paso {currentStep + 1} de {STEPS.length} — Prueba de Tecnologia
+          Paso {currentStep + 1} de {STEPS.length} — Prueba de Tecnología
         </span>
         <button
           onClick={() => setShowExitConfirm(true)}
@@ -122,7 +122,7 @@ export default function TechWizardShell() {
             </div>
             <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '8px' }}>Salir de la encuesta</h3>
             <p className="text-muted" style={{ fontSize: '13px', marginBottom: '24px' }}>
-              Puedes guardar tu progreso y continuar despues, o salir sin guardar.
+              Puedes guardar tu progreso y continuar después, o salir sin guardar.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button

@@ -16,6 +16,7 @@ export function generateSampleDiagnostic(): SavedDiagnostic {
     puestoFamilia: 'Hijo del fundador',
     esSocio: 'si' as const,
     porcentajeAcciones: '35',
+    ubicacion: 'Nuevo León',
     sector: 'manufactura' as const,
     softwareSelections: {
       selected: ['excel' as const],
@@ -32,12 +33,14 @@ export function generateSampleDiagnostic(): SavedDiagnostic {
     empleadosFamiliares: 8,
     socios: '3',
     sociosDetalle: [
-      { esFamiliar: true, porcentaje: '50' },
-      { esFamiliar: true, porcentaje: '35' },
-      { esFamiliar: false, porcentaje: '15' },
+      { nombre: 'Roberto Mendoza', esFamiliar: true, porcentaje: '50' },
+      { nombre: 'Carlos Mendoza', esFamiliar: true, porcentaje: '35' },
+      { nombre: 'Javier López', esFamiliar: false, porcentaje: '15' },
     ],
     familiaresEnPoder: '4',
     sueldoMasAlto: '85000',
+    pctIngresoFiscalizado: 70,
+    pctEgresoFiscalizado: 55,
   };
 
   const profAnswers = [
@@ -67,11 +70,11 @@ export function generateSampleDiagnostic(): SavedDiagnostic {
   ];
 
   const gerencias = [
-    { area: 'Dirección General', cubierto: true, antiguedad: '12', calificado: 'si' as const, rangoSueldo: '120-150 mil', esFamiliar: true },
-    { area: 'Administración y Finanzas', cubierto: true, antiguedad: '18', calificado: 'no' as const, rangoSueldo: '55-75 mil', esFamiliar: false },
-    { area: 'Comercial y Ventas', cubierto: true, antiguedad: '6', calificado: 'si' as const, rangoSueldo: '75-90 mil', esFamiliar: false },
-    { area: 'Operaciones', cubierto: true, antiguedad: '15', calificado: 'por_evaluar' as const, rangoSueldo: '40-55 mil', esFamiliar: true },
-    { area: 'Capital Humano', cubierto: true, antiguedad: '3', calificado: 'si' as const, rangoSueldo: '30-40 mil', esFamiliar: false },
+    { area: 'Dirección General', nombre: 'Carlos Mendoza', cubierto: true, antiguedad: '12', calificado: 'si' as const, rangoSueldo: '120-150 mil', esFamiliar: true, dgEvaluation: { nivelEstudios: 8, experienciaLaboral: 10, seguimientoResultados: 6 } },
+    { area: 'Administración y Finanzas', nombre: 'Patricia Mendoza', cubierto: true, antiguedad: '18', calificado: 'no' as const, rangoSueldo: '55-75 mil', esFamiliar: false },
+    { area: 'Comercial y Ventas', nombre: 'Laura Ríos', cubierto: true, antiguedad: '6', calificado: 'si' as const, rangoSueldo: '75-90 mil', esFamiliar: false },
+    { area: 'Operaciones', nombre: 'Miguel Mendoza', cubierto: true, antiguedad: '15', calificado: 'por_evaluar' as const, rangoSueldo: '40-55 mil', esFamiliar: true },
+    { area: 'Capital Humano', nombre: 'Ana García', cubierto: true, antiguedad: '3', calificado: 'si' as const, rangoSueldo: '30-40 mil', esFamiliar: false },
   ];
 
   const retos = [
@@ -117,6 +120,7 @@ export function generateSampleDiagnostic(): SavedDiagnostic {
     retos,
     urgenciaSelection: 'muy_urgente',
     urgenciaLevel: urgencyLevel,
+    tieneLiderInterno: true,
     analisisFamiliar,
     priority: true,
     classification: 'seguimiento',

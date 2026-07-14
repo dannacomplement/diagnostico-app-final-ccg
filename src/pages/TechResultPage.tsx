@@ -5,10 +5,10 @@ import { computeTechMaturityScore } from '../config/techQuestions';
 import type { TechMaturityLevel } from '../lib/types';
 
 const LEVEL_CONFIG: Record<TechMaturityLevel, { label: string; emoji: string; className: string }> = {
-  basico: { label: 'Basico', emoji: '🔴', className: 'bg-error/10 border-error/20 text-error' },
+  basico: { label: 'Básico', emoji: '🔴', className: 'bg-error/10 border-error/20 text-error' },
   intermedio: { label: 'Intermedio', emoji: '🟡', className: 'bg-warn/10 border-warn/20 text-warn' },
   avanzado: { label: 'Avanzado', emoji: '🟢', className: 'bg-success/10 border-success/20 text-success' },
-  lider_digital: { label: 'Lider Digital', emoji: '💎', className: 'bg-accent/10 border-accent/20 text-accent' },
+  lider_digital: { label: 'Líder Digital', emoji: '💎', className: 'bg-accent/10 border-accent/20 text-accent' },
 };
 
 export default function TechResultPage() {
@@ -57,8 +57,8 @@ export default function TechResultPage() {
         </h1>
         <p className="text-muted leading-relaxed mx-auto" style={{ fontSize: '13px', maxWidth: '440px' }}>
           {testMode
-            ? 'Esta fue una prueba de la Prueba de Tecnologia. Los datos no se guardaron.'
-            : 'La Prueba de Tecnologia ha sido registrada exitosamente. A continuacion se muestra un resumen de los resultados.'
+            ? 'Esta fue una prueba de la Prueba de Tecnología. Los datos no se guardaron.'
+            : 'La Prueba de Tecnología ha sido registrada exitosamente. A continuación se muestra un resumen de los resultados.'
           }
         </p>
       </div>
@@ -90,7 +90,7 @@ export default function TechResultPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px', marginTop: '14px' }}>
           <MetricBox label="KPIs" value={dataAnalytics.tieneKPIs ? '✓' : '✗'} highlight={dataAnalytics.tieneKPIs} />
           <MetricBox label="Website" value={digitalPresence.tieneWebsite ? '✓' : '✗'} highlight={digitalPresence.tieneWebsite} />
-          <MetricBox label="Automatizacion" value={automation.procesosAutomatizados !== 'ninguno' ? '✓' : '✗'} highlight={automation.procesosAutomatizados !== 'ninguno'} />
+          <MetricBox label="Automatización" value={automation.procesosAutomatizados !== 'ninguno' ? '✓' : '✗'} highlight={automation.procesosAutomatizados !== 'ninguno'} />
           <MetricBox label="Equipo TI" value={useTechSurveyStore.getState().culture.equipoTI ? '✓' : '✗'} highlight={useTechSurveyStore.getState().culture.equipoTI} />
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function TechResultPage() {
             className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
             style={{ fontSize: '13px', padding: '12px 32px', borderRadius: '12px' }}
           >
-            {testMode ? '← Pagina Principal' : 'Pagina Principal'}
+            {testMode ? '← Página Principal' : 'Página Principal'}
           </button>
         ) : (
           <button

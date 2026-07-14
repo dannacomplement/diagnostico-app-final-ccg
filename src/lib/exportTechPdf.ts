@@ -24,10 +24,10 @@ const LEVEL_COLORS: Record<TechMaturityLevel, [number, number, number]> = {
 };
 
 const LEVEL_LABELS: Record<TechMaturityLevel, string> = {
-  basico: 'Basico',
+  basico: 'Básico',
   intermedio: 'Intermedio',
   avanzado: 'Avanzado',
-  lider_digital: 'Lider Digital',
+  lider_digital: 'Líder Digital',
 };
 
 /* ── Main Export ──────────────────────────────────────── */
@@ -71,7 +71,7 @@ export function exportTechSurveyToPdf(
   doc.setFontSize(28);
   doc.setTextColor(...WHITE);
   doc.text('PRUEBA DE', pageWidth / 2, 70, { align: 'center' });
-  doc.text('TECNOLOGIA', pageWidth / 2, 82, { align: 'center' });
+  doc.text('TECNOLOGÍA', pageWidth / 2, 82, { align: 'center' });
 
   // Subtitle
   doc.setFontSize(11);
@@ -114,7 +114,7 @@ export function exportTechSurveyToPdf(
   // Footer on cover
   doc.setFontSize(7);
   doc.setTextColor(120, 140, 170);
-  doc.text('Complement Consulting Group --- Prueba de Tecnologia', pageWidth / 2, pageHeight - 10, { align: 'center' });
+  doc.text('Complement Consulting Group --- Prueba de Tecnología', pageWidth / 2, pageHeight - 10, { align: 'center' });
 
   /* ═══════════════════════════════════════════════════════
      PAGE 2: EXECUTIVE SUMMARY — area scores
@@ -195,15 +195,15 @@ export function exportTechSurveyToPdf(
 
   // Quick metrics table
   const metricsBody: string[][] = [
-    ['ERP', survey.tools.tieneERP ? 'Si' : 'No'],
-    ['CRM', survey.tools.tieneCRM ? 'Si' : 'No'],
-    ['Website', survey.digitalPresence.tieneWebsite ? 'Si' : 'No'],
-    ['E-commerce', survey.digitalPresence.tieneEcommerce ? 'Si' : 'No'],
-    ['Usa IA', survey.aiAdoption.usaIAEnEmpresa ? 'Si' : 'No'],
-    ['Nube', survey.security.usaNube ? 'Si' : 'No'],
-    ['KPIs', survey.dataAnalytics.tieneKPIs ? 'Si' : 'No'],
-    ['Equipo TI', survey.culture.equipoTI ? 'Si' : 'No'],
-    ['Presupuesto Tech', survey.culture.presupuestoTech ? 'Si' : 'No'],
+    ['ERP', survey.tools.tieneERP ? 'Sí' : 'No'],
+    ['CRM', survey.tools.tieneCRM ? 'Sí' : 'No'],
+    ['Website', survey.digitalPresence.tieneWebsite ? 'Sí' : 'No'],
+    ['E-commerce', survey.digitalPresence.tieneEcommerce ? 'Sí' : 'No'],
+    ['Usa IA', survey.aiAdoption.usaIAEnEmpresa ? 'Sí' : 'No'],
+    ['Nube', survey.security.usaNube ? 'Sí' : 'No'],
+    ['KPIs', survey.dataAnalytics.tieneKPIs ? 'Sí' : 'No'],
+    ['Equipo TI', survey.culture.equipoTI ? 'Sí' : 'No'],
+    ['Presupuesto Tech', survey.culture.presupuestoTech ? 'Sí' : 'No'],
   ];
 
   autoTable(doc, {
@@ -219,7 +219,7 @@ export function exportTechSurveyToPdf(
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 1) {
         const val = data.cell.raw as string;
-        if (val === 'Si') data.cell.styles.textColor = SUCCESS;
+        if (val === 'Sí') data.cell.styles.textColor = SUCCESS;
         if (val === 'No') data.cell.styles.textColor = ERROR;
       }
     },
@@ -267,7 +267,7 @@ export function exportTechSurveyToPdf(
       if (data.section === 'body' && data.column.index === 1) {
         const val = String(data.cell.raw);
         if (val === 'No') data.cell.styles.textColor = ERROR;
-        else if (val.startsWith('Si')) data.cell.styles.textColor = SUCCESS;
+        else if (val.startsWith('Sí')) data.cell.styles.textColor = SUCCESS;
       }
     },
     alternateRowStyles: { fillColor: PALE },
@@ -280,11 +280,11 @@ export function exportTechSurveyToPdf(
 
   // Digital Presence detail
   const digitalFindings: string[][] = [
-    ['Sitio web', survey.digitalPresence.tieneWebsite ? 'Si' : 'No'],
-    ['Actualizado', survey.digitalPresence.websiteActualizado ? 'Si' : 'No'],
-    ['E-commerce', survey.digitalPresence.tieneEcommerce ? 'Si' : 'No'],
+    ['Sitio web', survey.digitalPresence.tieneWebsite ? 'Sí' : 'No'],
+    ['Actualizado', survey.digitalPresence.websiteActualizado ? 'Sí' : 'No'],
+    ['E-commerce', survey.digitalPresence.tieneEcommerce ? 'Sí' : 'No'],
     ['Redes sociales', survey.digitalPresence.usaRedesSociales ? `Si (${survey.digitalPresence.redesActivas.join(', ') || 'N/A'})` : 'No'],
-    ['Marketing digital', survey.digitalPresence.marketingDigital ? 'Si' : 'No'],
+    ['Marketing digital', survey.digitalPresence.marketingDigital ? 'Sí' : 'No'],
   ];
 
   autoTable(doc, {
@@ -298,7 +298,7 @@ export function exportTechSurveyToPdf(
       if (data.section === 'body' && data.column.index === 1) {
         const val = String(data.cell.raw);
         if (val === 'No') data.cell.styles.textColor = ERROR;
-        else if (val.startsWith('Si')) data.cell.styles.textColor = SUCCESS;
+        else if (val.startsWith('Sí')) data.cell.styles.textColor = SUCCESS;
       }
     },
     alternateRowStyles: { fillColor: PALE },
@@ -311,14 +311,14 @@ export function exportTechSurveyToPdf(
 
   // Automation detail
   const autoLabel = survey.automation.procesosAutomatizados === 'todos' ? 'Todos'
-    : survey.automation.procesosAutomatizados === 'mayoria' ? 'Mayoria'
+    : survey.automation.procesosAutomatizados === 'mayoria' ? 'Mayoría'
     : survey.automation.procesosAutomatizados === 'algunos' ? 'Algunos' : 'Ninguno';
   const autoFindings: string[][] = [
     ['Procesos automatizados', autoLabel],
-    ['Factura electronica', survey.automation.facturaElectronica ? 'Si' : 'No'],
-    ['Banca digital', survey.automation.bancaDigital ? 'Si' : 'No'],
-    ['Firma electronica', survey.automation.firmaElectronica ? 'Si' : 'No'],
-    ['Gestion documental digital', survey.automation.gestionDocumentalDigital ? 'Si' : 'No'],
+    ['Factura electrónica', survey.automation.facturaElectronica ? 'Sí' : 'No'],
+    ['Banca digital', survey.automation.bancaDigital ? 'Sí' : 'No'],
+    ['Firma electrónica', survey.automation.firmaElectronica ? 'Sí' : 'No'],
+    ['Gestión documental digital', survey.automation.gestionDocumentalDigital ? 'Sí' : 'No'],
   ];
   if (survey.automation.areasMasAutomatizadas) {
     autoFindings.push(['Areas mas automatizadas', survey.automation.areasMasAutomatizadas]);
@@ -335,7 +335,7 @@ export function exportTechSurveyToPdf(
       if (data.section === 'body' && data.column.index === 1) {
         const val = String(data.cell.raw);
         if (val === 'No' || val === 'Ninguno') data.cell.styles.textColor = ERROR;
-        else if (val === 'Si' || val === 'Todos' || val === 'Mayoria') data.cell.styles.textColor = SUCCESS;
+        else if (val === 'Sí' || val === 'Todos' || val === 'Mayoría') data.cell.styles.textColor = SUCCESS;
         else if (val === 'Algunos') data.cell.styles.textColor = WARN;
       }
     },
@@ -359,15 +359,15 @@ export function exportTechSurveyToPdf(
     : survey.dataAnalytics.usaDatosParaDecisiones === 'a_veces' ? 'A veces' : 'Nunca';
   const dataFindings: string[][] = [
     ['Datos para decisiones', dataLabel],
-    ['KPIs definidos', survey.dataAnalytics.tieneKPIs ? 'Si' : 'No'],
-    ['Dashboards / BI', survey.dataAnalytics.dashboardsBI ? 'Si' : 'No'],
+    ['KPIs definidos', survey.dataAnalytics.tieneKPIs ? 'Sí' : 'No'],
+    ['Dashboards / BI', survey.dataAnalytics.dashboardsBI ? 'Sí' : 'No'],
     ['Herramienta BI', survey.dataAnalytics.herramientaBI || 'Ninguna'],
-    ['Analitica avanzada', survey.dataAnalytics.analiticaAvanzada ? 'Si' : 'No'],
+    ['Analítica avanzada', survey.dataAnalytics.analiticaAvanzada ? 'Sí' : 'No'],
   ];
 
   autoTable(doc, {
     startY: y,
-    head: [['DATOS Y ANALITICA', `Score: ${areaScores.data_analytics}/100`]],
+    head: [['DATOS Y ANALÍTICA', `Score: ${areaScores.data_analytics}/100`]],
     body: dataFindings,
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, textColor: INK },
@@ -376,7 +376,7 @@ export function exportTechSurveyToPdf(
       if (data.section === 'body' && data.column.index === 1) {
         const val = String(data.cell.raw);
         if (val === 'No' || val === 'Nunca' || val === 'Ninguna') data.cell.styles.textColor = ERROR;
-        else if (val === 'Si' || val === 'Siempre') data.cell.styles.textColor = SUCCESS;
+        else if (val === 'Sí' || val === 'Siempre') data.cell.styles.textColor = SUCCESS;
         else if (val === 'A veces') data.cell.styles.textColor = WARN;
         else if (val === 'Frecuentemente') data.cell.styles.textColor = MID;
       }
@@ -401,10 +401,10 @@ export function exportTechSurveyToPdf(
   const inversionLabel = survey.aiAdoption.inversionTechAnual === 'menos_50k' ? 'Menos de $50k'
     : survey.aiAdoption.inversionTechAnual === '50k_200k' ? '$50k - $200k'
     : survey.aiAdoption.inversionTechAnual === '200k_500k' ? '$200k - $500k'
-    : survey.aiAdoption.inversionTechAnual === 'mas_500k' ? 'Mas de $500k' : 'No sabe';
+    : survey.aiAdoption.inversionTechAnual === 'mas_500k' ? 'Más de $500k' : 'No sabe';
   const aiFindings: string[][] = [
-    ['Conoce IA', survey.aiAdoption.conoceIA ? 'Si' : 'No'],
-    ['Usa IA en empresa', survey.aiAdoption.usaIAEnEmpresa ? 'Si' : 'No'],
+    ['Conoce IA', survey.aiAdoption.conoceIA ? 'Sí' : 'No'],
+    ['Usa IA en empresa', survey.aiAdoption.usaIAEnEmpresa ? 'Sí' : 'No'],
     ['Casos de uso', survey.aiAdoption.casosUsoIA.length > 0 ? survey.aiAdoption.casosUsoIA.join(', ') : 'Ninguno'],
     ['Interes en IA', interesLabel],
     ['Inversion tech anual', inversionLabel],
@@ -421,7 +421,7 @@ export function exportTechSurveyToPdf(
       if (data.section === 'body' && data.column.index === 1) {
         const val = String(data.cell.raw);
         if (val === 'No' || val === 'Ninguno') data.cell.styles.textColor = ERROR;
-        else if (val === 'Si') data.cell.styles.textColor = SUCCESS;
+        else if (val === 'Sí') data.cell.styles.textColor = SUCCESS;
       }
     },
     alternateRowStyles: { fillColor: PALE },
@@ -438,14 +438,14 @@ export function exportTechSurveyToPdf(
   }
 
   // Security detail
-  const respaldosLabel = survey.security.respaldosDatos === 'automatico' ? 'Automatico'
+  const respaldosLabel = survey.security.respaldosDatos === 'automatico' ? 'Automático'
     : survey.security.respaldosDatos === 'manual' ? 'Manual' : 'Nunca';
   const secFindings: string[][] = [
-    ['Antivirus', survey.security.tieneAntivirus ? 'Si' : 'No'],
+    ['Antivirus', survey.security.tieneAntivirus ? 'Sí' : 'No'],
     ['Respaldos', respaldosLabel],
-    ['Politicas seguridad', survey.security.politicasSeguridad ? 'Si' : 'No'],
-    ['Capacitacion seguridad', survey.security.capacitacionSeguridad ? 'Si' : 'No'],
-    ['Usa nube', survey.security.usaNube ? 'Si' : 'No'],
+    ['Políticas seguridad', survey.security.politicasSeguridad ? 'Sí' : 'No'],
+    ['Capacitación seguridad', survey.security.capacitacionSeguridad ? 'Sí' : 'No'],
+    ['Usa nube', survey.security.usaNube ? 'Sí' : 'No'],
   ];
   if (survey.security.proveedorNube) {
     secFindings.push(['Proveedor nube', survey.security.proveedorNube]);
@@ -462,7 +462,7 @@ export function exportTechSurveyToPdf(
       if (data.section === 'body' && data.column.index === 1) {
         const val = String(data.cell.raw);
         if (val === 'No' || val === 'Nunca') data.cell.styles.textColor = ERROR;
-        else if (val === 'Si' || val === 'Automatico') data.cell.styles.textColor = SUCCESS;
+        else if (val === 'Sí' || val === 'Automático') data.cell.styles.textColor = SUCCESS;
         else if (val === 'Manual') data.cell.styles.textColor = WARN;
       }
     },
@@ -485,9 +485,9 @@ export function exportTechSurveyToPdf(
     : survey.culture.resistenciaAlCambio === 'media' ? 'Media' : 'Alta';
   const cultureFindings: string[][] = [
     ['Resistencia al cambio', resistenciaLabel],
-    ['Capacitacion tecnologica', survey.culture.capacitacionTecnologica ? 'Si' : 'No'],
+    ['Capacitación tecnológica', survey.culture.capacitacionTecnologica ? 'Sí' : 'No'],
     ['Equipo TI', survey.culture.equipoTI ? `Si${survey.culture.equipoTISize ? ` (${survey.culture.equipoTISize} personas)` : ''}` : 'No'],
-    ['Presupuesto tech', survey.culture.presupuestoTech ? 'Si' : 'No'],
+    ['Presupuesto tech', survey.culture.presupuestoTech ? 'Sí' : 'No'],
   ];
   if (survey.culture.retoPrincipalTech) {
     cultureFindings.push(['Reto principal', survey.culture.retoPrincipalTech]);
@@ -504,7 +504,7 @@ export function exportTechSurveyToPdf(
       if (data.section === 'body' && data.column.index === 1) {
         const val = String(data.cell.raw);
         if (val === 'No' || val === 'Alta') data.cell.styles.textColor = ERROR;
-        else if (val.startsWith('Si') || val === 'Ninguna' || val === 'Baja') data.cell.styles.textColor = SUCCESS;
+        else if (val.startsWith('Sí') || val === 'Ninguna' || val === 'Baja') data.cell.styles.textColor = SUCCESS;
         else if (val === 'Media') data.cell.styles.textColor = WARN;
       }
     },
@@ -524,13 +524,13 @@ export function exportTechSurveyToPdf(
     doc.setFontSize(7);
     doc.setTextColor(...MUTED);
     doc.text(
-      'Complement Consulting Group --- Prueba de Tecnologia',
+      'Complement Consulting Group --- Prueba de Tecnología',
       pageWidth / 2,
       ph - 6,
       { align: 'center' },
     );
     doc.text(
-      `Pagina ${i} de ${totalPages}`,
+      `Página ${i} de ${totalPages}`,
       pageWidth - margin,
       ph - 6,
       { align: 'right' },

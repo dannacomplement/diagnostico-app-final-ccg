@@ -47,7 +47,7 @@ export default function Header() {
             alt="Complement"
             className="h-9 w-auto object-contain"
           />
-          <span className="font-serif text-[17px] text-white tracking-wide">
+          <span className="font-serif text-[17px] text-white tracking-wide hidden sm:inline">
             COMPLEMENT
           </span>
         </button>

@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey } from '../lib/storage';
-import { generateSampleDiagnostic, generateSampleOrgSurvey } from '../lib/sampleData';
+import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds } from '../lib/storage';
 import { ALL_CRITERIA } from '../config/questions';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useOrgSurveyStore } from '../store/orgSurveyStore';
 import { useTechSurveyStore } from '../store/techSurveyStore';
 import { useBenchmarkStore } from '../store/benchmarkStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { exportExpediente } from '../lib/exportExpediente';
 import { exportToPdf } from '../lib/exportPdf';
 import { exportOrgSurveyToPdf } from '../lib/exportOrgPdf';
@@ -14,8 +14,9 @@ import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
 import { exportToPptx } from '../lib/exportPptx';
 import { SECTOR_OPTIONS } from '../config/constants';
 import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, TechMaturityLevel } from '../lib/types';
+import HistoricalComparison from '../components/ui/HistoricalComparison';
 
-type AdminTab = 'clientes' | 'expedientes' | 'datos_prueba' | 'configuracion';
+type AdminTab = 'clientes' | 'expedientes' | 'inactivos_prueba' | 'configuracion';
 
 export default function HistoryPage() {
   const setView = useDiagnosticStore(s => s.setView);
@@ -37,6 +38,9 @@ export default function HistoryPage() {
   // Prefill tracking — which clients have pending prefills
   const [clientPrefills, setClientPrefills] = useState<Map<string, SurveyType[]>>(new Map());
 
+  // Test client IDs
+  const [testClientIds, setTestClientIdsState] = useState<string[]>([]);
+
   // Settings
   const [showBenchmarks, setShowBenchmarks] = useState(false);
 
@@ -47,12 +51,14 @@ export default function HistoryPage() {
 
   const refreshExpedientes = useCallback(async () => {
     setLoadingExpedientes(true);
-    const [data, prefills] = await Promise.all([
+    const [data, prefills, testIds] = await Promise.all([
       getExpedienteDataForClients(),
       getPrefillsForClients(),
+      getTestClientIds(),
     ]);
     setExpedienteData(data);
     setClientPrefills(prefills);
+    setTestClientIdsState(testIds);
     setLoadingExpedientes(false);
   }, []);
 
@@ -71,16 +77,16 @@ export default function HistoryPage() {
   const TABS: { key: AdminTab; label: string; icon: string }[] = [
     { key: 'expedientes', label: 'Expedientes', icon: '📁' },
     { key: 'clientes', label: 'Clientes', icon: '👥' },
-    { key: 'datos_prueba', label: 'Datos de Prueba', icon: '🧪' },
+    { key: 'inactivos_prueba', label: 'Inactivos / Prueba', icon: '🧪' },
     { key: 'configuracion', label: 'Configuración', icon: '⚙️' },
   ];
 
   return (
-    <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto', padding: '36px 24px' }}>
+    <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto', padding: '36px clamp(16px, 3vw, 24px)' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between" style={{ marginBottom: '28px', gap: '10px' }}>
         <div>
-          <h1 className="font-serif text-navy" style={{ fontSize: '22px' }}>Administración y Expedientes</h1>
+          <h1 className="font-serif text-navy" style={{ fontSize: 'clamp(18px, 4vw, 22px)' }}>Administración y Expedientes</h1>
           <p className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>
             {user?.displayName || 'Complement Consulting Group'}
           </p>
@@ -95,17 +101,17 @@ export default function HistoryPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap" style={{ gap: '6px', marginBottom: '28px' }}>
+      <div className="flex overflow-x-auto" style={{ gap: '4px', marginBottom: '28px', paddingBottom: '2px' }}>
         {TABS.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`font-semibold transition-all cursor-pointer ${
+            className={`font-semibold transition-all cursor-pointer shrink-0 ${
               activeTab === tab.key
                 ? 'border-b-2 border-accent text-accent'
                 : 'text-muted hover:text-ink'
             }`}
-            style={{ padding: '10px 18px', fontSize: '13px', background: 'none' }}
+            style={{ padding: '10px clamp(10px, 2vw, 18px)', fontSize: 'clamp(11px, 2vw, 13px)', background: 'none' }}
           >
             {tab.icon} {tab.label}
           </button>
@@ -115,7 +121,7 @@ export default function HistoryPage() {
       {/* Tab content */}
       {activeTab === 'expedientes' && (
         <ExpedientesPanel
-          accounts={accounts}
+          accounts={accounts.filter(a => !testClientIds.includes(a.id))}
           expedienteData={expedienteData}
           clientPrefills={clientPrefills}
           loading={loadingExpedientes}
@@ -135,8 +141,15 @@ export default function HistoryPage() {
         />
       )}
 
-      {activeTab === 'datos_prueba' && (
-        <DatosPruebaPanel />
+      {activeTab === 'inactivos_prueba' && (
+        <DatosPruebaPanel
+          accounts={accounts}
+          expedienteData={expedienteData}
+          clientPrefills={clientPrefills}
+          testClientIds={testClientIds}
+          onTestIdsChange={setTestClientIdsState}
+          onRefresh={refreshExpedientes}
+        />
       )}
 
       {activeTab === 'configuracion' && (
@@ -175,6 +188,8 @@ function ExpedientesPanel({
   onRefresh: () => void;
 }) {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'prospecto'>('todos');
+  const [sortBy, setSortBy] = useState<'fecha' | 'nombre' | 'estatus' | 'tamaño'>('fecha');
   const loadDiagnosticForReport = useDiagnosticStore(s => s.loadDiagnosticForReport);
   const loadDiagnosticForEdit = useDiagnosticStore(s => s.loadDiagnosticForEdit);
   const loadOrgSurveyForReport = useOrgSurveyStore(s => s.loadOrgSurveyForReport);
@@ -229,13 +244,64 @@ function ExpedientesPanel({
   }
 
   // Client card list
+  const statusColors: Record<string, string> = {
+    activo: 'bg-success/10 text-success border-success/30',
+    inactivo: 'bg-muted/10 text-muted border-border',
+    prospecto: 'bg-warn/10 text-warn border-warn/30',
+  };
+
+  const filtered = accounts
+    .filter(a => statusFilter === 'todos' || (a.status ?? 'activo') === statusFilter)
+    .sort((a, b) => {
+      if (sortBy === 'nombre') return (a.displayName || '').localeCompare(b.displayName || '');
+      if (sortBy === 'estatus') return (a.status ?? 'activo').localeCompare(b.status ?? 'activo');
+      if (sortBy === 'tamaño') {
+        const tmcA = (expedienteData.get(a.id)?.diagnostics[0]?.companySize?.tmcScore) ?? 0;
+        const tmcB = (expedienteData.get(b.id)?.diagnostics[0]?.companySize?.tmcScore) ?? 0;
+        return tmcB - tmcA;
+      }
+      return (b.createdAt ?? '').localeCompare(a.createdAt ?? '');
+    });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <p className="text-muted" style={{ fontSize: '12px', marginBottom: '4px' }}>
-        {accounts.length} cliente{accounts.length !== 1 ? 's' : ''} registrado{accounts.length !== 1 ? 's' : ''}
-      </p>
+      <div className="flex items-center justify-between" style={{ marginBottom: '4px' }}>
+        <p className="text-muted" style={{ fontSize: '12px' }}>
+          {filtered.length} de {accounts.length} expediente{accounts.length !== 1 ? 's' : ''}
+        </p>
+      </div>
 
-      {accounts.map(acc => {
+      {/* Filters */}
+      <div className="flex flex-wrap items-center" style={{ gap: '10px', marginBottom: '4px' }}>
+        {(['todos', 'activo', 'prospecto'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter(s)}
+            className={`font-medium transition-all cursor-pointer border ${statusFilter === s ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '11px', textTransform: 'capitalize' }}
+          >
+            {s === 'todos' ? `Todos (${accounts.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${accounts.filter(a => (a.status ?? 'activo') === s).length})`}
+          </button>
+        ))}
+
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as typeof sortBy)}
+          className="bg-white border border-border text-muted cursor-pointer"
+          style={{ padding: '5px 10px', borderRadius: '8px', fontSize: '11px', marginLeft: 'auto' }}
+        >
+          <option value="fecha">Ordenar: Fecha</option>
+          <option value="nombre">Ordenar: Nombre</option>
+          <option value="estatus">Ordenar: Estatus</option>
+          <option value="tamaño">Ordenar: Tamaño (TMC)</option>
+        </select>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="bg-white rounded-xl border border-border text-center" style={{ padding: '48px 24px' }}>
+          <p className="text-muted" style={{ fontSize: '13px' }}>{accounts.length === 0 ? 'No hay clientes registrados aún.' : 'No hay expedientes con este filtro.'}</p>
+        </div>
+      ) : filtered.map(acc => {
         const data = expedienteData.get(acc.id) ?? { diagnostics: [], orgSurveys: [], techSurveys: [] };
         const diagCount = data.diagnostics.length;
         const orgCount = data.orgSurveys.length;
@@ -245,6 +311,7 @@ function ExpedientesPanel({
         const hasPrefill = (clientPrefills.get(acc.id) ?? []).length > 0;
         const prefilledCount = data.diagnostics.filter(d => d.wasPrefilled === true).length;
         const soloCount = data.diagnostics.filter(d => d.wasPrefilled === false).length;
+        const accStatus = acc.status ?? 'activo';
 
         return (
           <button
@@ -256,10 +323,15 @@ function ExpedientesPanel({
             <div className="flex items-center" style={{ gap: '14px' }}>
               <ClientLogo logoUrl={acc.logoUrl} size={44} />
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-navy group-hover:text-accent transition-colors truncate" style={{ fontSize: '15px', marginBottom: '2px' }}>
-                  {acc.displayName}
-                </h3>
-                <p className="text-muted truncate" style={{ fontSize: '11px' }}>
+                <div className="flex items-center" style={{ gap: '8px' }}>
+                  <h3 className="font-bold text-navy group-hover:text-accent transition-colors truncate" style={{ fontSize: '15px', marginBottom: '0' }}>
+                    {acc.displayName}
+                  </h3>
+                  <span className={`border font-semibold flex-shrink-0 ${statusColors[accStatus]}`} style={{ padding: '1px 8px', borderRadius: '6px', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                    {accStatus}
+                  </span>
+                </div>
+                <p className="text-muted truncate" style={{ fontSize: '11px', marginTop: '2px' }}>
                   {acc.email || acc.username}
                 </p>
               </div>
@@ -271,7 +343,7 @@ function ExpedientesPanel({
                     {latestDiag.profesionalizacion.level}
                   </span>
                 )}
-                <div className="flex" style={{ gap: '4px' }}>
+                <div className="hidden sm:flex" style={{ gap: '4px' }}>
                   <span className={`font-semibold border ${diagCount > 0 ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '6px' }}>
                     {diagCount} diag.
                   </span>
@@ -353,6 +425,7 @@ function ClientExpedienteDetail({
   const [deletePrefillConfirm, setDeletePrefillConfirm] = useState(false);
   const [deletingPrefill, setDeletingPrefill] = useState(false);
   const startPrefillMode = useDiagnosticStore(s => s.startPrefillMode);
+  const editPrefillMode = useDiagnosticStore(s => s.editPrefillMode);
   const diagCount = data.diagnostics.length;
   const orgCount = data.orgSurveys.length;
   const techCount = data.techSurveys.length;
@@ -367,11 +440,14 @@ function ClientExpedienteDetail({
     exportExpediente(companyName, latestDiag, latestOrg, 'view');
   }
 
-  function handleDownloadExpedientePdf() {
-    exportExpediente(companyName, latestDiag, latestOrg, 'download');
-  }
-
-  function handleStartPrefill() {
+  async function handleStartPrefill() {
+    if (hasDiagPrefill) {
+      const existing = await getPrefillForUser(account.id, 'diagnostico_empresarial');
+      if (existing) {
+        editPrefillMode(account.id, existing);
+        return;
+      }
+    }
     startPrefillMode(account.id);
   }
 
@@ -386,12 +462,14 @@ function ClientExpedienteDetail({
         ← Volver a expedientes
       </button>
 
-      <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px', marginBottom: '20px' }}>
+      <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: 'clamp(18px, 3vw, 28px) clamp(16px, 3vw, 32px)', marginBottom: '20px' }}>
         <div className="flex items-center" style={{ gap: '16px', marginBottom: '20px' }}>
           <ClientLogo logoUrl={account.logoUrl} size={52} />
-          <div className="flex-1">
-            <h2 className="font-serif text-navy" style={{ fontSize: '20px', marginBottom: '2px' }}>{account.displayName}</h2>
-            <p className="text-muted" style={{ fontSize: '12px' }}>{account.email || account.username}</p>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-serif text-navy truncate" style={{ fontSize: 'clamp(17px, 3vw, 20px)', marginBottom: '2px' }}>{account.displayName}</h2>
+            <p className="text-muted" style={{ fontSize: '12px' }}>
+              {account.email || account.username}
+            </p>
           </div>
         </div>
 
@@ -401,22 +479,10 @@ function ClientExpedienteDetail({
             <button
               onClick={handleViewExpedientePdf}
               className="bg-navy text-white font-semibold hover:bg-navy/80 transition-all cursor-pointer"
-              style={{ fontSize: '12px', padding: '9px 22px', borderRadius: '10px' }}
+              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
             >
               Ver Expediente PDF
             </button>
-            <button
-              onClick={handleDownloadExpedientePdf}
-              className="border border-navy text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer"
-              style={{ fontSize: '12px', padding: '9px 22px', borderRadius: '10px' }}
-            >
-              Descargar PDF
-            </button>
-            {!(diagCount > 0 && orgCount > 0) && (
-              <span className="text-warn font-medium" style={{ fontSize: '11px' }}>
-                Expediente parcial ({diagCount === 0 ? 'falta diagnostico' : 'falta estructura org.'})
-              </span>
-            )}
           </div>
         )}
 
@@ -432,7 +498,7 @@ function ClientExpedienteDetail({
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-navy" style={{ fontSize: '13px' }}>Pre-llenado completo</p>
-                    <p className="text-muted" style={{ fontSize: '11px' }}>El cliente vera los datos pre-llenados al contestar el diagnostico</p>
+                    <p className="text-muted" style={{ fontSize: '11px' }}>El cliente vera los datos pre-llenados al contestar la radiografía</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center" style={{ gap: '8px' }}>
@@ -484,9 +550,9 @@ function ClientExpedienteDetail({
                 <button
                   onClick={handleStartPrefill}
                   className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-                  style={{ fontSize: '12px', padding: '9px 22px', borderRadius: '10px' }}
+                  style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
                 >
-                  ✨ Pre-llenar diagnostico
+                  ✨ Pre-llenar radiografía
                 </button>
               </div>
             )}
@@ -495,22 +561,22 @@ function ClientExpedienteDetail({
       </div>
 
       {/* Section tabs */}
-      <div className="flex" style={{ gap: '4px', marginBottom: '20px' }}>
+      <div className="flex overflow-x-auto" style={{ gap: '4px', marginBottom: '20px', paddingBottom: '2px' }}>
         {([
           { key: 'resumen' as const, label: 'Resumen Ejecutivo', icon: '📊' },
-          ...(diagCount > 0 ? [{ key: 'diagnosticos' as const, label: `Diagnosticos (${diagCount})`, icon: '📋' }] : []),
+          ...(diagCount > 0 ? [{ key: 'diagnosticos' as const, label: `Radiografías (${diagCount})`, icon: '📋' }] : []),
           ...(orgCount > 0 ? [{ key: 'organizacional' as const, label: `Estructura Org. (${orgCount})`, icon: '🏗️' }] : []),
           ...(techCount > 0 ? [{ key: 'tecnologia' as const, label: `Tecnología (${techCount})`, icon: '💻' }] : []),
         ]).map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveSection(tab.key)}
-            className={`font-semibold transition-all cursor-pointer rounded-lg ${
+            className={`font-semibold transition-all cursor-pointer rounded-lg shrink-0 ${
               activeSection === tab.key
                 ? 'bg-accent text-white shadow-sm'
                 : 'bg-white text-muted hover:text-ink border border-border/40'
             }`}
-            style={{ padding: '9px 18px', fontSize: '12px' }}
+            style={{ padding: '9px clamp(10px, 2vw, 18px)', fontSize: 'clamp(10px, 2vw, 12px)' }}
           >
             {tab.icon} {tab.label}
           </button>
@@ -634,12 +700,12 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
   const gerenciasCubiertas = d.gerencias.filter(g => g.cubierto).length;
 
   return (
-    <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px 28px' }}>
+    <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: 'clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between" style={{ marginBottom: '20px' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between" style={{ marginBottom: '20px', gap: '10px' }}>
         <div>
-          <div className="flex items-center" style={{ gap: '8px', marginBottom: '4px' }}>
-            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px' }}>Diagnostico Empresarial</p>
+          <div className="flex items-center flex-wrap" style={{ gap: '8px', marginBottom: '4px' }}>
+            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px' }}>Radiografía Empresarial</p>
             {d.wasPrefilled && (
               <span style={{ fontSize: '8px', padding: '2px 8px', borderRadius: '4px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, border: '1px solid #d4922e30' }}>
                 ✨ Pre-llenado
@@ -655,7 +721,7 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
             {new Date(d.savedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
-        <div className="flex items-center" style={{ gap: '8px' }}>
+        <div className="flex items-center flex-wrap" style={{ gap: '8px' }}>
           <button
             onClick={() => exportToPptx(d)}
             className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
@@ -692,7 +758,7 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
       {/* Scores */}
       <div className="flex flex-wrap" style={{ gap: '14px', marginBottom: '16px' }}>
         <div className="rounded-xl border border-border/30 bg-pale/50" style={{ padding: '14px 18px', flex: 1, minWidth: '180px' }}>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Profesionalizacion</p>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Profesionalización</p>
           <div className="flex items-center" style={{ gap: '8px' }}>
             <span className="font-bold text-ink" style={{ fontSize: '18px' }}>{d.profesionalizacion.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '11px' }}>/100</span></span>
             <span className={`font-semibold rounded-full ${
@@ -720,7 +786,7 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
         </div>
 
         <div className="rounded-xl border border-border/30 bg-pale/50" style={{ padding: '14px 18px', flex: 1, minWidth: '180px' }}>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Institucionalizacion</p>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Institucionalización</p>
           <div className="flex items-center" style={{ gap: '8px' }}>
             <span className="font-bold text-ink" style={{ fontSize: '18px' }}>{d.institucionalizacion.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '11px' }}>/100</span></span>
             <span className={`font-semibold rounded-full ${
@@ -777,7 +843,7 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
       <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '10px', marginBottom: '14px' }}>
         <MiniMetric label="Gerencias cubiertas" value={`${gerenciasCubiertas}/${d.gerencias.length}`} />
         <MiniMetric label="Urgencia" value={d.urgenciaLevel} />
-        <MiniMetric label="Empresa Familiar" value={isFamily ? 'Si' : 'No'} />
+        <MiniMetric label="Empresa Familiar" value={isFamily ? 'Sí' : 'No'} />
         <MiniMetric label="Areas Oportunidad" value={d.opportunityAreas.length.toString()} />
       </div>
 
@@ -830,16 +896,16 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px 28px' }}>
+    <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: 'clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between" style={{ marginBottom: '20px' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between" style={{ marginBottom: '20px', gap: '10px' }}>
         <div>
           <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px', marginBottom: '4px' }}>Estructura Organizacional</p>
           <p className="text-muted" style={{ fontSize: '11px' }}>
             {new Date(s.savedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
-        <div className="flex items-center" style={{ gap: '8px' }}>
+        <div className="flex items-center flex-wrap" style={{ gap: '8px' }}>
           <button
             onClick={() => exportOrgSurveyToPdf(s)}
             className="border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer"
@@ -860,9 +926,9 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
       {/* Key metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '10px', marginBottom: '16px' }}>
         <MiniMetric label="Colaboradores" value={totalColab.toString()} />
-        <MiniMetric label="Nomina Mensual" value={`$${totalNomina.toLocaleString('es-MX')}`} />
+        <MiniMetric label="Nómina Mensual" value={`$${totalNomina.toLocaleString('es-MX')}`} />
         <MiniMetric label="Areas con Lider" value={`${areasConLider}/${s.areaDetails.length}`} />
-        <MiniMetric label="Organigrama" value={s.orgStructure.tieneOrganigrama ? 'Si' : 'No'} />
+        <MiniMetric label="Organigrama" value={s.orgStructure.tieneOrganigrama ? 'Sí' : 'No'} />
       </div>
 
       {/* Structure indicators */}
@@ -873,15 +939,15 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
           positive={s.orgStructure.descripcionesPuesto === 'todas'}
           warning={s.orgStructure.descripcionesPuesto === 'algunas'}
         />
-        <StatusPill label="Tabulador" value={s.orgStructure.tieneTabulador ? 'Si' : 'No'} positive={s.orgStructure.tieneTabulador} />
-        <StatusPill label="Reclutamiento" value={s.talentProcesses.procesoReclutamiento ? 'Si' : 'No'} positive={s.talentProcesses.procesoReclutamiento} />
+        <StatusPill label="Tabulador" value={s.orgStructure.tieneTabulador ? 'Sí' : 'No'} positive={s.orgStructure.tieneTabulador} />
+        <StatusPill label="Reclutamiento" value={s.talentProcesses.procesoReclutamiento ? 'Sí' : 'No'} positive={s.talentProcesses.procesoReclutamiento} />
         <StatusPill
           label="Evaluaciones"
-          value={s.talentProcesses.evaluacionesDesempeno === 'si' ? 'Si' : s.talentProcesses.evaluacionesDesempeno === 'parcialmente' ? 'Parcial' : 'No'}
+          value={s.talentProcesses.evaluacionesDesempeno === 'si' ? 'Sí' : s.talentProcesses.evaluacionesDesempeno === 'parcialmente' ? 'Parcial' : 'No'}
           positive={s.talentProcesses.evaluacionesDesempeno === 'si'}
           warning={s.talentProcesses.evaluacionesDesempeno === 'parcialmente'}
         />
-        <StatusPill label="Capacitacion" value={s.talentProcesses.programaCapacitacion ? 'Si' : 'No'} positive={s.talentProcesses.programaCapacitacion} />
+        <StatusPill label="Capacitación" value={s.talentProcesses.programaCapacitacion ? 'Sí' : 'No'} positive={s.talentProcesses.programaCapacitacion} />
       </div>
 
       {/* Areas detail compact */}
@@ -901,7 +967,7 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
 
       {/* Bottom row */}
       <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '10px' }}>
-        <MiniMetric label="Rotacion Anual" value={s.talentProcesses.rotacionAnual !== null ? `${s.talentProcesses.rotacionAnual}%` : '—'} />
+        <MiniMetric label="Rotación Anual" value={s.talentProcesses.rotacionAnual !== null ? `${s.talentProcesses.rotacionAnual}%` : '—'} />
         <MiniMetric label="Competitividad Sueldos" value={competLabels[s.talentProcesses.competitividadSueldos] || '—'} />
         {s.talentProcesses.retoCapitalHumano && (
           <div className="rounded-lg bg-pale/50 border border-border/30" style={{ padding: '8px 12px', gridColumn: '1 / -1' }}>
@@ -939,6 +1005,7 @@ function DiagnosticosSection({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <HistoricalComparison diagnostics={diagnostics} />
       {diagnostics.map(d => (
         <div key={d.id} className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '20px 24px' }}>
           <div className="flex items-center flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
@@ -1165,15 +1232,15 @@ const MATURITY_COLORS_EXP: Record<TechMaturityLevel, string> = {
   lider_digital: 'text-accent',
 };
 const MATURITY_LABELS_EXP: Record<TechMaturityLevel, string> = {
-  basico: 'Basico',
+  basico: 'Básico',
   intermedio: 'Intermedio',
   avanzado: 'Avanzado',
-  lider_digital: 'Lider Digital',
+  lider_digital: 'Líder Digital',
 };
 
 function TechEjecutivoCard({ survey, onExtenso }: { survey: SavedTechSurvey; onExtenso: (s: SavedTechSurvey) => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px 28px' }}>
+    <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: 'clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px)' }}>
       <div className="flex items-center" style={{ gap: '12px', marginBottom: '16px' }}>
         <div className="inline-flex items-center justify-center rounded-full bg-accent/10 shrink-0" style={{ width: '36px', height: '36px' }}>
           <span style={{ fontSize: '16px' }}>💻</span>
@@ -1198,10 +1265,10 @@ function TechEjecutivoCard({ survey, onExtenso }: { survey: SavedTechSurvey; onE
           </p>
         </div>
         <div className="flex flex-wrap" style={{ gap: '6px' }}>
-          <StatusPill label="ERP" value={survey.tools.tieneERP ? 'Si' : 'No'} positive={survey.tools.tieneERP} />
-          <StatusPill label="CRM" value={survey.tools.tieneCRM ? 'Si' : 'No'} positive={survey.tools.tieneCRM} />
-          <StatusPill label="IA" value={survey.aiAdoption.usaIAEnEmpresa ? 'Si' : 'No'} positive={survey.aiAdoption.usaIAEnEmpresa} />
-          <StatusPill label="Nube" value={survey.security.usaNube ? 'Si' : 'No'} positive={survey.security.usaNube} />
+          <StatusPill label="ERP" value={survey.tools.tieneERP ? 'Sí' : 'No'} positive={survey.tools.tieneERP} />
+          <StatusPill label="CRM" value={survey.tools.tieneCRM ? 'Sí' : 'No'} positive={survey.tools.tieneCRM} />
+          <StatusPill label="IA" value={survey.aiAdoption.usaIAEnEmpresa ? 'Sí' : 'No'} positive={survey.aiAdoption.usaIAEnEmpresa} />
+          <StatusPill label="Nube" value={survey.security.usaNube ? 'Sí' : 'No'} positive={survey.security.usaNube} />
         </div>
       </div>
 
@@ -1273,12 +1340,12 @@ function TecnologiaSection({
           </div>
 
           <div className="flex flex-wrap" style={{ gap: '6px', marginBottom: '14px' }}>
-            <StatusPill label="ERP" value={survey.tools.tieneERP ? 'Si' : 'No'} positive={survey.tools.tieneERP} />
-            <StatusPill label="CRM" value={survey.tools.tieneCRM ? 'Si' : 'No'} positive={survey.tools.tieneCRM} />
-            <StatusPill label="IA" value={survey.aiAdoption.usaIAEnEmpresa ? 'Si' : 'No'} positive={survey.aiAdoption.usaIAEnEmpresa} />
-            <StatusPill label="KPIs" value={survey.dataAnalytics.tieneKPIs ? 'Si' : 'No'} positive={survey.dataAnalytics.tieneKPIs} />
-            <StatusPill label="Nube" value={survey.security.usaNube ? 'Si' : 'No'} positive={survey.security.usaNube} />
-            <StatusPill label="Equipo TI" value={survey.culture.equipoTI ? 'Si' : 'No'} positive={survey.culture.equipoTI} />
+            <StatusPill label="ERP" value={survey.tools.tieneERP ? 'Sí' : 'No'} positive={survey.tools.tieneERP} />
+            <StatusPill label="CRM" value={survey.tools.tieneCRM ? 'Sí' : 'No'} positive={survey.tools.tieneCRM} />
+            <StatusPill label="IA" value={survey.aiAdoption.usaIAEnEmpresa ? 'Sí' : 'No'} positive={survey.aiAdoption.usaIAEnEmpresa} />
+            <StatusPill label="KPIs" value={survey.dataAnalytics.tieneKPIs ? 'Sí' : 'No'} positive={survey.dataAnalytics.tieneKPIs} />
+            <StatusPill label="Nube" value={survey.security.usaNube ? 'Sí' : 'No'} positive={survey.security.usaNube} />
+            <StatusPill label="Equipo TI" value={survey.culture.equipoTI ? 'Sí' : 'No'} positive={survey.culture.equipoTI} />
           </div>
 
           <div className="flex flex-wrap" style={{ gap: '8px' }}>
@@ -1359,11 +1426,28 @@ function ClientesPanel({
   setDeleteConfirm: (v: string | null) => void;
   onDelete: (id: string) => void;
 }) {
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'prospecto'>('todos');
+  const [sortBy, setSortBy] = useState<'fecha' | 'nombre' | 'estatus'>('fecha');
+
+  const filtered = accounts
+    .filter(a => statusFilter === 'todos' || (a.status ?? 'activo') === statusFilter)
+    .sort((a, b) => {
+      if (sortBy === 'nombre') return (a.displayName || '').localeCompare(b.displayName || '');
+      if (sortBy === 'estatus') return (a.status ?? 'activo').localeCompare(b.status ?? 'activo');
+      return (b.createdAt ?? '').localeCompare(a.createdAt ?? '');
+    });
+
+  const statusColors: Record<string, string> = {
+    activo: 'bg-success/10 text-success border-success/30',
+    inactivo: 'bg-muted/10 text-muted border-border',
+    prospecto: 'bg-warn/10 text-warn border-warn/30',
+  };
+
   return (
     <div>
-      <div className="flex items-center justify-between" style={{ marginBottom: '20px' }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: '16px' }}>
         <p className="text-muted" style={{ fontSize: '12px' }}>
-          {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''} de cliente
+          {filtered.length} de {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''}
         </p>
         <button
           onClick={() => setShowCreate(true)}
@@ -1374,17 +1458,45 @@ function ClientesPanel({
         </button>
       </div>
 
-      {accounts.length === 0 ? (
+      {/* Filters */}
+      <div className="flex flex-wrap items-center" style={{ gap: '10px', marginBottom: '16px' }}>
+        {/* Status filter pills */}
+        {(['todos', 'activo', 'prospecto'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter(s)}
+            className={`font-medium transition-all cursor-pointer border ${statusFilter === s ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '11px', textTransform: 'capitalize' }}
+          >
+            {s === 'todos' ? `Todos (${accounts.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${accounts.filter(a => (a.status ?? 'activo') === s).length})`}
+          </button>
+        ))}
+
+        {/* Sort selector */}
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as typeof sortBy)}
+          className="bg-white border border-border text-muted cursor-pointer"
+          style={{ padding: '5px 10px', borderRadius: '8px', fontSize: '11px', marginLeft: 'auto' }}
+        >
+          <option value="fecha">Ordenar: Fecha</option>
+          <option value="nombre">Ordenar: Nombre</option>
+          <option value="estatus">Ordenar: Estatus</option>
+        </select>
+      </div>
+
+      {filtered.length === 0 ? (
         <div className="bg-white rounded-xl border border-border text-center" style={{ padding: '48px 24px' }}>
-          <p className="text-muted" style={{ fontSize: '13px' }}>No hay cuentas de clientes creadas aún.</p>
-          <p className="text-muted" style={{ fontSize: '11px', marginTop: '8px' }}>Crea una cuenta para que tus clientes puedan acceder a sus encuestas.</p>
+          <p className="text-muted" style={{ fontSize: '13px' }}>{accounts.length === 0 ? 'No hay cuentas de clientes creadas aún.' : 'No hay clientes con este filtro.'}</p>
+          {accounts.length === 0 && <p className="text-muted" style={{ fontSize: '11px', marginTop: '8px' }}>Crea una cuenta para que tus clientes puedan acceder a sus encuestas.</p>}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {accounts.map(acc => (
+          {filtered.map(acc => (
             <AccountCard
               key={acc.id}
               account={acc}
+              statusColors={statusColors}
               onDeleteRequest={() => setDeleteConfirm(acc.id)}
               onUpdated={onCreated}
             />
@@ -1409,7 +1521,7 @@ function ClientesPanel({
             </div>
             <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '10px' }}>¿Eliminar cuenta de cliente?</h3>
             <p className="text-muted" style={{ fontSize: '13px', marginBottom: '28px' }}>
-              Se eliminarán la cuenta y <strong>todos sus diagnósticos</strong>. Esta acción no se puede deshacer.
+              Se eliminarán la cuenta y <strong>todas sus radiografías</strong>. Esta acción no se puede deshacer.
             </p>
             <div className="flex" style={{ gap: '14px' }}>
               <button
@@ -1438,18 +1550,28 @@ function ClientesPanel({
 
 function AccountCard({
   account,
+  statusColors,
   onDeleteRequest,
   onUpdated,
 }: {
   account: AppUser;
+  statusColors: Record<string, string>;
   onDeleteRequest: () => void;
   onUpdated: () => void;
 }) {
   const [editing, setEditing] = useState(false);
+  const [changingStatus, setChangingStatus] = useState(false);
   const perms = account.surveyPermissions ?? ['diagnostico_empresarial'];
   const hasDiag = perms.includes('diagnostico_empresarial');
   const hasOrg = perms.includes('estructura_organizacional');
   const hasTech = perms.includes('prueba_tecnologia');
+  const status = account.status ?? 'activo';
+
+  async function handleStatusChange(newStatus: string) {
+    await updateClientProfile(account.id, { status: newStatus });
+    setChangingStatus(false);
+    onUpdated();
+  }
 
   return (
     <>
@@ -1461,7 +1583,37 @@ function AccountCard({
         <div className="flex items-center" style={{ gap: '16px', marginBottom: '12px' }}>
           <ClientLogo logoUrl={account.logoUrl} size={44} />
           <div className="flex-1">
-            <p className="font-semibold text-ink" style={{ fontSize: '14px' }}>{account.displayName}</p>
+            <div className="flex items-center" style={{ gap: '8px' }}>
+              <p className="font-semibold text-ink" style={{ fontSize: '14px' }}>{account.displayName}</p>
+              {/* Status badge - clickable */}
+              <div className="relative">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setChangingStatus(!changingStatus); }}
+                  className={`border font-semibold transition-all cursor-pointer ${statusColors[status] || statusColors.activo}`}
+                  style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.03em' }}
+                >
+                  {status}
+                </button>
+                {changingStatus && (
+                  <div
+                    className="absolute z-20 bg-white rounded-lg border border-border shadow-lg"
+                    style={{ top: '100%', left: 0, marginTop: '4px', padding: '4px', minWidth: '120px' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {(['activo', 'inactivo', 'prospecto'] as const).map(s => (
+                      <button
+                        key={s}
+                        onClick={() => handleStatusChange(s)}
+                        className={`w-full text-left font-medium transition-colors cursor-pointer hover:bg-pale rounded-md ${s === status ? 'text-navy' : 'text-muted'}`}
+                        style={{ padding: '6px 10px', fontSize: '11px', textTransform: 'capitalize' }}
+                      >
+                        {s === status && '✓ '}{s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
             <p className="text-muted" style={{ fontSize: '11px', marginTop: '2px' }}>
               {account.email || account.username}
             </p>
@@ -1487,7 +1639,7 @@ function AccountCard({
         {/* Permission badges (read-only summary) */}
         <div className="flex items-center flex-wrap" style={{ gap: '8px', paddingLeft: '60px' }}>
           <span className={`border font-medium ${hasDiag ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: '10px' }}>
-            {hasDiag ? '✓' : '○'} Diagnóstico
+            {hasDiag ? '✓' : '○'} Radiografía
           </span>
           <span className={`border font-medium ${hasOrg ? 'border-mid/30 bg-mid/5 text-mid' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: '10px' }}>
             {hasOrg ? '✓' : '○'} Estructura Org.
@@ -1513,12 +1665,14 @@ function AccountCard({
 
 function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onClose: () => void; onSaved: () => void }) {
   const [displayName, setDisplayName] = useState(account.displayName);
+  const [username, setUsername] = useState(account.username ?? '');
   const [email, setEmail] = useState(account.email ?? '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [permDiag, setPermDiag] = useState((account.surveyPermissions ?? ['diagnostico_empresarial']).includes('diagnostico_empresarial'));
   const [permOrg, setPermOrg] = useState((account.surveyPermissions ?? []).includes('estructura_organizacional'));
   const [permTech, setPermTech] = useState((account.surveyPermissions ?? []).includes('prueba_tecnologia'));
+  const [statusVal, setStatusVal] = useState<string>(account.status ?? 'activo');
   const [logoPreview, setLogoPreview] = useState<string | null>(account.logoUrl ?? null);
   const [logoChanged, setLogoChanged] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1544,6 +1698,8 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!username.trim()) { setError('El nombre de usuario es obligatorio.'); return; }
+    if (!/^[a-z0-9._-]+$/i.test(username.trim())) { setError('El usuario solo puede contener letras, números, puntos, guiones y guiones bajos.'); return; }
     if (!email.trim()) { setError('El correo electronico es obligatorio.'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('El formato del correo electronico no es valido.'); return; }
     if (!permDiag && !permOrg && !permTech) { setError('Debe seleccionar al menos una encuesta.'); return; }
@@ -1557,10 +1713,11 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
     if (permTech) permissions.push('prueba_tecnologia');
 
     const updates: Parameters<typeof updateClientProfile>[1] = {
-      displayName: displayName.trim() || account.username.trim(),
-      username: account.username.trim(),
+      displayName: displayName.trim() || username.trim(),
+      username: username.trim().toLowerCase(),
       email: email.trim(),
       permissions,
+      status: statusVal,
     };
     if (password.trim()) updates.password = password.trim();
     if (logoChanged) updates.logoUrl = logoPreview;
@@ -1616,17 +1773,24 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
             <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="input-field" placeholder="Ej: Empresa ABC" style={{ fontSize: '13px' }} />
           </div>
 
+          {/* Username */}
+          <div>
+            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Usuario *</label>
+            <input type="text" value={username} onChange={e => { setUsername(e.target.value.replace(/\s/g, '')); setError(''); }} className="input-field" placeholder="Ej: empresa_abc" style={{ fontSize: '13px' }} />
+            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>Se usa para inicio de sesión. Solo letras, números, puntos y guiones.</p>
+          </div>
+
           {/* Email */}
           <div>
             <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Correo electronico *</label>
             <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} className="input-field" placeholder="Ej: contacto@empresa.com" style={{ fontSize: '13px' }} />
-            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>Se usa para inicio de sesion y envio de reportes.</p>
+            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>Se usa para inicio de sesión y envío de reportes.</p>
           </div>
 
           {/* Password */}
           <div>
             <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>
-              Contrasena <span className="text-muted font-normal">(dejar vacio para no cambiar)</span>
+              Contraseña <span className="text-muted font-normal">(dejar vacío para no cambiar)</span>
             </label>
             <div className="flex items-center" style={{ gap: '8px' }}>
               <input
@@ -1659,7 +1823,7 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
                 className={`border font-medium transition-all cursor-pointer ${permDiag ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-pale text-muted'}`}
                 style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
               >
-                {permDiag ? '✓' : '○'} Diagnóstico Empresarial
+                {permDiag ? '✓' : '○'} Radiografía Empresarial
               </button>
               <button
                 type="button"
@@ -1677,6 +1841,28 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
               >
                 {permTech ? '✓' : '○'} Prueba de Tecnologia
               </button>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>Estatus del cliente</label>
+            <div className="flex flex-wrap" style={{ gap: '10px' }}>
+              {([
+                { value: 'activo', label: 'Activo', colors: 'border-success bg-success/10 text-success' },
+                { value: 'inactivo', label: 'Inactivo', colors: 'border-border bg-pale text-muted' },
+                { value: 'prospecto', label: 'Prospecto', colors: 'border-warn bg-warn/10 text-warn' },
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setStatusVal(opt.value)}
+                  className={`border font-medium transition-all cursor-pointer ${statusVal === opt.value ? opt.colors : 'border-border bg-pale text-muted'}`}
+                  style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                >
+                  {statusVal === opt.value ? '✓' : '○'} {opt.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1785,7 +1971,7 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      setError('Correo electronico y contrasena son obligatorios.');
+      setError('Correo electrónico y contraseña son obligatorios.');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
@@ -1880,11 +2066,11 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
           <div>
             <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Correo electronico *</label>
             <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} className="input-field" placeholder="Ej: contacto@empresa.com" style={{ fontSize: '13px' }} autoFocus />
-            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>El cliente usara este correo para iniciar sesion y recibir reportes.</p>
+            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>El cliente usará este correo para iniciar sesión y recibir reportes.</p>
           </div>
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Contrasena *</label>
-            <input type="text" value={password} onChange={e => { setPassword(e.target.value); setError(''); }} className="input-field" placeholder="Contrasena para el cliente" style={{ fontSize: '13px' }} />
+            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Contraseña *</label>
+            <input type="text" value={password} onChange={e => { setPassword(e.target.value); setError(''); }} className="input-field" placeholder="Contraseña para el cliente" style={{ fontSize: '13px' }} />
           </div>
 
           {/* Survey permissions */}
@@ -1899,7 +2085,7 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
                 }`}
                 style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
               >
-                {permDiag ? '✓' : '○'} Diagnóstico Empresarial
+                {permDiag ? '✓' : '○'} Radiografía Empresarial
               </button>
               <button
                 type="button"
@@ -1944,75 +2130,210 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
    DATOS DE PRUEBA PANEL
    ══════════════════════════════════════════════════════════ */
 
-function DatosPruebaPanel() {
+function DatosPruebaPanel({
+  accounts,
+  expedienteData,
+  clientPrefills,
+  testClientIds,
+  onTestIdsChange,
+  onRefresh,
+}: {
+  accounts: AppUser[];
+  expedienteData: Map<string, { diagnostics: SavedDiagnostic[]; orgSurveys: SavedOrgSurvey[]; techSurveys: SavedTechSurvey[] }>;
+  clientPrefills: Map<string, SurveyType[]>;
+  testClientIds: string[];
+  onTestIdsChange: (ids: string[]) => void;
+  onRefresh: () => Promise<void>;
+}) {
   const loadDiagnosticForReport = useDiagnosticStore(s => s.loadDiagnosticForReport);
+  const loadDiagnosticForEdit = useDiagnosticStore(s => s.loadDiagnosticForEdit);
   const loadOrgSurveyForReport = useOrgSurveyStore(s => s.loadOrgSurveyForReport);
+  const loadOrgSurveyForEdit = useOrgSurveyStore(s => s.loadOrgSurveyForEdit);
+  const loadTechSurveyForReport = useTechSurveyStore(s => s.loadTechSurveyForReport);
+  const loadTechSurveyForEdit = useTechSurveyStore(s => s.loadTechSurveyForEdit);
   const setView = useDiagnosticStore(s => s.setView);
 
-  const sampleDiag = generateSampleDiagnostic();
-  const sampleOrg = generateSampleOrgSurvey();
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [addClientId, setAddClientId] = useState('');
+  const [confirmAdd, setConfirmAdd] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
-  const companyName = sampleDiag.datosGenerales.nombreComercial;
+  const availableClients = accounts.filter(a => a.role === 'client' && !testClientIds.includes(a.id));
+  const testClients = accounts.filter(a => testClientIds.includes(a.id));
 
-  function handleViewExpediente() {
-    exportExpediente(companyName, sampleDiag, sampleOrg, 'view');
+  async function handleAddTestClient() {
+    if (!addClientId) return;
+    const newIds = [...testClientIds, addClientId];
+    await setTestClientIds(newIds);
+    onTestIdsChange(newIds);
+    setAddClientId('');
+    setConfirmAdd(false);
   }
 
-  function handleDownloadExpediente() {
-    exportExpediente(companyName, sampleDiag, sampleOrg, 'download');
+  async function handleRemoveTestClient(id: string) {
+    const newIds = testClientIds.filter(tid => tid !== id);
+    await setTestClientIds(newIds);
+    onTestIdsChange(newIds);
+    setConfirmRemoveId(null);
+  }
+
+  // Detail view for a selected test client — full functionality like Expedientes
+  if (selectedClientId) {
+    const acc = testClients.find(a => a.id === selectedClientId);
+    if (!acc) { setSelectedClientId(null); return null; }
+    const data = expedienteData.get(acc.id) ?? { diagnostics: [], orgSurveys: [], techSurveys: [] };
+    const hasDiagPrefill = (clientPrefills.get(acc.id) ?? []).includes('diagnostico_empresarial');
+
+    return (
+      <div>
+        {/* Test banner */}
+        <div className="w-full bg-warn/10 border border-warn/30 rounded-xl text-center" style={{ padding: '8px 16px', marginBottom: '16px' }}>
+          <p className="text-warn font-semibold" style={{ fontSize: '11px' }}>🧪 Cliente de prueba — los datos de este cliente son de prueba</p>
+        </div>
+        <ClientExpedienteDetail
+          account={acc}
+          data={data}
+          hasDiagPrefill={hasDiagPrefill}
+          onBack={() => { setSelectedClientId(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          onDiagExtenso={(d) => { loadDiagnosticForReport(d); }}
+          onOrgExtenso={(s) => { loadOrgSurveyForReport(s); setView('org_report'); }}
+          onTechExtenso={(s) => { loadTechSurveyForReport(s); setView('tech_report'); }}
+          onDiagEdit={(d) => { loadDiagnosticForEdit(d); }}
+          onOrgEdit={(s) => { loadOrgSurveyForEdit(s); setView('org_wizard'); }}
+          onTechEdit={(s) => { loadTechSurveyForEdit(s); setView('tech_wizard'); }}
+          onDeleteDiag={async (id) => { await deleteDiagnostic(id); onRefresh(); }}
+          onDeleteOrg={async (id) => { await deleteOrgSurvey(id); onRefresh(); }}
+          onDeleteTech={async (id) => { await deleteTechSurvey(id); onRefresh(); }}
+          onDeletePrefill={async () => { await deletePrefill(acc.id, 'diagnostico_empresarial'); onRefresh(); }}
+        />
+      </div>
+    );
   }
 
   return (
     <div>
-      {/* Header */}
       <div style={{ marginBottom: '20px' }}>
-        <h3 className="font-serif text-navy" style={{ fontSize: '17px' }}>Expediente de Prueba</h3>
+        <h3 className="font-serif text-navy" style={{ fontSize: '17px' }}>Clientes Inactivos / Prueba</h3>
         <p className="text-muted" style={{ fontSize: '11px', marginTop: '4px' }}>
-          Cliente ficticio para visualizar como se ve un expediente completo. Los datos no se guardan.
+          Clientes marcados como datos de prueba. No aparecen en Expedientes y su acceso requiere clave maestra.
         </p>
       </div>
 
-      {/* Test mode banner */}
-      <div className="w-full bg-warn/10 border border-warn/30 rounded-xl text-center" style={{ padding: '12px 20px', marginBottom: '20px' }}>
-        <p className="text-warn font-semibold" style={{ fontSize: '12px' }}>Modo de prueba — estos datos son ficticios y no se guardan</p>
-      </div>
-
-      {/* Expediente actions */}
-      <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px 28px', marginBottom: '20px' }}>
-        <div className="flex items-center" style={{ gap: '14px', marginBottom: '16px' }}>
-          <ClientLogo size={44} />
-          <div className="flex-1">
-            <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>{companyName}</h3>
-            <p className="text-muted" style={{ fontSize: '11px' }}>Cliente de prueba — Manufactura</p>
-          </div>
-        </div>
+      {/* Add client selector */}
+      <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '20px 24px', marginBottom: '20px' }}>
+        <p className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px' }}>Agregar cliente de prueba</p>
         <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
-          <button onClick={handleViewExpediente} className="bg-navy text-white font-semibold hover:bg-navy/80 transition-all cursor-pointer" style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '8px' }}>
-            Ver Expediente PDF
-          </button>
-          <button onClick={handleDownloadExpediente} className="border border-navy text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer" style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '8px' }}>
-            Descargar PDF
-          </button>
+          <select
+            value={addClientId}
+            onChange={e => { setAddClientId(e.target.value); setConfirmAdd(false); }}
+            className="border border-border/60 rounded-lg bg-white text-ink"
+            style={{ fontSize: '12px', padding: '8px 12px', minWidth: '200px' }}
+          >
+            <option value="">Seleccionar cliente...</option>
+            {availableClients.map(a => (
+              <option key={a.id} value={a.id}>{a.displayName} ({a.email || a.username})</option>
+            ))}
+          </select>
+          {!confirmAdd ? (
+            <button
+              onClick={() => setConfirmAdd(true)}
+              disabled={!addClientId}
+              className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ fontSize: '12px', padding: '8px 18px', borderRadius: '8px' }}
+            >
+              Agregar
+            </button>
+          ) : (
+            <span className="flex items-center" style={{ gap: '8px' }}>
+              <span className="text-warn font-medium" style={{ fontSize: '11px' }}>¿Marcar como dato de prueba?</span>
+              <button
+                onClick={handleAddTestClient}
+                className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
+                style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '6px' }}
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={() => setConfirmAdd(false)}
+                className="text-muted font-medium hover:text-ink transition-all cursor-pointer"
+                style={{ fontSize: '11px', padding: '6px 8px' }}
+              >
+                Cancelar
+              </button>
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Resumen cards using new components */}
-      <DiagEjecutivoCard
-        diag={sampleDiag}
-        onExtenso={(d) => loadDiagnosticForReport(d)}
-      />
-      <div style={{ marginTop: '16px' }}>
-        <OrgEjecutivoCard
-          survey={sampleOrg}
-          onExtenso={(s) => { loadOrgSurveyForReport(s); setView('org_report'); }}
-        />
-      </div>
+      {/* Empty state */}
+      {testClients.length === 0 && (
+        <div className="bg-pale rounded-2xl border border-border/30 text-center" style={{ padding: '48px 24px' }}>
+          <span style={{ fontSize: '36px', display: 'block', marginBottom: '12px' }}>🧪</span>
+          <p className="text-muted font-medium" style={{ fontSize: '13px' }}>No hay clientes de prueba</p>
+          <p className="text-muted" style={{ fontSize: '11px', marginTop: '4px' }}>Selecciona un cliente arriba para marcarlo como dato de prueba.</p>
+        </div>
+      )}
 
-      {/* Info note */}
-      <div className="bg-pale rounded-xl border border-border/30" style={{ padding: '16px 20px', marginTop: '20px' }}>
-        <p className="text-muted" style={{ fontSize: '11px' }}>
-          <strong>Nota:</strong> Este expediente usa datos ficticios para que pueda visualizar como se ve un cliente con ambas encuestas completadas.
-        </p>
+      {/* Test clients cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {testClients.map(client => {
+          const clientData = expedienteData.get(client.id);
+          const diagCount = clientData?.diagnostics.length ?? 0;
+          const orgCount = clientData?.orgSurveys.length ?? 0;
+          const techCount = clientData?.techSurveys.length ?? 0;
+
+          return (
+            <div
+              key={client.id}
+              className="bg-white rounded-2xl border-2 border-warn/30 shadow-sm hover:shadow-md transition-all cursor-pointer"
+              style={{ padding: '20px 24px' }}
+              onClick={() => setSelectedClientId(client.id)}
+            >
+              <div className="flex items-center" style={{ gap: '14px' }}>
+                <ClientLogo logoUrl={client.logoUrl} size={44} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center" style={{ gap: '8px' }}>
+                    <h3 className="font-bold text-navy truncate" style={{ fontSize: '15px' }}>{client.displayName}</h3>
+                    <span className="shrink-0 bg-warn/15 text-warn font-bold border border-warn/30" style={{ fontSize: '9px', padding: '2px 8px', borderRadius: '6px', letterSpacing: '0.5px' }}>
+                      PRUEBA
+                    </span>
+                  </div>
+                  <p className="text-muted" style={{ fontSize: '11px' }}>{client.email || client.username}</p>
+                </div>
+                <div className="flex items-center shrink-0" style={{ gap: '12px' }}>
+                  <span className="text-muted" style={{ fontSize: '11px' }}>{diagCount + orgCount + techCount} encuesta{diagCount + orgCount + techCount !== 1 ? 's' : ''}</span>
+                  {/* Remove button */}
+                  {confirmRemoveId === client.id ? (
+                    <span className="flex items-center" style={{ gap: '4px' }} onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => handleRemoveTestClient(client.id)}
+                        className="bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer"
+                        style={{ fontSize: '10px', padding: '4px 10px', borderRadius: '6px' }}
+                      >
+                        Quitar
+                      </button>
+                      <button
+                        onClick={() => setConfirmRemoveId(null)}
+                        className="text-muted hover:text-ink transition-all cursor-pointer"
+                        style={{ fontSize: '10px', padding: '4px 6px' }}
+                      >
+                        No
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={e => { e.stopPropagation(); setConfirmRemoveId(client.id); }}
+                      className="text-error/50 hover:text-error transition-all cursor-pointer"
+                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                    >
+                      Quitar
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -2023,77 +2344,237 @@ function DatosPruebaPanel() {
    ══════════════════════════════════════════════════════════ */
 
 function ConfiguracionPanel({ showBenchmarks, setShowBenchmarks }: { showBenchmarks: boolean; setShowBenchmarks: (v: boolean) => void }) {
+  const [configTab, setConfigTab] = useState<'apariencia' | 'benchmarks' | 'sistema'>('apariencia');
+
+  const CONFIG_TABS: { key: typeof configTab; label: string; icon: string }[] = [
+    { key: 'apariencia', label: 'Apariencia', icon: '🎨' },
+    { key: 'benchmarks', label: 'Benchmarks', icon: '📊' },
+    { key: 'sistema', label: 'Sistema', icon: 'ℹ️' },
+  ];
+
+  return (
+    <div>
+      {/* Sub-tabs */}
+      <div className="flex flex-wrap" style={{ gap: '6px', marginBottom: '20px' }}>
+        {CONFIG_TABS.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setConfigTab(tab.key)}
+            className={`font-semibold transition-all cursor-pointer rounded-lg ${
+              configTab === tab.key
+                ? 'bg-navy text-white shadow-sm'
+                : 'bg-white text-muted hover:text-ink border border-border/40'
+            }`}
+            style={{ padding: '7px 14px', fontSize: '11px' }}
+          >
+            {tab.icon} {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {configTab === 'apariencia' && <LogoSettingsSubPanel />}
+
+      {configTab === 'benchmarks' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center" style={{ gap: '14px' }}>
+                <div className="inline-flex items-center justify-center rounded-full bg-accent/10 shrink-0" style={{ width: '44px', height: '44px' }}>
+                  <span style={{ fontSize: '20px' }}>📊</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Benchmarks por Industria</h3>
+                  <p className="text-muted" style={{ fontSize: '12px' }}>Márgenes financieros de referencia por sector</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBenchmarks(true)}
+                className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
+                style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '8px' }}
+              >
+                Editar
+              </button>
+            </div>
+          </div>
+          {showBenchmarks && <BenchmarkSettingsModal onClose={() => setShowBenchmarks(false)} />}
+        </div>
+      )}
+
+      {configTab === 'sistema' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
+            <div className="flex items-center" style={{ gap: '14px' }}>
+              <div className="inline-flex items-center justify-center rounded-full bg-mid/10 shrink-0" style={{ width: '44px', height: '44px' }}>
+                <span style={{ fontSize: '20px' }}>📋</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Encuestas Disponibles</h3>
+                <p className="text-muted" style={{ fontSize: '12px' }}>Las encuestas se configuran por cliente en la pestaña "Clientes"</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap" style={{ gap: '10px', marginTop: '16px', paddingLeft: '58px' }}>
+              <span className="border border-accent/30 bg-accent/5 text-accent font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
+                ✓ Radiografía Empresarial
+              </span>
+              <span className="border border-border/40 bg-pale text-muted font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
+                Estructura Organizacional — Proximamente
+              </span>
+              <span className="border border-border/40 bg-pale text-muted font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
+                Prueba de Tecnología — Proximamente
+              </span>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
+            <div className="flex items-center" style={{ gap: '14px' }}>
+              <div className="inline-flex items-center justify-center rounded-full bg-navy/10 shrink-0" style={{ width: '44px', height: '44px' }}>
+                <span style={{ fontSize: '20px' }}>ℹ️</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Información del Sistema</h3>
+                <p className="text-muted" style={{ fontSize: '12px' }}>Complement Consulting Group — Radiografía Empresarial v2.0</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2" style={{ gap: '10px', marginTop: '16px', paddingLeft: '58px' }}>
+              <div className="rounded-lg bg-pale" style={{ padding: '10px 14px' }}>
+                <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '2px' }}>Base de datos</p>
+                <p className="text-ink font-semibold" style={{ fontSize: '11px' }}>Supabase PostgreSQL</p>
+              </div>
+              <div className="rounded-lg bg-pale" style={{ padding: '10px 14px' }}>
+                <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '2px' }}>Hosting</p>
+                <p className="text-ink font-semibold" style={{ fontSize: '11px' }}>Vercel</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LogoSettingsSubPanel() {
+  const companyLogo = useSettingsStore(s => s.companyLogo);
+  const companyLogoIcon = useSettingsStore(s => s.companyLogoIcon);
+  const floatingLogo = useSettingsStore(s => s.floatingLogo);
+  const setCompanyLogo = useSettingsStore(s => s.setCompanyLogo);
+  const setFloatingLogo = useSettingsStore(s => s.setFloatingLogo);
+
+  const [preview, setPreview] = useState<string | null>(null);
+  const [previewIcon, setPreviewIcon] = useState<string | null>(null);
+  const [previewFloating, setPreviewFloating] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+  const iconFileRef = useRef<HTMLInputElement>(null);
+  const floatingFileRef = useRef<HTMLInputElement>(null);
+
+  const hasChanges = preview !== null || previewIcon !== null || previewFloating !== null;
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>, target: 'logo' | 'icon' | 'floating') {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setError('Seleccione un archivo de imagen.'); return; }
+    if (file.size > 2 * 1024 * 1024) { setError('La imagen no debe exceder 2MB.'); return; }
+    setError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      if (target === 'logo') setPreview(dataUrl);
+      else if (target === 'icon') setPreviewIcon(dataUrl);
+      else setPreviewFloating(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleSave() {
+    setSaving(true); setError(''); setSuccess(false);
+    const logoToSave = preview !== null ? preview : companyLogo;
+    const iconToSave = previewIcon !== null ? previewIcon : companyLogoIcon;
+    const ok = await setCompanyLogo(logoToSave, iconToSave);
+    if (previewFloating !== null) await setFloatingLogo(previewFloating);
+    if (ok) { setPreview(null); setPreviewIcon(null); setPreviewFloating(null); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }
+    else setError('Error al guardar.');
+    setSaving(false);
+  }
+
+  async function handleRemoveLogo() {
+    setSaving(true); setError('');
+    const ok = await setCompanyLogo(null, null);
+    if (ok) { setPreview(null); setPreviewIcon(null); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }
+    else setError('Error al eliminar el logo.');
+    setSaving(false);
+  }
+
+  const displayLogo = preview ?? companyLogo;
+  const displayIcon = previewIcon ?? companyLogoIcon;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Benchmark settings card */}
+      {/* Logo principal */}
       <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center" style={{ gap: '14px' }}>
-            <div className="inline-flex items-center justify-center rounded-full bg-accent/10 shrink-0" style={{ width: '44px', height: '44px' }}>
-              <span style={{ fontSize: '20px' }}>📊</span>
-            </div>
-            <div>
-              <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Benchmarks por Industria</h3>
-              <p className="text-muted" style={{ fontSize: '12px' }}>Márgenes financieros de referencia por sector</p>
-            </div>
+        <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '4px' }}>Logo principal</h3>
+        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '16px' }}>Aparece en login, portada y reportes. Se recomienda imagen horizontal con fondo transparente.</p>
+        <div className="flex items-center" style={{ gap: '16px', marginBottom: '16px' }}>
+          <div className="flex items-center justify-center bg-pale rounded-xl border border-border/40" style={{ width: '160px', height: '64px', overflow: 'hidden' }}>
+            {displayLogo ? (
+              <img src={displayLogo} alt="Logo" className="object-contain" style={{ maxWidth: '140px', maxHeight: '54px' }} />
+            ) : (
+              <img src="/logo-complement.svg" alt="Default" className="object-contain" style={{ maxWidth: '140px', maxHeight: '54px' }} />
+            )}
           </div>
-          <button
-            onClick={() => setShowBenchmarks(true)}
-            className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-            style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '8px' }}
-          >
-            Editar
-          </button>
+          <span className="text-muted" style={{ fontSize: '10px' }}>{displayLogo ? 'Logo personalizado' : 'Logo por defecto'}</span>
+        </div>
+        <div className="flex items-center" style={{ gap: '8px' }}>
+          <input ref={fileRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, 'logo')} className="hidden" />
+          <button onClick={() => fileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
+          {displayLogo && <button onClick={handleRemoveLogo} disabled={saving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Quitar</button>}
         </div>
       </div>
 
-      {/* Encuestas config card */}
+      {/* Icono header */}
       <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
-        <div className="flex items-center" style={{ gap: '14px' }}>
-          <div className="inline-flex items-center justify-center rounded-full bg-mid/10 shrink-0" style={{ width: '44px', height: '44px' }}>
-            <span style={{ fontSize: '20px' }}>📋</span>
+        <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '4px' }}>Icono del encabezado</h3>
+        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '16px' }}>Icono cuadrado para la barra de navegación.</p>
+        <div className="flex items-center" style={{ gap: '16px', marginBottom: '16px' }}>
+          <div className="flex items-center justify-center bg-navy rounded-xl" style={{ width: '52px', height: '52px', overflow: 'hidden' }}>
+            {displayIcon ? (
+              <img src={displayIcon} alt="Icono" className="object-contain" style={{ maxWidth: '40px', maxHeight: '40px' }} />
+            ) : (
+              <img src="/icon-complement.svg" alt="Default" className="object-contain" style={{ maxWidth: '40px', maxHeight: '40px' }} />
+            )}
           </div>
-          <div>
-            <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Encuestas Disponibles</h3>
-            <p className="text-muted" style={{ fontSize: '12px' }}>Las encuestas se configuran por cliente en la pestaña "Clientes"</p>
-          </div>
+          <span className="text-muted" style={{ fontSize: '10px' }}>{displayIcon ? 'Icono personalizado' : 'Icono por defecto'}</span>
         </div>
-        <div className="flex flex-wrap" style={{ gap: '10px', marginTop: '16px', paddingLeft: '58px' }}>
-          <span className="border border-accent/30 bg-accent/5 text-accent font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
-            ✓ Diagnóstico Empresarial
-          </span>
-          <span className="border border-mid/30 bg-mid/5 text-mid font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
-            ✓ Estructura Organizacional
-          </span>
+        <input ref={iconFileRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, 'icon')} className="hidden" />
+        <button onClick={() => iconFileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
+      </div>
+
+      {/* Logo flotante */}
+      <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
+        <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '4px' }}>Logo flotante (login)</h3>
+        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '16px' }}>Imagen que flota en el fondo del login. Si no se configura, se usa el logo principal.</p>
+        <div className="flex items-center" style={{ gap: '16px', marginBottom: '16px' }}>
+          <div className="flex items-center justify-center rounded-xl" style={{ width: '64px', height: '64px', overflow: 'hidden', background: 'linear-gradient(135deg, #001845, #002060)' }}>
+            <img src={(previewFloating ?? floatingLogo) || companyLogo || '/logo-complement.svg'} alt="Flotante" className="object-contain" style={{ maxWidth: '44px', maxHeight: '44px', filter: 'brightness(0) invert(1)', opacity: 0.5 }} />
+          </div>
+          <span className="text-muted" style={{ fontSize: '10px' }}>{(previewFloating ?? floatingLogo) ? 'Logo flotante personalizado' : 'Usando logo principal'}</span>
+        </div>
+        <div className="flex items-center" style={{ gap: '8px' }}>
+          <input ref={floatingFileRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, 'floating')} className="hidden" />
+          <button onClick={() => floatingFileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
+          {(previewFloating ?? floatingLogo) && (
+            <button onClick={async () => { setSaving(true); await setFloatingLogo(null); setPreviewFloating(null); setSaving(false); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }} disabled={saving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Usar logo principal</button>
+          )}
         </div>
       </div>
 
-      {/* System info card */}
-      <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
-        <div className="flex items-center" style={{ gap: '14px' }}>
-          <div className="inline-flex items-center justify-center rounded-full bg-navy/10 shrink-0" style={{ width: '44px', height: '44px' }}>
-            <span style={{ fontSize: '20px' }}>ℹ️</span>
-          </div>
-          <div>
-            <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Información del Sistema</h3>
-            <p className="text-muted" style={{ fontSize: '12px' }}>Complement Consulting Group — Diagnóstico Empresarial v2.0</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2" style={{ gap: '10px', marginTop: '16px', paddingLeft: '58px' }}>
-          <div className="rounded-lg bg-pale" style={{ padding: '10px 14px' }}>
-            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '2px' }}>Base de datos</p>
-            <p className="text-ink font-semibold" style={{ fontSize: '11px' }}>Supabase PostgreSQL</p>
-          </div>
-          <div className="rounded-lg bg-pale" style={{ padding: '10px 14px' }}>
-            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '2px' }}>Hosting</p>
-            <p className="text-ink font-semibold" style={{ fontSize: '11px' }}>Vercel</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Benchmark Settings Modal */}
-      {showBenchmarks && (
-        <BenchmarkSettingsModal onClose={() => setShowBenchmarks(false)} />
+      {/* Error / Success / Save */}
+      {error && <div className="bg-error/10 rounded-xl" style={{ padding: '10px 14px' }}><p className="text-error font-medium" style={{ fontSize: '11px' }}>{error}</p></div>}
+      {success && <div className="bg-success/10 rounded-xl" style={{ padding: '10px 14px' }}><p className="text-success font-medium" style={{ fontSize: '11px' }}>Logo actualizado correctamente.</p></div>}
+      {hasChanges && (
+        <button onClick={handleSave} disabled={saving} className="w-full bg-navy text-white font-bold hover:bg-navy/90 disabled:opacity-50 transition-colors cursor-pointer" style={{ fontSize: '13px', padding: '12px 24px', borderRadius: '10px' }}>
+          {saving ? 'Guardando...' : 'Guardar cambios'}
+        </button>
       )}
     </div>
   );

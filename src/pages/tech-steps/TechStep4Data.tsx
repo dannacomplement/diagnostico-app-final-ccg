@@ -16,10 +16,10 @@ export default function TechStep4Data() {
   return (
     <div className="card">
       <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>
-        Datos y Analitica
+        Datos y Analítica
       </h2>
       <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '36px' }}>
-        Evaluemos como su empresa utiliza los datos para la toma de decisiones.
+        Evaluemos cómo su empresa utiliza los datos para la toma de decisiones.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -72,7 +72,7 @@ export default function TechStep4Data() {
           {data.dashboardsBI && (
             <div style={{ marginLeft: '8px' }}>
               <label className="block text-muted font-medium" style={{ fontSize: '11px', marginBottom: '6px' }}>
-                ¿Cual herramienta de BI utiliza?
+                ¿Cuál herramienta de BI utiliza?
               </label>
               <select
                 value={data.herramientaBI}
@@ -80,7 +80,7 @@ export default function TechStep4Data() {
                 className="input-field"
                 style={{ fontSize: '13px', maxWidth: '280px' }}
               >
-                <option value="">Seleccione una opcion</option>
+                <option value="">Seleccione una opción</option>
                 {BI_OPTIONS.map(opt => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
@@ -91,7 +91,7 @@ export default function TechStep4Data() {
 
         {/* Analitica avanzada */}
         <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px' }}>
-          <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Usa analitica avanzada o modelos predictivos?</span>
+          <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Usa analítica avanzada o modelos predictivos?</span>
           <button
             onClick={() => update({ analiticaAvanzada: !data.analiticaAvanzada })}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${data.analiticaAvanzada ? 'bg-accent' : 'bg-border'}`}

@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
-import { EMPRESA_FAMILIAR_OPTIONS, SECTOR_OPTIONS, SOFTWARE_OPTIONS, EXCEL_NIVEL_OPTIONS, PUESTO_EMPRESA_OPTIONS, PUESTO_FAMILIA_OPTIONS, ERP_OPTIONS, MRP_OPTIONS, CRM_OPTIONS } from '../../config/constants';
-import type { SoftwareOption } from '../../lib/types';
+import { useAuthStore } from '../../store/authStore';
+import { EMPRESA_FAMILIAR_OPTIONS, SECTOR_OPTIONS, SOFTWARE_OPTIONS, EXCEL_NIVEL_OPTIONS, PUESTO_EMPRESA_OPTIONS, PUESTO_FAMILIA_OPTIONS, ERP_OPTIONS, MRP_OPTIONS, CRM_OPTIONS, UBICACION_OPTIONS } from '../../config/constants';
+import type { SoftwareOption, SavedDiagnostic } from '../../lib/types';
+import { getDiagnosticsByUser } from '../../lib/storage';
 import SearchableCombobox from '../../components/ui/SearchableCombobox';
 
 const EMPTY_SELECTIONS = { selected: [] as SoftwareOption[], erpDetalle: '', mrpDetalle: '', crmDetalle: '', excelNivel: '' as const };
@@ -8,8 +11,46 @@ const EMPTY_SELECTIONS = { selected: [] as SoftwareOption[], erpDetalle: '', mrp
 export default function Step1DatosGenerales() {
   const datos = useDiagnosticStore(s => s.datosGenerales);
   const update = useDiagnosticStore(s => s.updateDatosGenerales);
+  const setDescripcion = useDiagnosticStore(s => s.setDescripcionNegocio);
   const isFamilyBusiness = useDiagnosticStore(s => s.isFamilyBusiness);
+  const testMode = useDiagnosticStore(s => s.testMode);
+  const editMode = useDiagnosticStore(s => s.editMode);
   const isFamily = isFamilyBusiness();
+  const user = useAuthStore(s => s.user);
+
+  const [prevDiag, setPrevDiag] = useState<SavedDiagnostic | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!user || testMode || editMode) return;
+    getDiagnosticsByUser(user.id).then(diags => {
+      if (diags.length > 0) setPrevDiag(diags[0]);
+    });
+  }, [user, testMode, editMode]);
+
+  function handleLoadPrevious() {
+    if (!prevDiag) return;
+    const dg = prevDiag.datosGenerales;
+    update({
+      nombreComercial: dg.nombreComercial,
+      antiguedadConstituida: dg.antiguedadConstituida,
+      antiguedadOperativa: dg.antiguedadOperativa,
+      empresaFamiliar: dg.empresaFamiliar,
+      respondente: dg.respondente,
+      email: dg.email,
+      puestoEmpresa: dg.puestoEmpresa,
+      puestoFamilia: dg.puestoFamilia,
+      esSocio: dg.esSocio,
+      porcentajeAcciones: dg.porcentajeAcciones,
+      sector: dg.sector,
+      softwareSelections: dg.softwareSelections,
+    });
+    if (prevDiag.descripcionNegocio) {
+      setDescripcion(prevDiag.descripcionNegocio);
+    }
+    setLoaded(true);
+  }
 
   // Defensive: handle old persisted data that may lack softwareSelections
   const sel = datos.softwareSelections ?? EMPTY_SELECTIONS;
@@ -17,37 +58,105 @@ export default function Step1DatosGenerales() {
   return (
     <div className="card">
       <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Datos Generales de la Empresa</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '40px' }}>Informaci&oacute;n general del cliente y su empresa.</p>
+      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: prevDiag && !dismissed && !loaded ? '20px' : '40px' }}>Informaci&oacute;n general del cliente y su empresa.</p>
+
+      {prevDiag && !dismissed && !loaded && (
+        <div
+          className="rounded-xl border-2 border-accent/30 bg-accent/5 animate-fade-up"
+          style={{ padding: '16px 20px', marginBottom: '32px' }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center" style={{ gap: '12px' }}>
+              <div className="inline-flex items-center justify-center rounded-full bg-accent/15 shrink-0" style={{ width: '36px', height: '36px' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: '18px', height: '18px', color: '#0047AB' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-bold text-navy" style={{ fontSize: '13px', marginBottom: '2px' }}>
+                  Usar datos de la radiografía anterior
+                </p>
+                <p className="text-muted" style={{ fontSize: '11px' }}>
+                  {prevDiag.datosGenerales.nombreComercial} — {new Date(prevDiag.savedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center shrink-0" style={{ gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setDismissed(true)}
+                className="text-muted hover:text-ink font-medium transition-colors cursor-pointer"
+                style={{ fontSize: '11px', padding: '6px 10px', background: 'none' }}
+              >
+                No, gracias
+              </button>
+              <button
+                type="button"
+                onClick={handleLoadPrevious}
+                className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm"
+                style={{ fontSize: '12px', padding: '8px 18px', borderRadius: '8px' }}
+              >
+                Cargar datos
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loaded && (
+        <div
+          className="rounded-xl bg-success/10 border border-success/30 animate-fade-up"
+          style={{ padding: '12px 16px', marginBottom: '32px' }}
+        >
+          <p className="text-success font-medium" style={{ fontSize: '12px' }}>
+            Datos cargados de la radiografía anterior. Revise y actualice lo que sea necesario.
+          </p>
+        </div>
+      )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-        <Field label="Nombre Comercial / Raz&oacute;n Social" required>
-          <input
-            type="text"
-            value={datos.nombreComercial}
-            onChange={e => update({ nombreComercial: e.target.value })}
-            placeholder="Ej: Grupo Industrial Monterrey S.A. de C.V."
-            className="input-field"
-          />
-        </Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
+          <Field label="Nombre Comercial / Raz&oacute;n Social" required>
+            <input
+              type="text"
+              value={datos.nombreComercial}
+              onChange={e => update({ nombreComercial: e.target.value })}
+              placeholder="Ej: Grupo Industrial Monterrey S.A. de C.V."
+              className="input-field"
+            />
+          </Field>
+          <Field label="Ubicaci&oacute;n" required>
+            <select
+              value={datos.ubicacion}
+              onChange={e => update({ ubicacion: e.target.value })}
+              className="input-field"
+            >
+              <option value="">Seleccionar estado...</option>
+              {UBICACION_OPTIONS.map(ub => (
+                <option key={ub} value={ub}>{ub}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
-          <InlineField label="Antigüedad Constituida" suffix="años">
+          <InlineField label="Antigüedad Constituida" required suffix="años">
             <input
               type="number"
               value={datos.antiguedadConstituida}
               onChange={e => update({ antiguedadConstituida: e.target.value })}
-              placeholder="Ej: 15"
+              placeholder=""
               min="0"
               className="input-field"
               style={{ maxWidth: '100px' }}
             />
           </InlineField>
-          <InlineField label="Antigüedad Operativa" suffix="años">
+          <InlineField label="Antigüedad Operativa" required suffix="años">
             <input
               type="number"
               value={datos.antiguedadOperativa}
               onChange={e => update({ antiguedadOperativa: e.target.value })}
-              placeholder="Ej: 12"
+              placeholder=""
               min="0"
               className="input-field"
               style={{ maxWidth: '100px' }}
@@ -80,7 +189,7 @@ export default function Step1DatosGenerales() {
           <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '24px' }}>Persona que contesta</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
-              <Field label="Nombre completo">
+              <Field label="Nombre completo" required>
                 <input
                   type="text"
                   value={datos.respondente}
@@ -89,7 +198,7 @@ export default function Step1DatosGenerales() {
                   className="input-field"
                 />
               </Field>
-              <Field label="Correo electrónico">
+              <Field label="Correo electrónico" required>
                 <input
                   type="email"
                   value={datos.email}
@@ -100,7 +209,7 @@ export default function Step1DatosGenerales() {
               </Field>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
-              <Field label="Puesto en la empresa">
+              <Field label="Puesto en la empresa" required>
                 <SearchableCombobox
                   value={datos.puestoEmpresa}
                   onChange={val => update({ puestoEmpresa: val })}
@@ -109,7 +218,7 @@ export default function Step1DatosGenerales() {
                 />
               </Field>
               {isFamily && (
-                <Field label="Puesto en la familia">
+                <Field label="Puesto en la familia" required>
                   <SearchableCombobox
                     value={datos.puestoFamilia}
                     onChange={val => update({ puestoFamilia: val })}
@@ -119,7 +228,7 @@ export default function Step1DatosGenerales() {
                 </Field>
               )}
             </div>
-            <Field label="¿Es socio?">
+            <Field label="¿Es socio?" required>
               <div className="flex" style={{ gap: '10px' }}>
                 {(['si', 'no'] as const).map(opt => (
                   <button
@@ -145,7 +254,7 @@ export default function Step1DatosGenerales() {
                     type="number"
                     value={datos.porcentajeAcciones}
                     onChange={e => update({ porcentajeAcciones: e.target.value })}
-                    placeholder="Ej: 40"
+                    placeholder=""
                     min="0"
                     max="100"
                     step="1"
@@ -182,7 +291,7 @@ export default function Step1DatosGenerales() {
                 ))}
               </div>
             </Field>
-            <Field label="Software de Gestión (puede seleccionar varios)">
+            <Field label="Software de Gestión (puede seleccionar varios)" required>
               <div className="flex flex-wrap" style={{ gap: '10px' }}>
                 {SOFTWARE_OPTIONS.map(opt => {
                   const isSelected = sel.selected.includes(opt.value);

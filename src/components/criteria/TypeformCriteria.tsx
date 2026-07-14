@@ -52,7 +52,7 @@ export default function TypeformCriteria({
   const criterion = criteria[currentIndex];
   const answer = answers.find(a => a.criterionId === criterion?.id);
   const options = criterion ? (CRITERION_CARD_OPTIONS[criterion.id] ?? []) : [];
-  const answeredCount = answers.filter(a => criteria.some(c => c.id === a.criterionId) && a.rating >= 0).length;
+  const answeredCount = answers.filter(a => criteria.some(c => c.id === a.criterionId) && (a.rating >= 0 || a.rating === -2)).length;
 
   const goTo = useCallback((index: number, dir: 'next' | 'prev') => {
     if (isTransitioning) return;
@@ -107,7 +107,7 @@ export default function TypeformCriteria({
     const a = answers.find(ans => ans.criterionId === c.id);
     return {
       label: `${i + 1}`,
-      value: a && a.rating >= 0 ? a.rating * 10 : 0,
+      value: a && a.rating >= 0 ? a.rating * 10 : a?.rating === -2 ? -1 : 0,
     };
   });
 
@@ -231,8 +231,77 @@ export default function TypeformCriteria({
             {criterion.text}
           </p>
 
+          {/* Not applicable toggle */}
+          {criterion.notApplicableLabel && (() => {
+            const isNA = answer?.rating === -2;
+            return (
+              <button
+                type="button"
+                onClick={() => {
+                  if (isNA) {
+                    onAnswerChange(criterion.id, { rating: -1, siNo: false });
+                  } else {
+                    onAnswerChange(criterion.id, { rating: -2, siNo: false });
+                    setTimeout(() => {
+                      if (currentIndex < criteria.length - 1) {
+                        goTo(currentIndex + 1, 'next');
+                      } else {
+                        setShowSummary(true);
+                      }
+                    }, 600);
+                  }
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '14px 18px',
+                  marginBottom: '16px',
+                  borderRadius: '12px',
+                  border: `2px solid ${isNA ? '#6366f1' : 'rgba(0,0,0,0.08)'}`,
+                  background: isNA ? 'rgba(99,102,241,0.06)' : '#fafafa',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <span style={{
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '6px',
+                  background: isNA ? '#6366f1' : '#e5e7eb',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  flexShrink: 0,
+                  transition: 'all 0.2s ease',
+                }}>
+                  {isNA ? '✓' : ''}
+                </span>
+                <span style={{
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: isNA ? '#6366f1' : '#6b7280',
+                }}>
+                  {criterion.notApplicableLabel}
+                </span>
+              </button>
+            );
+          })()}
+
           {/* Options */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            opacity: criterion.notApplicableLabel && answer?.rating === -2 ? 0.3 : 1,
+            pointerEvents: criterion.notApplicableLabel && answer?.rating === -2 ? 'none' : 'auto',
+            transition: 'opacity 0.3s ease',
+          }}>
             {options.map((option, idx) => {
               const selected = answer?.rating === option.score;
               const hovered = hoveredOption === idx;
@@ -352,7 +421,7 @@ export default function TypeformCriteria({
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '200px' }}>
             {criteria.map((c, i) => {
               const a = answers.find(ans => ans.criterionId === c.id);
-              const answered = a && a.rating >= 0;
+              const answered = a && (a.rating >= 0 || a.rating === -2);
               return (
                 <button
                   key={c.id}

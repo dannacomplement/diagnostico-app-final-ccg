@@ -85,9 +85,9 @@ export function computeRiskProfile(d: SavedDiagnostic): RiskItem[] {
   const succession = d.institucionalizacion.answers.find(a => a.criterionId === 'inst_05');
   if (succession && succession.rating <= 0) {
     risks.push({
-      risk: 'Sucesion directiva sin definir',
+      risk: 'Sucesión directiva sin definir',
       severity: 'critico',
-      impact: 'No tener documentado el proceso de sucesion directiva pone en riesgo la continuidad del negocio ante la salida del lider actual.',
+      impact: 'No tener documentado el proceso de sucesión directiva pone en riesgo la continuidad del negocio ante la salida del líder actual.',
     });
   }
 
@@ -105,13 +105,13 @@ export function computeRiskProfile(d: SavedDiagnostic): RiskItem[] {
     risks.push({
       risk: `${uncovered.length} puestos gerenciales sin cubrir`,
       severity: 'critico',
-      impact: `Las areas de ${uncovered.map(g => g.area).join(' y ')} no tienen responsable asignado, generando cuellos de botella y falta de liderazgo.`,
+      impact: `Las áreas de ${uncovered.map(g => g.area).join(' y ')} no tienen responsable asignado, generando cuellos de botella y falta de liderazgo.`,
     });
   } else if (uncovered.length === 1) {
     risks.push({
       risk: `Puesto sin cubrir: ${uncovered[0].area}`,
       severity: 'alto',
-      impact: `El area de ${uncovered[0].area} no tiene responsable, concentrando la carga en otras posiciones.`,
+      impact: `El área de ${uncovered[0].area} no tiene responsable, concentrando la carga en otras posiciones.`,
     });
   }
 
@@ -121,7 +121,7 @@ export function computeRiskProfile(d: SavedDiagnostic): RiskItem[] {
     if (criticalMargins.length > 0) {
       const labels = criticalMargins.map(k => k === 'margenBruto' ? 'bruto' : k === 'margenOperativo' ? 'operativo' : 'neto');
       risks.push({
-        risk: `Margenes en nivel critico: ${labels.join(', ')}`,
+        risk: `Márgenes en nivel crítico: ${labels.join(', ')}`,
         severity: 'critico',
         impact: 'Los margenes estan significativamente por debajo de la industria, poniendo en riesgo la rentabilidad y sostenibilidad del negocio.',
       });
@@ -141,9 +141,9 @@ export function computeRiskProfile(d: SavedDiagnostic): RiskItem[] {
   const consejo = d.profesionalizacion.answers.find(a => a.criterionId === 'prof_10');
   if (consejo && consejo.rating <= 0) {
     risks.push({
-      risk: 'Sin consejo consultivo ni de administracion',
+      risk: 'Sin consejo consultivo ni de administración',
       severity: 'alto',
-      impact: 'La falta de un consejo con independientes limita la supervision externa y la calidad de las decisiones estrategicas.',
+      impact: 'La falta de un consejo con independientes limita la supervisión externa y la calidad de las decisiones estratégicas.',
     });
   }
 
@@ -184,7 +184,7 @@ export function generateDiagnosticNarrative(d: SavedDiagnostic, maturity: Maturi
   let narrative = '';
   const sizeLabel = d.companySize.size.toLowerCase();
   if (dg.antiguedadOperativa) {
-    narrative += `${dg.nombreComercial || 'La empresa'} es una ${isFamily ? 'empresa familiar ' : ''}${sizeLabel} del sector ${sectorLabel} con ${dg.antiguedadOperativa} anos de operacion`;
+    narrative += `${dg.nombreComercial || 'La empresa'} es una ${isFamily ? 'empresa familiar ' : ''}${sizeLabel} del sector ${sectorLabel} con ${dg.antiguedadOperativa} años de operación`;
   } else {
     narrative += `${dg.nombreComercial || 'La empresa'} es una ${isFamily ? 'empresa familiar ' : ''}${sizeLabel} del sector ${sectorLabel}`;
   }
@@ -194,13 +194,13 @@ export function generateDiagnosticNarrative(d: SavedDiagnostic, maturity: Maturi
   narrative += '. ';
 
   if (maturity.score <= 30) {
-    narrative += 'El analisis refleja una empresa en etapa inicial de formalizacion, donde la mayoria de los procesos dependen de las personas y no de sistemas estructurados. ';
+    narrative += 'El análisis refleja una empresa en etapa inicial de formalización, donde la mayoría de los procesos dependen de las personas y no de sistemas estructurados.';
   } else if (maturity.score <= 55) {
-    narrative += 'El diagnostico muestra una empresa en desarrollo que ha avanzado en algunas areas pero requiere fortalecer su estructura para crecer de forma sostenible. ';
+    narrative += 'La radiografía muestra una empresa en desarrollo que ha avanzado en algunas áreas pero requiere fortalecer su estructura para crecer de forma sostenible.';
   } else if (maturity.score <= 80) {
-    narrative += 'Los resultados muestran una empresa con buena base de formalizacion que puede enfocarse en optimizar las areas especificas identificadas para alcanzar la madurez. ';
+    narrative += 'Los resultados muestran una empresa con buena base de formalización que puede enfocarse en optimizar las áreas específicas identificadas para alcanzar la madurez.';
   } else {
-    narrative += 'La empresa muestra un alto nivel de madurez empresarial con procesos solidos y buena estructura organizacional. ';
+    narrative += 'La empresa muestra un alto nivel de madurez empresarial con procesos sólidos y buena estructura organizacional.';
   }
 
   const highAnswers = [...d.profesionalizacion.answers, ...d.institucionalizacion.answers]
@@ -230,7 +230,7 @@ export function generateDiagnosticNarrative(d: SavedDiagnostic, maturity: Maturi
     const aboveCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
       .filter(k => d.marginEvaluation![k].level === 'arriba_industria').length;
     if (criticalCount > 0) {
-      narrative += 'Los margenes financieros presentan niveles criticos que requieren atencion inmediata para asegurar la viabilidad del negocio. ';
+      narrative += 'Los márgenes financieros presentan niveles críticos que requieren atención inmediata para asegurar la viabilidad del negocio. ';
     } else if (aboveCount >= 2) {
       narrative += 'La rentabilidad es solida, con margenes por encima del promedio de la industria. ';
     }
@@ -287,14 +287,14 @@ export function generateSmartRecommendations(d: SavedDiagnostic, maturity: Matur
 
   for (const risk of risks.filter(r => r.severity === 'critico').slice(0, 2)) {
     if (risk.risk.includes('sucesion')) {
-      recs.push('Documentar un plan de sucesion directiva que incluya: perfil del sucesor, cronograma de transicion (12-24 meses), y proceso de evaluacion. Iniciar la preparacion del candidato de forma inmediata.');
+      recs.push('Documentar un plan de sucesión directiva que incluya: perfil del sucesor, cronograma de transición (12-24 meses), y proceso de evaluación. Iniciar la preparación del candidato de forma inmediata.');
     } else if (risk.risk.includes('financiero')) {
-      recs.push('Implementar un tablero financiero mensual que incluya estado de resultados, flujo de efectivo, y comparativo vs. presupuesto. Considere un sistema contable que genere estos reportes automaticamente.');
+      recs.push('Implementar un tablero financiero mensual que incluya estado de resultados, flujo de efectivo, y comparativo vs. presupuesto. Considere un sistema contable que genere estos reportes automáticamente.');
     } else if (risk.risk.includes('gerenciales') || risk.risk.includes('Puesto sin cubrir')) {
-      recs.push('Priorizar la contratacion o asignacion de responsables en los puestos clave pendientes. Definir perfil de puesto, rango salarial y proceso de seleccion para cada posicion.');
+      recs.push('Priorizar la contratación o asignación de responsables en los puestos clave pendientes. Definir perfil de puesto, rango salarial y proceso de selección para cada posición.');
     } else if (risk.risk.includes('Margenes')) {
       const bench = DEFAULT_INDUSTRY_BENCHMARKS[d.datosGenerales.sector as Sector];
-      recs.push(`Realizar un analisis de estructura de costos para identificar donde se concentra la erosion del margen. El benchmark de ${d.datosGenerales.sector} es: bruto ${bench.margenBruto}%, operativo ${bench.margenOperativo}%, neto ${bench.margenNeto}%.`);
+      recs.push(`Realizar un análisis de estructura de costos para identificar dónde se concentra la erosión del margen. El benchmark de ${d.datosGenerales.sector} es: bruto ${bench.margenBruto}%, operativo ${bench.margenOperativo}%, neto ${bench.margenNeto}%.`);
     }
   }
 
@@ -303,25 +303,25 @@ export function generateSmartRecommendations(d: SavedDiagnostic, maturity: Matur
     .sort((a, b) => a.rating - b.rating);
 
   const critRecs: Record<string, string> = {
-    prof_01: 'Implementar reuniones periodicas de revision de resultados por area, con indicadores claros y acciones concretas de seguimiento.',
-    prof_02: 'Disenar un organigrama funcional, documentar las responsabilidades de cada puesto y definir perfiles claros.',
-    prof_03: 'Disenar e implementar un sistema de evaluacion de desempeno con indicadores medibles, y una tabulacion salarial alineada al mercado.',
-    prof_04: 'Documentar y sistematizar los procesos clave del negocio. Priorizar los que mas impactan la operacion y la satisfaccion del cliente.',
-    prof_05: 'Establecer estados financieros mensuales con revision de ingresos, egresos y utilidades reales, no solo contabilidad fiscal.',
-    prof_06: 'Desarrollar un plan comercial con: propuesta de valor diferenciada, segmentacion de mercado, presupuesto de ventas por canal, y KPIs de seguimiento.',
-    prof_07: 'Realizar un ejercicio de planeacion estrategica: definir mision/vision, analisis FODA, objetivos a 3 anos, y presupuestos de inversion anuales.',
-    prof_08: 'Definir presupuestos de reinversion y una politica de dividendos acordada por todos los socios o propietarios.',
-    prof_09: 'Formalizar el perfil de la direccion general incluyendo competencias, esquema de compensacion, y mecanismo de supervision y evaluacion.',
-    prof_10: 'Establecer un consejo consultivo o de administracion con al menos un consejero independiente externo para supervisar y mejorar la gestion.',
-    inst_01: 'Realizar una valuacion formal de la empresa para conocer el valor real de las acciones y patrimonio. Documentarlo y compartirlo con todos los propietarios.',
-    inst_02: 'Separar las finanzas familiares de las de la empresa con politicas claras de dividendos, prestamos y compensaciones.',
-    inst_03: 'Trabajar en alinear la vision entre familiares-propietarios sobre el destino de la empresa. Facilitar comunicacion abierta intergeneracional.',
-    inst_04: 'Establecer criterios formales de contratacion para familiares indirectos, o definir una politica clara sobre su participacion.',
-    inst_05: 'Documentar un plan de sucesion directiva que incluya: perfil del sucesor, cronograma de transicion (12-24 meses), y proceso de evaluacion.',
-    inst_06: 'Definir y documentar el proceso de sucesion accionaria incluyendo responsabilidades, tipo de consejero y acuerdos entre socios.',
-    inst_07: 'Desarrollar un protocolo familiar que establezca reglas claras para la relacion familia-empresa: incorporacion de familiares, compensacion, gobierno y resolucion de conflictos.',
-    inst_08: 'Definir y separar claramente los roles de empleado, propietario y familiar dentro de la empresa. Cada circulo debe tener sus propias reglas y responsabilidades.',
-    inst_09: 'Abordar de forma proactiva los conflictos familiares mediante acuerdos claros, mediacion profesional y protocolos de resolucion de disputas.',
+    prof_01: 'Implementar reuniones periódicas de revisión de resultados por área, con indicadores claros y acciones concretas de seguimiento.',
+    prof_02: 'Diseñar un organigrama funcional, documentar las responsabilidades de cada puesto y definir perfiles claros.',
+    prof_03: 'Diseñar e implementar un sistema de evaluación de desempeño con indicadores medibles, y una tabulación salarial alineada al mercado.',
+    prof_04: 'Documentar y sistematizar los procesos clave del negocio. Priorizar los que más impactan la operación y la satisfacción del cliente.',
+    prof_05: 'Establecer estados financieros mensuales con revisión de ingresos, egresos y utilidades reales, no solo contabilidad fiscal.',
+    prof_06: 'Desarrollar un plan comercial con: propuesta de valor diferenciada, segmentación de mercado, presupuesto de ventas por canal, y KPIs de seguimiento.',
+    prof_07: 'Realizar un ejercicio de planeación estratégica: definir misión/visión, análisis FODA, objetivos a 3 años, y presupuestos de inversión anuales.',
+    prof_08: 'Definir presupuestos de reinversión y una política de dividendos acordada por todos los socios o propietarios.',
+    prof_09: 'Formalizar el perfil de la dirección general incluyendo competencias, esquema de compensación, y mecanismo de supervisión y evaluación.',
+    prof_10: 'Establecer un consejo consultivo o de administración con al menos un consejero independiente externo para supervisar y mejorar la gestión.',
+    inst_01: 'Realizar una valuación formal de la empresa para conocer el valor real de las acciones y patrimonio. Documentarlo y compartirlo con todos los propietarios.',
+    inst_02: 'Separar las finanzas familiares de las de la empresa con políticas claras de dividendos, préstamos y compensaciones.',
+    inst_03: 'Trabajar en alinear la visión entre familiares-propietarios sobre el destino de la empresa. Facilitar comunicación abierta intergeneracional.',
+    inst_04: 'Establecer criterios formales de contratación para familiares indirectos, o definir una política clara sobre su participación.',
+    inst_05: 'Documentar un plan de sucesión directiva que incluya: perfil del sucesor, cronograma de transición (12-24 meses), y proceso de evaluación.',
+    inst_06: 'Definir y documentar el proceso de sucesión accionaria incluyendo responsabilidades, tipo de consejero y acuerdos entre socios.',
+    inst_07: 'Desarrollar un protocolo familiar que establezca reglas claras para la relación familia-empresa: incorporación de familiares, compensación, gobierno y resolución de conflictos.',
+    inst_08: 'Definir y separar claramente los roles de empleado, propietario y familiar dentro de la empresa. Cada círculo debe tener sus propias reglas y responsabilidades.',
+    inst_09: 'Abordar de forma proactiva los conflictos familiares mediante acuerdos claros, mediación profesional y protocolos de resolución de disputas.',
     inst_10: 'Asegurar que existan convenios, contratos, testamentos y documentos legales que protejan la continuidad de la empresa ante cualquier eventualidad.',
   };
 
@@ -333,18 +333,18 @@ export function generateSmartRecommendations(d: SavedDiagnostic, maturity: Matur
   }
 
   if (maturity.score <= 55) {
-    recs.push('Antes de buscar crecimiento agresivo, enfoquese en consolidar la base operativa: documentar procesos, cubrir puestos clave, y establecer controles financieros. Una empresa que crece sin estructura multiplica sus problemas.');
+    recs.push('Antes de buscar crecimiento agresivo, enfóquese en consolidar la base operativa: documentar procesos, cubrir puestos clave, y establecer controles financieros. Una empresa que crece sin estructura multiplica sus problemas.');
   }
 
   if (isFamily && d.analisisFamiliar) {
     if (!d.analisisFamiliar.protocoloFamiliar) {
-      recs.push('Como empresa familiar, se recomienda desarrollar un protocolo familiar que establezca reglas claras para la relacion familia-empresa: incorporacion de familiares, compensacion, gobierno, y resolucion de conflictos.');
+      recs.push('Como empresa familiar, se recomienda desarrollar un protocolo familiar que establezca reglas claras para la relación familia-empresa: incorporación de familiares, compensación, gobierno, y resolución de conflictos.');
     }
   }
 
   const sw = d.datosGenerales.softwareSelections;
   if (sw.selected.includes('nada') || (sw.selected.includes('excel') && sw.selected.length === 1)) {
-    recs.push('La gestion basada unicamente en Excel o sin herramientas digitales limita el control y la escalabilidad. Evaluar la implementacion de un sistema ERP adecuado al tamano de la empresa.');
+    recs.push('La gestión basada únicamente en Excel o sin herramientas digitales limita el control y la escalabilidad. Evaluar la implementación de un sistema ERP adecuado al tamaño de la empresa.');
   }
 
   return recs.slice(0, 6);

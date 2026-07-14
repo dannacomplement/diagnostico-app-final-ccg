@@ -49,7 +49,7 @@ export default function CriterionRow({ config, answer, onChange }: Props) {
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <span className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '10px' }}>Selecciona una opcion</span>
+        <span className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '10px' }}>Selecciona una opción</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
           {options.map((option) => {
             const selected = answer.rating === option.score;

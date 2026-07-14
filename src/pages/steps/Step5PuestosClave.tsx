@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
-import type { CalificadoStatus } from '../../lib/types';
-import { formatCurrency } from '../../lib/formatters';
+import type { CalificadoStatus, DGEvaluation } from '../../lib/types';
 
 
 const CALIFICADO_OPTIONS: { value: CalificadoStatus; label: string; color: string }[] = [
-  { value: 'si', label: 'Si', color: 'bg-success text-white' },
+  { value: 'si', label: 'Sí', color: 'bg-success text-white' },
   { value: 'no', label: 'No', color: 'bg-error/80 text-white' },
-  { value: 'por_evaluar', label: 'No lo se', color: 'bg-warn text-white' },
+  { value: 'por_evaluar', label: 'No lo sé', color: 'bg-warn text-white' },
 ];
 
 const SUELDO_RANGES = [
@@ -24,6 +23,51 @@ const SUELDO_RANGES = [
   '200+ mil',
 ];
 
+const DG_NIVEL_ESTUDIOS = [
+  { label: 'Sin estudios profesionales', value: 0 },
+  { label: 'Carrera técnica / trunca', value: 3 },
+  { label: 'Licenciatura', value: 6 },
+  { label: 'Posgrado / Maestría', value: 8 },
+  { label: 'Formación ejecutiva continua', value: 10 },
+];
+
+const DG_EXPERIENCIA = [
+  { label: 'Sin experiencia directiva', value: 0 },
+  { label: '1-2 años general', value: 2 },
+  { label: '1-2 años en el sector', value: 4 },
+  { label: '3-5 años general', value: 5 },
+  { label: '3-5 años en el sector', value: 7 },
+  { label: 'Más de 5 años general', value: 8 },
+  { label: 'Más de 5 años en el sector', value: 10 },
+];
+
+const DG_SEGUIMIENTO = [
+  { label: 'No da seguimiento a resultados', value: 0 },
+  { label: 'Revisa solo cuando hay problemas', value: 2 },
+  { label: 'Revisa de forma ocasional', value: 4 },
+  { label: 'Revisa periódicamente', value: 6 },
+  { label: 'Revisa con indicadores y responsables', value: 8 },
+  { label: 'Seguimiento formal con KPIs, responsables, fechas y acuerdos', value: 10 },
+];
+
+function calcDGScore(ev: DGEvaluation): number | null {
+  if (ev.nivelEstudios == null || ev.experienciaLaboral == null || ev.seguimientoResultados == null) return null;
+  return ev.nivelEstudios * 0.4 + ev.experienciaLaboral * 0.4 + ev.seguimientoResultados * 0.2;
+}
+
+function dgScoreColor(score: number): string {
+  if (score >= 8) return 'text-success';
+  if (score >= 5) return 'text-warn';
+  return 'text-error';
+}
+
+function dgScoreLabel(score: number): string {
+  if (score >= 8) return 'Excelente';
+  if (score >= 6) return 'Bueno';
+  if (score >= 4) return 'Regular';
+  return 'Bajo';
+}
+
 const AREA_ICONS: Record<string, string> = {
   'Dirección General': '🏢',
   'Administración y Finanzas': '💼',
@@ -31,6 +75,80 @@ const AREA_ICONS: Record<string, string> = {
   'Operaciones': '⚙️',
   'Capital Humano': '👥',
 };
+
+function DGEvaluationPanel({ evaluation, onChange }: {
+  evaluation: DGEvaluation;
+  onChange: (ev: DGEvaluation) => void;
+}) {
+  const score = calcDGScore(evaluation);
+
+  function renderSelect(
+    label: string,
+    options: { label: string; value: number }[],
+    current: number | null,
+    onSelect: (v: number) => void,
+  ) {
+    return (
+      <div className="flex items-center" style={{ gap: '8px', marginBottom: '10px' }}>
+        <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '200px' }}>{label}</span>
+        <select
+          value={current ?? ''}
+          onChange={e => onSelect(Number(e.target.value))}
+          className="input-field-sm"
+          style={{ flex: 1, fontSize: '11px' }}
+        >
+          <option value="">Seleccionar...</option>
+          {options.map(opt => (
+            <option key={opt.value + opt.label} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-t border-accent/20" style={{ marginTop: '16px', paddingTop: '16px' }}>
+      <div className="flex items-center" style={{ gap: '8px', marginBottom: '14px' }}>
+        <span style={{ fontSize: '14px' }}>📋</span>
+        <h4 className="font-bold text-navy" style={{ fontSize: '12px' }}>Evaluación del Director General</h4>
+      </div>
+
+      {renderSelect(
+        '1. Nivel de estudios',
+        DG_NIVEL_ESTUDIOS,
+        evaluation.nivelEstudios,
+        v => onChange({ ...evaluation, nivelEstudios: v }),
+      )}
+      {renderSelect(
+        '2. Experiencia laboral general y en el sector',
+        DG_EXPERIENCIA,
+        evaluation.experienciaLaboral,
+        v => onChange({ ...evaluation, experienciaLaboral: v }),
+      )}
+      {renderSelect(
+        '3. Seguimiento de resultados',
+        DG_SEGUIMIENTO,
+        evaluation.seguimientoResultados,
+        v => onChange({ ...evaluation, seguimientoResultados: v }),
+      )}
+
+      {score != null && (
+        <div className="rounded-xl bg-pale border border-border/50 flex items-center justify-between" style={{ padding: '12px 16px', marginTop: '4px' }}>
+          <span className="font-medium text-ink" style={{ fontSize: '12px' }}>Calificación Director General</span>
+          <div className="flex items-center" style={{ gap: '8px' }}>
+            <span className={`font-bold ${dgScoreColor(score)}`} style={{ fontSize: '18px' }}>
+              {score.toFixed(1)}
+            </span>
+            <span className="text-muted" style={{ fontSize: '11px' }}>/ 10</span>
+            <span className={`font-semibold ${dgScoreColor(score)} rounded-md`} style={{ fontSize: '9px', padding: '2px 6px', background: 'var(--color-light)' }}>
+              {dgScoreLabel(score)}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Detail panel for a single gerencia — shown inline when its pyramid node is tapped */
 function GerenciaPanel({ g, i, setGerencia, onClose }: {
@@ -73,9 +191,9 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
         <div className="flex" style={{ gap: '4px' }}>
           <button
             type="button"
-            onClick={() => setGerencia(i, { cubierto: true })}
+            onClick={() => setGerencia(i, { cubierto: true, soyYo: false })}
             className={`font-semibold transition-all cursor-pointer
-              ${g.cubierto ? 'bg-success text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
+              ${g.cubierto === true && !g.soyYo ? 'bg-success text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
             `}
             style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '12px' }}
           >
@@ -83,9 +201,19 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
           </button>
           <button
             type="button"
-            onClick={() => setGerencia(i, { cubierto: false, rangoSueldo: '', esFamiliar: undefined })}
+            onClick={() => setGerencia(i, { cubierto: true, soyYo: true })}
             className={`font-semibold transition-all cursor-pointer
-              ${!g.cubierto ? 'bg-error/80 text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
+              ${g.soyYo ? 'bg-accent text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
+            `}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '12px' }}
+          >
+            Soy Yo
+          </button>
+          <button
+            type="button"
+            onClick={() => setGerencia(i, { cubierto: false, soyYo: false, rangoSueldo: '', esFamiliar: undefined })}
+            className={`font-semibold transition-all cursor-pointer
+              ${g.cubierto === false ? 'bg-error/80 text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
             `}
             style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '12px' }}
           >
@@ -97,19 +225,32 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
       {/* Detail fields — only if covered */}
       {g.cubierto && (
         <div className="border-t border-border/40" style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Antiguedad */}
+          {/* Nombre */}
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Antiguedad:</span>
+            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Nombre:</span>
+            <input
+              type="text"
+              value={g.nombre ?? ''}
+              onChange={e => setGerencia(i, { nombre: e.target.value })}
+              placeholder="Nombre de la persona"
+              className="input-field-sm"
+              style={{ maxWidth: '200px' }}
+            />
+          </div>
+
+          {/* Antigüedad */}
+          <div className="flex items-center" style={{ gap: '8px' }}>
+            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Antigüedad:</span>
             <input
               type="number"
               value={g.antiguedad}
               onChange={e => setGerencia(i, { antiguedad: e.target.value })}
-              placeholder="Ej: 5"
+              placeholder=""
               min="0"
               className="input-field-sm"
               style={{ maxWidth: '80px' }}
             />
-            <span className="text-muted font-medium" style={{ fontSize: '11px' }}>anos</span>
+            <span className="text-muted font-medium" style={{ fontSize: '11px' }}>años</span>
           </div>
 
           {/* Rango de sueldo */}
@@ -174,6 +315,14 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
               ))}
             </div>
           </div>
+
+          {/* DG Evaluation — only for Director General (index 0) */}
+          {i === 0 && (
+            <DGEvaluationPanel
+              evaluation={g.dgEvaluation ?? { nivelEstudios: null, experienciaLaboral: null, seguimientoResultados: null }}
+              onChange={ev => setGerencia(i, { dgEvaluation: ev })}
+            />
+          )}
         </div>
       )}
     </div>
@@ -187,7 +336,6 @@ export default function Step5Gerencias() {
   const situacion = useDiagnosticStore(s => s.situacionActual);
   const updateSituacion = useDiagnosticStore(s => s.updateSituacionActual);
 
-  const [sueldoFocused, setSueldoFocused] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   // Director general is index 0, the rest are the 4 gerencias
@@ -208,11 +356,13 @@ export default function Step5Gerencias() {
     return parts.length > 0 ? parts.join(' · ') : null;
   }
 
+  const respondentName = useDiagnosticStore(s => s.datosGenerales.respondente);
+
   return (
     <div className="card">
       <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Gerencias</h2>
       <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '8px' }}>
-        Toque cada puesto en la piramide para completar su informacion.
+        Toque cada puesto en la pirámide para completar su información.
       </p>
       <p className="text-muted" style={{ fontSize: '11px', marginBottom: '32px', fontStyle: 'italic' }}>
         Rangos salariales en miles de pesos mensuales.
@@ -229,9 +379,11 @@ export default function Step5Gerencias() {
             className={`rounded-xl border-2 text-center transition-all cursor-pointer hover:shadow-md ${
               openIndex === 0
                 ? 'border-accent bg-accent/5 shadow-md ring-2 ring-accent/20'
-                : dg.cubierto
-                  ? 'border-success/50 bg-success/10 hover:border-success'
-                  : 'border-error/30 bg-error/5 hover:border-error/60'
+                : dg.cubierto === true
+                  ? dg.soyYo ? 'border-accent/50 bg-accent/10 hover:border-accent' : 'border-success/50 bg-success/10 hover:border-success'
+                  : dg.cubierto === false
+                    ? 'border-error/30 bg-error/5 hover:border-error/60'
+                    : 'border-border bg-pale hover:border-mid/50'
             }`}
             style={{ padding: '10px 24px', minWidth: '190px' }}
           >
@@ -240,16 +392,29 @@ export default function Step5Gerencias() {
               {dg.area}
             </p>
             <p
-              className={`font-semibold ${dg.cubierto ? 'text-success' : 'text-error'}`}
+              className={`font-semibold ${dg.cubierto === true ? dg.soyYo ? 'text-accent' : 'text-success' : dg.cubierto === false ? 'text-error' : 'text-muted'}`}
               style={{ fontSize: '9px', marginTop: '1px' }}
             >
-              {dg.cubierto ? 'Cubierto' : 'No cubierto'}
+              {dg.cubierto === true ? dg.soyYo ? 'Soy Yo' : 'Cubierto' : dg.cubierto === false ? 'No cubierto' : 'Sin definir'}
             </p>
+            {(dg.nombre || (dg.soyYo && respondentName)) && (
+              <p className="text-accent/70 font-medium truncate" style={{ fontSize: '8px', marginTop: '2px', maxWidth: '160px' }}>
+                {dg.nombre || respondentName}
+              </p>
+            )}
             {nodeSubtext(dg) && (
               <p className="text-muted" style={{ fontSize: '8px', marginTop: '2px' }}>
                 {nodeSubtext(dg)}
               </p>
             )}
+            {dg.dgEvaluation && (() => {
+              const s = calcDGScore(dg.dgEvaluation);
+              return s != null ? (
+                <p className={`font-bold ${dgScoreColor(s)}`} style={{ fontSize: '9px', marginTop: '3px' }}>
+                  Calif. DG: {s.toFixed(1)}/10
+                </p>
+              ) : null;
+            })()}
           </button>
         </div>
 
@@ -299,9 +464,11 @@ export default function Step5Gerencias() {
                 className={`rounded-xl border text-center transition-all cursor-pointer hover:shadow-md ${
                   openIndex === realIndex
                     ? 'border-accent bg-accent/5 shadow-md ring-2 ring-accent/20'
-                    : g.cubierto
-                      ? 'border-success/40 bg-success/5 hover:border-success'
-                      : 'border-error/20 bg-error/5 hover:border-error/40'
+                    : g.cubierto === true
+                      ? g.soyYo ? 'border-accent/40 bg-accent/5 hover:border-accent' : 'border-success/40 bg-success/5 hover:border-success'
+                      : g.cubierto === false
+                        ? 'border-error/20 bg-error/5 hover:border-error/40'
+                        : 'border-border bg-pale hover:border-mid/40'
                 }`}
                 style={{ padding: '8px 6px' }}
               >
@@ -310,11 +477,16 @@ export default function Step5Gerencias() {
                   {g.area}
                 </p>
                 <p
-                  className={`font-semibold ${g.cubierto ? 'text-success' : 'text-error'}`}
+                  className={`font-semibold ${g.cubierto === true ? g.soyYo ? 'text-accent' : 'text-success' : g.cubierto === false ? 'text-error' : 'text-muted'}`}
                   style={{ fontSize: '8px', marginTop: '1px' }}
                 >
-                  {g.cubierto ? 'Cubierto' : 'No cubierto'}
+                  {g.cubierto === true ? g.soyYo ? 'Soy Yo' : 'Cubierto' : g.cubierto === false ? 'No cubierto' : 'Sin definir'}
                 </p>
+                {(g.nombre || (g.soyYo && respondentName)) && (
+                  <p className="text-accent/70 font-medium truncate" style={{ fontSize: '7px', marginTop: '2px', maxWidth: '100px' }}>
+                    {g.nombre || respondentName}
+                  </p>
+                )}
                 {nodeSubtext(g) && (
                   <p className="text-muted" style={{ fontSize: '7px', marginTop: '2px' }}>
                     {nodeSubtext(g)}
@@ -338,37 +510,45 @@ export default function Step5Gerencias() {
 
       {/* Sueldo mas alto */}
       <div className="border-t border-border/50" style={{ marginTop: '28px', paddingTop: '24px' }}>
-        <div className="flex items-center" style={{ gap: '8px' }}>
+        <div className="flex items-center flex-wrap" style={{ gap: '10px' }}>
           <label className="font-medium text-ink shrink-0" style={{ fontSize: '12px' }}>
-            Sueldo mas alto mensual:
+            ¿Cuál gerencia tiene el sueldo más alto?
           </label>
-          {sueldoFocused ? (
-            <>
-              <span className="text-muted font-semibold shrink-0" style={{ fontSize: '13px' }}>$</span>
-              <input
-                type="number"
-                value={situacion.sueldoMasAlto ?? ''}
-                onChange={e => updateSituacion({ sueldoMasAlto: e.target.value })}
-                onBlur={() => setSueldoFocused(false)}
-                placeholder="Ej: 85000"
-                min="0"
-                className="input-field"
-                style={{ maxWidth: '160px' }}
-                autoFocus
-              />
-            </>
-          ) : (
-            <div
-              onClick={() => setSueldoFocused(true)}
-              className="input-field cursor-pointer"
-              style={{ maxWidth: '200px', minHeight: '38px', display: 'flex', alignItems: 'center' }}
-            >
-              <span className={situacion.sueldoMasAlto ? 'text-ink font-semibold' : 'text-muted'} style={{ fontSize: '13px' }}>
-                {situacion.sueldoMasAlto ? formatCurrency(situacion.sueldoMasAlto) : '$0'}
-              </span>
-            </div>
-          )}
+          <select
+            value={(() => {
+              const coveredWithSueldo = gerencias.filter(g => g.cubierto && g.rangoSueldo);
+              const match = coveredWithSueldo.find(g => g.area === situacion.sueldoMasAlto);
+              return match ? match.area : situacion.sueldoMasAlto || '';
+            })()}
+            onChange={e => {
+              const selected = gerencias.find(g => g.area === e.target.value);
+              updateSituacion({ sueldoMasAlto: e.target.value });
+              if (selected?.rangoSueldo) {
+                // auto-show the range
+              }
+            }}
+            className="input-field"
+            style={{ maxWidth: '240px', fontSize: '12px' }}
+          >
+            <option value="">Seleccionar...</option>
+            {gerencias.filter(g => g.cubierto && g.rangoSueldo).map(g => (
+              <option key={g.area} value={g.area}>
+                {g.area} — ${g.rangoSueldo}
+              </option>
+            ))}
+          </select>
         </div>
+        {situacion.sueldoMasAlto && (() => {
+          const match = gerencias.find(g => g.area === situacion.sueldoMasAlto);
+          if (match?.rangoSueldo) {
+            return (
+              <p className="text-accent font-semibold" style={{ fontSize: '12px', marginTop: '8px' }}>
+                Sueldo: ${match.rangoSueldo}
+              </p>
+            );
+          }
+          return null;
+        })()}
       </div>
     </div>
   );

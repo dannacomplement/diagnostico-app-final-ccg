@@ -1,8 +1,8 @@
 import { useTechSurveyStore } from '../../store/techSurveyStore';
 
 const EXCEL_NIVELES = [
-  { value: 'basico' as const, icon: '📊', label: 'Basico', desc: 'Formulas simples' },
-  { value: 'intermedio' as const, icon: '📈', label: 'Intermedio', desc: 'Tablas dinamicas' },
+  { value: 'basico' as const, icon: '📊', label: 'Básico', desc: 'Fórmulas simples' },
+  { value: 'intermedio' as const, icon: '📈', label: 'Intermedio', desc: 'Tablas dinámicas' },
   { value: 'avanzado' as const, icon: '🧮', label: 'Avanzado', desc: 'Macros y VBA' },
 ];
 
@@ -22,7 +22,7 @@ export default function TechStep1Tools() {
         Herramientas y Software
       </h2>
       <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '36px' }}>
-        Identifiquemos las herramientas tecnologicas que utiliza actualmente su empresa.
+        Identifiquemos las herramientas tecnológicas que utiliza actualmente su empresa.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -91,7 +91,7 @@ export default function TechStep1Tools() {
           {tools.tieneERP && (
             <div style={{ marginLeft: '8px' }}>
               <label className="block text-muted font-medium" style={{ fontSize: '11px', marginBottom: '6px' }}>
-                ¿Cual ERP utiliza?
+                ¿Cuál ERP utiliza?
               </label>
               <select
                 value={tools.erpNombre}
@@ -99,7 +99,7 @@ export default function TechStep1Tools() {
                 className="input-field"
                 style={{ fontSize: '13px', maxWidth: '280px' }}
               >
-                <option value="">Seleccione una opcion</option>
+                <option value="">Seleccione una opción</option>
                 {ERP_OPTIONS.map(opt => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
@@ -123,7 +123,7 @@ export default function TechStep1Tools() {
           {tools.tieneCRM && (
             <div style={{ marginLeft: '8px' }}>
               <label className="block text-muted font-medium" style={{ fontSize: '11px', marginBottom: '6px' }}>
-                ¿Cual CRM utiliza?
+                ¿Cuál CRM utiliza?
               </label>
               <select
                 value={tools.crmNombre}
@@ -131,7 +131,7 @@ export default function TechStep1Tools() {
                 className="input-field"
                 style={{ fontSize: '13px', maxWidth: '280px' }}
               >
-                <option value="">Seleccione una opcion</option>
+                <option value="">Seleccione una opción</option>
                 {CRM_OPTIONS.map(opt => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
@@ -155,7 +155,7 @@ export default function TechStep1Tools() {
           {tools.tieneMRP && (
             <div style={{ marginLeft: '8px' }}>
               <label className="block text-muted font-medium" style={{ fontSize: '11px', marginBottom: '6px' }}>
-                ¿Cual MRP utiliza?
+                ¿Cuál MRP utiliza?
               </label>
               <select
                 value={tools.mrpNombre}
@@ -163,7 +163,7 @@ export default function TechStep1Tools() {
                 className="input-field"
                 style={{ fontSize: '13px', maxWidth: '280px' }}
               >
-                <option value="">Seleccione una opcion</option>
+                <option value="">Seleccione una opción</option>
                 {MRP_OPTIONS.map(opt => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
@@ -175,7 +175,7 @@ export default function TechStep1Tools() {
         {/* Otras herramientas */}
         <div>
           <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '8px' }}>
-            Otras herramientas tecnologicas
+            Otras herramientas tecnológicas
           </label>
           <p className="text-muted" style={{ fontSize: '11px', marginBottom: '8px' }}>
             Mencione cualquier otro software o herramienta que utilice (opcional)

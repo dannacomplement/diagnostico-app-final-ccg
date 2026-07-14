@@ -3,7 +3,7 @@ import StepIndicator from './StepIndicator';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { useAuthStore } from '../../store/authStore';
 import { sendReportEmail } from '../../lib/sendReportEmail';
-import { getCurrentUser } from '../../lib/auth';
+import { getCurrentUser, ensureFreshSession } from '../../lib/auth';
 import { INSTITUCIONALIZACION_CRITERIA } from '../../config/questions';
 import CompletionCelebration from '../ui/CompletionCelebration';
 
@@ -17,9 +17,9 @@ import Step6RetosUrgencia from '../../pages/steps/Step6RetosUrgencia';
 const BASE_STEPS = [
   { id: 'datos', label: 'Datos Generales', component: Step1DatosGenerales, avgMinutes: 3 },
   { id: 'negocio', label: 'Tu Negocio', component: StepExplicaNegocio, avgMinutes: 2 },
-  { id: 'situacion', label: 'Situacion Actual', component: Step2SituacionActual, avgMinutes: 3 },
-  { id: 'prof', label: 'Profesionalizacion', component: Step3Profesionalizacion, avgMinutes: 5 },
-  { id: 'inst', label: 'Institucionalizacion', component: Step4Institucionalizacion, avgMinutes: 5 },
+  { id: 'situacion', label: 'Situación Actual', component: Step2SituacionActual, avgMinutes: 3 },
+  { id: 'prof', label: 'Profesionalización', component: Step3Profesionalizacion, avgMinutes: 5 },
+  { id: 'inst', label: 'Institucionalización', component: Step4Institucionalizacion, avgMinutes: 5 },
   { id: 'gerencias', label: 'Gerencias', component: Step5Gerencias, avgMinutes: 4 },
   { id: 'retos', label: 'Retos y Urgencia', component: Step6RetosUrgencia, avgMinutes: 3 },
 ];
@@ -28,14 +28,30 @@ function validateStep(stepId: string, state: ReturnType<typeof useDiagnosticStor
   const missing: string[] = [];
   switch (stepId) {
     case 'datos': {
-      if (!state.datosGenerales.nombreComercial.trim()) missing.push('Nombre comercial');
-      if (!state.datosGenerales.empresaFamiliar) missing.push('Empresa familiar');
-      if (!state.datosGenerales.sector) missing.push('Sector');
+      const dg = state.datosGenerales;
+      const isFamily = state.isFamilyBusiness();
+      if (!dg.nombreComercial.trim()) missing.push('Nombre comercial');
+      if (!dg.ubicacion) missing.push('Ubicación');
+      if (!dg.antiguedadConstituida) missing.push('Antigüedad constituida');
+      if (!dg.antiguedadOperativa) missing.push('Antigüedad operativa');
+      if (!dg.empresaFamiliar) missing.push('Empresa familiar');
+      if (!dg.respondente.trim()) missing.push('Nombre del respondente');
+      if (!dg.email.trim()) missing.push('Correo electrónico');
+      if (!dg.puestoEmpresa.trim()) missing.push('Puesto en la empresa');
+      if (isFamily && !dg.puestoFamilia.trim()) missing.push('Puesto en la familia');
+      if (!dg.esSocio) missing.push('¿Es socio?');
+      if (!dg.sector) missing.push('Sector');
+      if (!dg.softwareSelections || dg.softwareSelections.selected.length === 0) missing.push('Software de gestión');
       break;
     }
     case 'situacion': {
+      const isFamily = state.isFamilyBusiness();
       if (state.situacionActual.ventasAnualesMDP === null) missing.push('Ventas anuales');
       if (state.situacionActual.empleadosTotales === null) missing.push('Empleados totales');
+      if (!state.situacionActual.socios) missing.push('Número de socios');
+      if (isFamily) {
+        if (state.situacionActual.empleadosFamiliares === null) missing.push('Empleados familiares');
+      }
       break;
     }
     case 'prof': {
@@ -50,6 +66,11 @@ function validateStep(stepId: string, state: ReturnType<typeof useDiagnosticStor
         return criterion && (!criterion.requiresFamilyBusiness || isFamily) && a.rating < 0;
       });
       if (unansweredInst.length > 0) missing.push(`${unansweredInst.length} pregunta${unansweredInst.length > 1 ? 's' : ''} de institucionalizacion`);
+      break;
+    }
+    case 'gerencias': {
+      const covered = state.gerencias.filter(g => g.cubierto).length;
+      if (covered === 0) missing.push('Al menos una gerencia debe estar cubierta');
       break;
     }
     case 'retos': {
@@ -83,6 +104,12 @@ export default function WizardShell() {
   /* ── B5: Celebration state ── */
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState<{ score: number; companyName: string } | null>(null);
+
+  /* ── Keep Supabase session alive while filling the survey ── */
+  useEffect(() => {
+    const interval = setInterval(() => { ensureFreshSession(); }, 4 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   /* ── B6: Auto-save ── */
   const [saveToast, setSaveToast] = useState(false);
@@ -263,7 +290,7 @@ export default function WizardShell() {
             Pre-llenado completo
           </h2>
           <p className="text-muted" style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '32px', maxWidth: '360px', margin: '0 auto 32px' }}>
-            Los datos han sido guardados exitosamente. El cliente vera esta informacion pre-llenada cuando conteste su diagnostico empresarial.
+            Los datos han sido guardados exitosamente. El cliente verá esta información pre-llenada cuando conteste su radiografía empresarial.
           </p>
 
           {/* Info card */}
@@ -319,7 +346,7 @@ export default function WizardShell() {
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '36px 24px', position: 'relative' }}>
+    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: 'clamp(20px, 4vw, 36px) clamp(14px, 3vw, 24px)', position: 'relative' }}>
       {/* ── B6: Auto-save toast ── */}
       {saveToast && (
         <div className="save-toast" style={{
@@ -414,7 +441,7 @@ export default function WizardShell() {
           onClick={handlePrev}
           disabled={currentStep === 0}
           className="border border-border text-muted hover:text-ink hover:border-mid transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-          style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '13px', fontWeight: 500 }}
+          style={{ padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 28px)', borderRadius: '12px', fontSize: '13px', fontWeight: 500 }}
         >
           ← Anterior
         </button>
@@ -423,7 +450,7 @@ export default function WizardShell() {
           disabled={savingPrefill}
           className={`font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50 ${prefillMode && isLast ? 'bg-success text-white hover:bg-success/80' : ''}`}
           style={{
-            padding: '12px 28px',
+            padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 28px)',
             borderRadius: '12px',
             fontSize: '13px',
             ...(prefillMode && isLast
@@ -446,7 +473,7 @@ export default function WizardShell() {
             }
           }}
         >
-          {savingPrefill ? 'Guardando...' : isLast ? (prefillMode ? 'Guardar pre-llenado' : 'Finalizar diagnostico ✓') : 'Siguiente →'}
+          {savingPrefill ? 'Guardando...' : isLast ? (prefillMode ? 'Guardar pre-llenado' : 'Finalizar radiografía ✓') : 'Siguiente →'}
         </button>
       </div>
 
@@ -456,7 +483,7 @@ export default function WizardShell() {
             <div className="inline-flex items-center justify-center rounded-full bg-accent/10" style={{ width: '48px', height: '48px', marginBottom: '16px' }}>
               <span style={{ fontSize: '20px' }}>💾</span>
             </div>
-            <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '8px' }}>Salir del diagnostico</h3>
+            <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '8px' }}>Salir de la radiografía</h3>
             <p className="text-muted" style={{ fontSize: '13px', marginBottom: '24px' }}>
               Puedes guardar tu progreso y continuar despues, o salir sin guardar.
             </p>

@@ -4,7 +4,7 @@ const RESISTENCIA_OPTIONS = [
   { value: 'alta' as const, label: 'Alta', desc: 'Los empleados rechazan nuevas herramientas', icon: '🔴' },
   { value: 'media' as const, label: 'Media', desc: 'Aceptan con algo de resistencia', icon: '🟡' },
   { value: 'baja' as const, label: 'Baja', desc: 'En general aceptan los cambios', icon: '🟢' },
-  { value: 'ninguna' as const, label: 'Ninguna', desc: 'El equipo abraza la tecnologia', icon: '💎' },
+  { value: 'ninguna' as const, label: 'Ninguna', desc: 'El equipo abraza la tecnología', icon: '💎' },
 ];
 
 export default function TechStep7Culture() {
@@ -18,13 +18,13 @@ export default function TechStep7Culture() {
           🧠 Cultura Digital
         </h2>
         <p className="text-muted" style={{ fontSize: '12px' }}>
-          Disposicion al cambio, capacitacion y equipo de tecnologia.
+          Disposición al cambio, capacitación y equipo de tecnología.
         </p>
       </div>
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
         <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
-          Nivel de resistencia al cambio tecnologico
+          Nivel de resistencia al cambio tecnológico
         </label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {RESISTENCIA_OPTIONS.map(opt => (
@@ -44,7 +44,7 @@ export default function TechStep7Culture() {
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
         <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
-          ¿Ofrece capacitacion en herramientas tecnologicas?
+          ¿Ofrece capacitación en herramientas tecnológicas?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
           {[true, false].map(val => (
@@ -54,7 +54,7 @@ export default function TechStep7Culture() {
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${culture.capacitacionTecnologica === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
               style={{ padding: '12px', fontSize: '13px' }}
             >
-              {val ? 'Si' : 'No'}
+              {val ? 'Sí' : 'No'}
             </button>
           ))}
         </div>
@@ -72,7 +72,7 @@ export default function TechStep7Culture() {
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${culture.equipoTI === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
               style={{ padding: '12px', fontSize: '13px' }}
             >
-              {val ? 'Si' : 'No'}
+              {val ? 'Sí' : 'No'}
             </button>
           ))}
         </div>
@@ -81,7 +81,7 @@ export default function TechStep7Culture() {
       {culture.equipoTI && (
         <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
           <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
-            ¿Cuantas personas integran el equipo de TI?
+            ¿Cuántas personas integran el equipo de TI?
           </label>
           <input
             type="number"
@@ -97,7 +97,7 @@ export default function TechStep7Culture() {
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
         <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
-          ¿Tiene presupuesto asignado para tecnologia?
+          ¿Tiene presupuesto asignado para tecnología?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
           {[true, false].map(val => (
@@ -107,7 +107,7 @@ export default function TechStep7Culture() {
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${culture.presupuestoTech === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
               style={{ padding: '12px', fontSize: '13px' }}
             >
-              {val ? 'Si' : 'No'}
+              {val ? 'Sí' : 'No'}
             </button>
           ))}
         </div>
@@ -115,12 +115,12 @@ export default function TechStep7Culture() {
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
         <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
-          Principal reto tecnologico de la empresa
+          Principal reto tecnológico de la empresa
         </label>
         <textarea
           value={culture.retoPrincipalTech}
           onChange={e => update({ retoPrincipalTech: e.target.value })}
-          placeholder="Describa brevemente el mayor reto tecnologico que enfrenta..."
+          placeholder="Describa brevemente el mayor reto tecnológico que enfrenta..."
           rows={3}
           className="w-full rounded-xl border border-border bg-pale text-ink focus:outline-accent resize-none"
           style={{ padding: '12px 16px', fontSize: '13px' }}

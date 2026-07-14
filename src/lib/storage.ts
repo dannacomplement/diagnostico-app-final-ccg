@@ -1,8 +1,9 @@
 import { supabase } from './supabase';
+import { getAccessToken, ensureFreshSession } from './auth';
 import type {
   SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, AppUser, SurveyType,
   DatosGenerales, SituacionActual, CriterionAnswer, Gerencia,
-  FamilyAnalysis, MarginData, UrgencySelection,
+  FamilyAnalysis, MarginData, UrgencySelection, LineaNegocio,
 } from './types';
 
 /* ── Prefill data shape (raw wizard state) ─────────────── */
@@ -11,11 +12,13 @@ export interface PrefillData {
   datosGenerales?: Partial<DatosGenerales>;
   situacionActual?: Partial<SituacionActual>;
   descripcionNegocio?: string;
+  lineasNegocio?: LineaNegocio[];
   profAnswers?: CriterionAnswer[];
   instAnswers?: CriterionAnswer[];
   gerencias?: Gerencia[];
   retos?: string[];
   urgencia?: UrgencySelection | null;
+  tieneLiderInterno?: boolean | null;
   analisisFamiliar?: FamilyAnalysis;
   marginData?: MarginData;
 }
@@ -58,6 +61,7 @@ export async function getDiagnosticsByUser(userId: string): Promise<SavedDiagnos
 }
 
 export async function saveDiagnostic(diagnostic: SavedDiagnostic, userId?: string): Promise<void> {
+  await ensureFreshSession();
   const { error } = await supabase
     .from('diagnostics')
     .insert({
@@ -310,93 +314,56 @@ export async function createClientAccount(
   logoUrl?: string,
   email?: string,
 ): Promise<AppUser | null> {
-  const insertPayload: Record<string, any> = {
-    username,
-    password,
-    role: 'client',
-    display_name: displayName || username,
-  };
-
-  // Build full payload with optional columns
-  const fullPayload: Record<string, any> = {
-    ...insertPayload,
-    survey_permissions: permissions,
-    ...(logoUrl ? { logo_url: logoUrl } : {}),
-    ...(email ? { email } : {}),
-  };
-
-  const selectCols = 'id, username, role, display_name, email, survey_permissions, logo_url';
-
-  const { data, error } = await supabase
-    .from('users')
-    .insert(fullPayload)
-    .select(selectCols)
-    .single();
-
-  if (error && (error.message?.includes('survey_permissions') || error.message?.includes('logo_url') || error.message?.includes('email'))) {
-    // One or more columns don't exist — insert with basic columns only
-    const { data: d2, error: e2 } = await supabase
-      .from('users')
-      .insert(insertPayload)
-      .select('id, username, role, display_name')
-      .single();
-    if (e2 || !d2) {
-      console.error('Supabase createClientAccount error:', e2);
-      return null;
-    }
-    return {
-      id: d2.id,
-      username: d2.username,
-      role: d2.role as AppUser['role'],
-      displayName: d2.display_name || d2.username,
-      surveyPermissions: ['diagnostico_empresarial'],
-    };
-  }
-
-  if (error || !data) {
-    console.error('Supabase createClientAccount error:', error);
+  if (!email) {
+    console.error('createClientAccount: email is required for Supabase Auth');
     return null;
   }
 
+  const token = await getAccessToken();
+  if (!token) {
+    console.error('createClientAccount: no auth token');
+    return null;
+  }
+
+  const res = await fetch('/api/create-user', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ email, password, displayName: displayName || username, username, permissions, logoUrl }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error('createClientAccount error:', err.error || res.statusText);
+    return null;
+  }
+
+  const { user: profile } = await res.json();
   return {
-    id: data.id,
-    username: data.username,
-    role: data.role as AppUser['role'],
-    displayName: data.display_name || data.username,
-    email: (data.email as string | null) ?? undefined,
-    surveyPermissions: (data.survey_permissions as SurveyType[] | null) ?? ['diagnostico_empresarial'],
-    logoUrl: (data.logo_url as string | null) ?? undefined,
+    id: profile.id,
+    username: profile.username,
+    role: profile.role as AppUser['role'],
+    displayName: profile.display_name || profile.username,
+    email: profile.email ?? undefined,
+    surveyPermissions: (profile.survey_permissions as SurveyType[] | null) ?? ['diagnostico_empresarial'],
+    logoUrl: (profile.logo_url as string | null) ?? undefined,
+    status: (profile.status as AppUser['status']) ?? 'activo',
+    createdAt: (profile.created_at as string | null) ?? undefined,
   };
 }
 
 export async function getAllClientAccounts(): Promise<AppUser[]> {
-  let rows: any[] = [];
-
-  const res1 = await supabase
-    .from('users')
-    .select('id, username, role, display_name, email, created_at, survey_permissions, logo_url')
+  const { data: rows, error } = await supabase
+    .from('profiles')
+    .select('id, username, role, display_name, email, created_at, survey_permissions, logo_url, status')
     .eq('role', 'client')
     .order('created_at', { ascending: false });
 
-  if (res1.error && (res1.error.message?.includes('survey_permissions') || res1.error.message?.includes('logo_url') || res1.error.message?.includes('email'))) {
-    const res2 = await supabase
-      .from('users')
-      .select('id, username, role, display_name, created_at')
-      .eq('role', 'client')
-      .order('created_at', { ascending: false });
-    if (res2.error) {
-      console.error('Supabase getAllClientAccounts error:', res2.error);
-      return [];
-    }
-    rows = res2.data ?? [];
-  } else if (res1.error) {
-    console.error('Supabase getAllClientAccounts error:', res1.error);
+  if (error) {
+    console.error('Supabase getAllClientAccounts error:', error);
     return [];
-  } else {
-    rows = res1.data ?? [];
   }
 
-  return rows.map(row => ({
+  return (rows ?? []).map(row => ({
     id: row.id,
     username: row.username,
     role: row.role as AppUser['role'],
@@ -404,36 +371,66 @@ export async function getAllClientAccounts(): Promise<AppUser[]> {
     email: (row.email as string | null) ?? undefined,
     surveyPermissions: (row.survey_permissions as SurveyType[] | null) ?? ['diagnostico_empresarial'],
     logoUrl: (row.logo_url as string | null) ?? undefined,
+    status: (row.status as AppUser['status']) ?? 'activo',
+    createdAt: (row.created_at as string | null) ?? undefined,
   }));
 }
 
 export async function updateClientLogo(userId: string, logoUrl: string | null): Promise<void> {
   const { error } = await supabase
-    .from('users')
+    .from('profiles')
     .update({ logo_url: logoUrl })
     .eq('id', userId);
 
   if (error) {
-    console.warn('Supabase updateClientLogo error (run ALTER TABLE to add logo_url column):', error);
+    console.warn('Supabase updateClientLogo error:', error);
   }
 }
 
 export async function updateClientProfile(
   userId: string,
-  updates: { displayName?: string; username?: string; password?: string; logoUrl?: string | null; email?: string; permissions?: SurveyType[] },
+  updates: { displayName?: string; username?: string; password?: string; logoUrl?: string | null; email?: string; permissions?: SurveyType[]; status?: string },
 ): Promise<boolean> {
+  // Password and email changes require the admin API (server-side)
+  if (updates.password || updates.email) {
+    const token = await getAccessToken();
+    if (!token) return false;
+
+    const res = await fetch('/api/update-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        userId,
+        password: updates.password,
+        email: updates.email,
+        displayName: updates.displayName,
+        username: updates.username,
+        permissions: updates.permissions,
+        logoUrl: updates.logoUrl,
+        status: updates.status,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('updateClientProfile API error:', err.error || res.statusText);
+      return false;
+    }
+    return true;
+  }
+
+  // Metadata-only updates go directly to profiles table
   const payload: Record<string, any> = {};
   if (updates.displayName !== undefined) payload.display_name = updates.displayName;
   if (updates.username !== undefined) payload.username = updates.username;
-  if (updates.password !== undefined) payload.password = updates.password;
   if (updates.logoUrl !== undefined) payload.logo_url = updates.logoUrl;
-  if (updates.email !== undefined) payload.email = updates.email;
   if (updates.permissions !== undefined) payload.survey_permissions = updates.permissions;
+  if (updates.status !== undefined) payload.status = updates.status;
 
   if (Object.keys(payload).length === 0) return true;
 
   const { error } = await supabase
-    .from('users')
+    .from('profiles')
     .update(payload)
     .eq('id', userId);
 
@@ -446,69 +443,43 @@ export async function updateClientProfile(
 
 export async function updateUserPermissions(userId: string, permissions: SurveyType[]): Promise<void> {
   const { error } = await supabase
-    .from('users')
+    .from('profiles')
     .update({ survey_permissions: permissions })
     .eq('id', userId);
 
   if (error) {
-    // Column might not exist yet — warn but don't break
-    console.warn('Supabase updateUserPermissions error (run ALTER TABLE to add survey_permissions column):', error);
+    console.warn('Supabase updateUserPermissions error:', error);
   }
 }
 
 export async function deleteClientAccount(userId: string): Promise<void> {
-  // Delete all diagnostics belonging to this user
-  const { error: diagErr } = await supabase
-    .from('diagnostics')
-    .delete()
-    .eq('user_id', userId);
-
-  if (diagErr) {
-    console.error('Supabase deleteClientAccount diagnostics error:', diagErr);
+  const token = await getAccessToken();
+  if (!token) {
+    console.error('deleteClientAccount: no auth token');
+    return;
   }
 
-  // Delete all org surveys belonging to this user
-  const { error: orgErr } = await supabase
-    .from('org_surveys')
-    .delete()
-    .eq('user_id', userId);
+  const res = await fetch('/api/delete-user', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ userId }),
+  });
 
-  if (orgErr) {
-    console.error('Supabase deleteClientAccount org_surveys error:', orgErr);
-  }
-
-  // Delete all tech surveys belonging to this user
-  const { error: techErr } = await supabase
-    .from('tech_surveys')
-    .delete()
-    .eq('user_id', userId);
-
-  if (techErr) {
-    console.error('Supabase deleteClientAccount tech_surveys error:', techErr);
-  }
-
-  // Delete any prefills for this user
-  await deletePrefill(userId, 'diagnostico_empresarial').catch(() => {});
-
-  // Then delete the user
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', userId);
-
-  if (error) {
-    console.error('Supabase deleteClientAccount error:', error);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error('deleteClientAccount error:', err.error || res.statusText);
   }
 }
 
 /* ── Prefills (master pre-populates survey for client) ─── */
 
 export async function savePrefill(
+
   userId: string,
   surveyType: SurveyType,
   data: PrefillData,
 ): Promise<boolean> {
-  // Upsert — one prefill per user per survey type
+  await ensureFreshSession();
   const { error } = await supabase
     .from('prefills')
     .upsert(
@@ -578,4 +549,29 @@ export async function getPrefillsForClients(): Promise<Map<string, SurveyType[]>
     map.get(uid)!.push(row.survey_type as SurveyType);
   }
   return map;
+}
+
+/* ── Test client IDs (stored in app_settings) ─────────── */
+
+export async function getTestClientIds(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'test_client_ids')
+    .maybeSingle();
+
+  if (error || !data?.value) return [];
+  try { return JSON.parse(data.value as string); } catch { return []; }
+}
+
+export async function setTestClientIds(ids: string[]): Promise<boolean> {
+  const { error } = await supabase
+    .from('app_settings')
+    .upsert([{ key: 'test_client_ids', value: JSON.stringify(ids) }], { onConflict: 'key' });
+
+  if (error) {
+    console.error('Failed to save test client ids:', error);
+    return false;
+  }
+  return true;
 }

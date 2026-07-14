@@ -1,8 +1,19 @@
 export const EMPRESA_FAMILIAR_OPTIONS = [
-  { value: 'si_1era' as const, label: 'Sí, 1ª generación' },
-  { value: 'si_2da' as const, label: 'Sí, 2ª generación' },
-  { value: 'si_3era' as const, label: 'Sí, 3ª generación' },
-  { value: 'no' as const, label: 'No' },
+  { value: 'si_1era' as const, label: '1era Generación' },
+  { value: 'si_1era_transicion' as const, label: '1era Generación en transición' },
+  { value: 'si_2da' as const, label: '2da Generación' },
+  { value: 'si_3era' as const, label: '3era Generación' },
+  { value: 'no' as const, label: 'No es familiar' },
+];
+
+export const UBICACION_OPTIONS = [
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche',
+  'Chiapas', 'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima',
+  'Durango', 'Estado de México', 'Guanajuato', 'Guerrero', 'Hidalgo',
+  'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca',
+  'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa',
+  'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz',
+  'Yucatán', 'Zacatecas',
 ];
 
 export const SECTOR_OPTIONS = [

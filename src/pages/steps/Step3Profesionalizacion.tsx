@@ -12,8 +12,8 @@ export default function Step3Profesionalizacion() {
   return (
     <div>
       <TypeformCriteria
-        title="Profesionalizacion"
-        description="Evalue que tan profesionalizada esta su empresa en cada uno de los siguientes criterios."
+        title="Profesionalización"
+        description="Evalúe qué tan profesionalizada está su empresa en cada uno de los siguientes criterios."
         criteria={PROFESIONALIZACION_CRITERIA}
         answers={answers}
         onAnswerChange={(id, partial) => setCriterionAnswer('prof', id, partial)}

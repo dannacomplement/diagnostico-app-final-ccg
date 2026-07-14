@@ -3,15 +3,15 @@ import { useTechSurveyStore } from '../../store/techSurveyStore';
 const AUTOMATION_LEVELS = [
   { value: 'ninguno' as const, icon: '🔴', label: 'Ninguno', desc: 'Todo es manual' },
   { value: 'algunos' as const, icon: '🟡', label: 'Algunos', desc: 'Pocos procesos' },
-  { value: 'mayoria' as const, icon: '🟢', label: 'Mayoria', desc: 'Casi todos' },
+  { value: 'mayoria' as const, icon: '🟢', label: 'Mayoría', desc: 'Casi todos' },
   { value: 'todos' as const, icon: '🚀', label: 'Todos', desc: 'Completamente' },
 ];
 
 const DIGITAL_TOOLS = [
-  { key: 'facturaElectronica' as const, label: 'Factura electronica' },
+  { key: 'facturaElectronica' as const, label: 'Factura electrónica' },
   { key: 'bancaDigital' as const, label: 'Banca digital' },
-  { key: 'firmaElectronica' as const, label: 'Firma electronica' },
-  { key: 'gestionDocumentalDigital' as const, label: 'Gestion documental digital' },
+  { key: 'firmaElectronica' as const, label: 'Firma electrónica' },
+  { key: 'gestionDocumentalDigital' as const, label: 'Gestión documental digital' },
 ];
 
 export default function TechStep3Automation() {
@@ -21,17 +21,17 @@ export default function TechStep3Automation() {
   return (
     <div className="card">
       <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>
-        Automatizacion de Procesos
+        Automatización de Procesos
       </h2>
       <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '36px' }}>
-        Evaluemos el nivel de automatizacion y digitalizacion de sus procesos operativos.
+        Evaluemos el nivel de automatización y digitalización de sus procesos operativos.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* Nivel de automatizacion */}
         <div>
           <p className="font-medium text-ink" style={{ fontSize: '13px', marginBottom: '10px' }}>
-            ¿Que tan automatizados estan sus procesos?
+            ¿Qué tan automatizados están sus procesos?
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '10px' }}>
             {AUTOMATION_LEVELS.map(opt => (
@@ -54,12 +54,12 @@ export default function TechStep3Automation() {
         {/* Areas mas automatizadas */}
         <div>
           <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '8px' }}>
-            ¿Cuales areas estan mas automatizadas?
+            ¿Cuáles áreas están más automatizadas?
           </label>
           <textarea
             value={auto.areasMasAutomatizadas}
             onChange={e => update({ areasMasAutomatizadas: e.target.value })}
-            placeholder="Ej: Contabilidad, facturacion, nomina, inventarios..."
+            placeholder="Ej: Contabilidad, facturación, nómina, inventarios..."
             className="input-field"
             rows={3}
             style={{ fontSize: '13px', resize: 'vertical' }}

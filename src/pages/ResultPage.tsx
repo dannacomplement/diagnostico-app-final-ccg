@@ -61,7 +61,7 @@ export default function ResultPage() {
           <span style={{ fontSize: '24px' }}>✓</span>
         </div>
         <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '10px' }}>
-          Muchas gracias por responder el diagnóstico
+          Muchas gracias por responder la radiografía
         </h1>
         <p className="text-muted leading-relaxed mx-auto" style={{ fontSize: '13px', maxWidth: '440px' }}>
           Sus respuestas han sido registradas exitosamente. A continuación se muestra un resumen de los datos de su empresa.

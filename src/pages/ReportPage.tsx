@@ -6,7 +6,7 @@ import { ALL_CRITERIA } from '../config/questions';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { exportToPdf } from '../lib/exportPdf';
 import { buildSoftwareLabel } from '../lib/formatters';
-import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness, generateSmartRecommendations } from '../lib/diagnosticAnalysis';
+import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from '../lib/diagnosticAnalysis';
 import type { ScoreLevel, MarginLevel, SavedDiagnostic, Sector } from '../lib/types';
 
 const LEVEL_COLORS: Record<ScoreLevel, string> = {
@@ -95,7 +95,6 @@ export default function ReportPage() {
   const risks = useMemo(() => computeRiskProfile(diagnostic), [diagnostic]);
   const narrative = useMemo(() => generateDiagnosticNarrative(diagnostic, maturity), [diagnostic, maturity]);
   const growth = useMemo(() => generateGrowthReadiness(diagnostic), [diagnostic]);
-  const smartRecs = useMemo(() => generateSmartRecommendations(diagnostic, maturity, risks), [diagnostic, maturity, risks]);
 
   function handleDownloadPdf() {
     exportToPdf(diagnostic);
@@ -138,7 +137,7 @@ export default function ReportPage() {
 
           <div className="flex-1 text-center sm:text-right">
             <h1 className="font-serif text-navy" style={{ fontSize: '20px', marginBottom: '4px' }}>Reporte Ejecutivo</h1>
-            <p className="text-muted" style={{ fontSize: '12px', marginBottom: '2px' }}>Diagnostico Empresarial</p>
+            <p className="text-muted" style={{ fontSize: '12px', marginBottom: '2px' }}>Radiografía Empresarial</p>
             <p className="font-semibold text-navy" style={{ fontSize: '13px' }}>
               {datosGenerales.nombreComercial || 'Empresa'}
             </p>
@@ -170,8 +169,8 @@ export default function ReportPage() {
 
           {/* Contribution breakdown */}
           <div className="flex-1 w-full" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <ContribBar label="Profesionalizacion" value={maturity.profContrib} max={35} color="bg-accent" />
-            <ContribBar label="Institucionalizacion" value={maturity.instContrib} max={25} color="bg-mid" />
+            <ContribBar label="Profesionalización" value={maturity.profContrib} max={35} color="bg-accent" />
+            <ContribBar label="Institucionalización" value={maturity.instContrib} max={25} color="bg-mid" />
             <ContribBar label="Gerencias" value={maturity.gerContrib} max={20} color="bg-navy" />
             <ContribBar label="Margenes" value={maturity.marginContrib} max={20} color="bg-success" />
           </div>
@@ -190,13 +189,13 @@ export default function ReportPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px', marginBottom: '14px' }}>
           <MetricBox label="Empresa" value={datosGenerales.nombreComercial || '—'} />
           <MetricBox label="Sector" value={sectorLabel} />
-          <MetricBox label="Tamano" value={sizeResult?.size ?? '—'} highlight />
+          <MetricBox label="Tamaño" value={sizeResult?.size ?? '—'} highlight />
           <MetricBox label="Productividad per capita" value={sizeResult ? `$${sizeResult.productivityIndex.toFixed(2)} MDP` : '—'} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px' }}>
           <MetricBox label="Empleados" value={situacionActual.empleadosTotales?.toString() ?? '—'} />
           <MetricBox label="Ventas Anuales" value={situacionActual.ventasAnualesMDP ? `$${situacionActual.ventasAnualesMDP} MDP` : '—'} />
-          <MetricBox label="Empresa Familiar" value={isFamily ? 'Si' : 'No'} />
+          <MetricBox label="Empresa Familiar" value={isFamily ? 'Sí' : 'No'} />
           <MetricBox label="Urgencia" value={urgencyLevel ?? '—'} />
         </div>
       </Section>
@@ -269,7 +268,7 @@ export default function ReportPage() {
           SECTION: MARGINS + BENCHMARK COMPARISON
          ═══════════════════════════════════════════════ */}
       {marginData.tieneDatosFinancieros && marginEval && (
-        <Section title="Analisis de Margenes Financieros" number={nextNum()}>
+        <Section title="Análisis de Márgenes Financieros" number={nextNum()}>
           <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '14px', marginBottom: '24px' }}>
             {([
               { key: 'margenBruto' as const, label: 'Margen Bruto' },
@@ -352,7 +351,7 @@ export default function ReportPage() {
           SECTION: DESCRIPCION DEL NEGOCIO
          ═══════════════════════════════════════════════ */}
       {descripcionNegocio && (
-        <Section title="Descripcion del Negocio" number={nextNum()}>
+        <Section title="Descripción del Negocio" number={nextNum()}>
           <p className="text-ink leading-relaxed" style={{ fontSize: '13px' }}>{descripcionNegocio}</p>
         </Section>
       )}
@@ -360,7 +359,7 @@ export default function ReportPage() {
       {/* ═══════════════════════════════════════════════
           SECTION: PROFESIONALIZACION (detailed criteria table)
          ═══════════════════════════════════════════════ */}
-      <Section title={`Profesionalizacion (${profScore.average.toFixed(0)}/100 — ${profScore.level})`} number={nextNum()}>
+      <Section title={`Profesionalización (${profScore.average.toFixed(0)}/100 — ${profScore.level})`} number={nextNum()}>
         <div className="flex items-center" style={{ gap: '14px', marginBottom: '20px' }}>
           <div className="text-center">
             <p className="font-bold text-ink" style={{ fontSize: '18px' }}>{profScore.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '12px' }}>/100</span></p>
@@ -400,7 +399,7 @@ export default function ReportPage() {
       {/* ═══════════════════════════════════════════════
           SECTION: INSTITUCIONALIZACION (detailed criteria table)
          ═══════════════════════════════════════════════ */}
-      <Section title={`Institucionalizacion (${instScore.average.toFixed(0)}/100 — ${instScore.level})`} number={nextNum()}>
+      <Section title={`Institucionalización (${instScore.average.toFixed(0)}/100 — ${instScore.level})`} number={nextNum()}>
         <div className="flex items-center" style={{ gap: '14px', marginBottom: '20px' }}>
           <div className="text-center">
             <p className="font-bold text-ink" style={{ fontSize: '18px' }}>{instScore.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '12px' }}>/100</span></p>
@@ -442,17 +441,23 @@ export default function ReportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
           {gerencias.map(g => (
             <div key={g.area} className="flex items-center rounded-lg bg-pale" style={{ gap: '10px', padding: '12px 16px' }}>
-              <span className={`rounded-full shrink-0 ${g.cubierto ? (g.calificado === 'si' ? 'bg-success' : g.calificado === 'no' ? 'bg-error' : 'bg-warn') : 'bg-error'}`} style={{ width: '8px', height: '8px' }} />
+              <span className={`rounded-full shrink-0 ${g.cubierto ? (g.soyYo ? 'bg-accent' : g.calificado === 'si' ? 'bg-success' : g.calificado === 'no' ? 'bg-error' : 'bg-warn') : 'bg-error'}`} style={{ width: '8px', height: '8px' }} />
               <span className="font-bold text-navy flex-1" style={{ fontSize: '12px' }}>{g.area}</span>
               {g.cubierto ? (
                 <>
-                  <span className={`font-semibold rounded-full
-                    ${g.calificado === 'si' ? 'bg-success/15 text-success' :
-                      g.calificado === 'no' ? 'bg-error/15 text-error' :
-                      'bg-warn/15 text-warn'}
-                  `} style={{ fontSize: '10px', padding: '2px 8px' }}>
-                    {g.calificado === 'si' ? 'Calificado' : g.calificado === 'no' ? 'No calificado' : 'Por evaluar'}
-                  </span>
+                  {g.soyYo ? (
+                    <span className="font-semibold rounded-full bg-accent/15 text-accent" style={{ fontSize: '10px', padding: '2px 8px' }}>
+                      Soy Yo
+                    </span>
+                  ) : (
+                    <span className={`font-semibold rounded-full
+                      ${g.calificado === 'si' ? 'bg-success/15 text-success' :
+                        g.calificado === 'no' ? 'bg-error/15 text-error' :
+                        'bg-warn/15 text-warn'}
+                    `} style={{ fontSize: '10px', padding: '2px 8px' }}>
+                      {g.calificado === 'si' ? 'Calificado' : g.calificado === 'no' ? 'No calificado' : 'Por evaluar'}
+                    </span>
+                  )}
                   <div className="flex items-center text-muted" style={{ gap: '8px', fontSize: '10px' }}>
                     {g.antiguedad && <span>{g.antiguedad} anos</span>}
                     {(g as any).rangoSueldo && <span>{(g as any).rangoSueldo}</span>}
@@ -470,7 +475,7 @@ export default function ReportPage() {
         </p>
         {gerenciasCubiertas < gerencias.length && (
           <p className="text-error" style={{ fontSize: '12px', marginTop: '6px' }}>
-            Hay {gerencias.length - gerenciasCubiertas} posicion(es) gerencial(es) sin cubrir.
+            Hay {gerencias.length - gerenciasCubiertas} posición(es) gerencial(es) sin cubrir.
           </p>
         )}
       </Section>
@@ -510,28 +515,12 @@ export default function ReportPage() {
       )}
 
       {/* ═══════════════════════════════════════════════
-          SECTION: SMART RECOMMENDATIONS
-         ═══════════════════════════════════════════════ */}
-      <Section title="Recomendaciones Especificas" number={nextNum()}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {smartRecs.map((rec, i) => (
-            <div key={i} className="flex items-start rounded-xl bg-accent/5 border border-accent/10" style={{ padding: '14px 18px', gap: '12px' }}>
-              <span className="bg-accent text-white font-bold rounded-lg shrink-0 flex items-center justify-center" style={{ width: '24px', height: '24px', fontSize: '12px' }}>
-                {i + 1}
-              </span>
-              <p className="text-ink" style={{ fontSize: '12px', lineHeight: '1.6' }}>{rec}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* ═══════════════════════════════════════════════
           SECTION: SIGUIENTES PASOS
          ═══════════════════════════════════════════════ */}
       <Section title="Siguientes Pasos Sugeridos" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {[
-            'Agendar una sesion de revision de resultados con un consultor de Complement.',
+            'Agendar una sesión de revisión de resultados con un consultor de Complement.',
             'Priorizar las areas de oportunidad con mayor impacto para su empresa.',
             'Definir un plan de accion con plazos y responsables para cada area.',
             'Implementar mejoras de forma gradual, comenzando por los focos rojos identificados.',
@@ -571,29 +560,6 @@ export default function ReportPage() {
       </Section>
 
       {/* ═══════════════════════════════════════════════
-          SECTION: ANALISIS FAMILIAR
-         ═══════════════════════════════════════════════ */}
-      {isFamily && analisisFamiliar && (
-        <Section title="Analisis Familiar" number={nextNum()}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {Object.entries(analisisFamiliar).map(([key, value]) => value && (
-              <div key={key} className="rounded-lg bg-pale" style={{ padding: '14px 18px' }}>
-                <p className="font-semibold text-navy" style={{ fontSize: '11px', marginBottom: '4px' }}>
-                  {key === 'gobiernoFamiliar' ? 'Gobierno Familiar' :
-                   key === 'planSucesion' ? 'Plan de Sucesion' :
-                   key === 'protocoloFamiliar' ? 'Protocolo Familiar' :
-                   key === 'conflictosFamiliares' ? 'Conflictos Familiares' :
-                   key === 'rolesOperacion' ? 'Roles en la Operacion' :
-                   'Profesionalizacion de Familiares'}
-                </p>
-                <p className="text-ink" style={{ fontSize: '12px' }}>{value}</p>
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* ═══════════════════════════════════════════════
           SECTION: DATOS GENERALES (detail table)
          ═══════════════════════════════════════════════ */}
       <Section title="Datos Generales" number={nextNum()}>
@@ -607,21 +573,21 @@ export default function ReportPage() {
           <DetailRow label="Puesto en la Empresa" value={datosGenerales.puestoEmpresa || '—'} />
           {isFamily && <DetailRow label="Puesto en la Familia" value={datosGenerales.puestoFamilia || '—'} alt />}
           <DetailRow label="Es socio?" value={datosGenerales.esSocio === 'si' ? `Si${datosGenerales.porcentajeAcciones ? ` — ${datosGenerales.porcentajeAcciones}%` : ''}` : datosGenerales.esSocio === 'no' ? 'No' : '—'} />
-          <DetailRow label="Software de Gestion" value={softwareLabel} alt />
+          <DetailRow label="Software de Gestión" value={softwareLabel} alt />
         </div>
       </Section>
 
       {/* ═══════════════════════════════════════════════
           SECTION: SITUACION ACTUAL (detail table)
          ═══════════════════════════════════════════════ */}
-      <Section title="Situacion Actual" number={nextNum()}>
+      <Section title="Situación Actual" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
           <DetailRow label="Ventas Anuales" value={situacionActual.ventasAnualesMDP !== null ? `$${situacionActual.ventasAnualesMDP} MDP` : '—'} />
           <DetailRow label="Empleados Totales" value={situacionActual.empleadosTotales?.toString() ?? '—'} alt />
           {situacionActual.empleadosFamiliares !== null && situacionActual.empleadosFamiliares !== undefined && (
             <DetailRow label="Empleados Familiares" value={situacionActual.empleadosFamiliares.toString()} />
           )}
-          <DetailRow label="Numero de Socios" value={situacionActual.socios || '—'} alt />
+          <DetailRow label="Número de Socios" value={situacionActual.socios || '—'} alt />
           {situacionActual.sociosDetalle && situacionActual.sociosDetalle.length > 0 && (
             situacionActual.sociosDetalle.map((s, i) => (
               <DetailRow
@@ -642,7 +608,7 @@ export default function ReportPage() {
           SECTION: COMPANY CLASSIFICATION
          ═══════════════════════════════════════════════ */}
       {sizeResult && (
-        <Section title="Clasificacion de Empresa" number={nextNum()}>
+        <Section title="Clasificación de Empresa" number={nextNum()}>
           <div className="flex flex-wrap" style={{ gap: '10px', marginBottom: '18px' }}>
             {['Micro', 'Pequena', 'Mediana', 'Grande'].map(size => (
               <div

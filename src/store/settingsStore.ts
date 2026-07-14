@@ -4,17 +4,20 @@ import { supabase } from '../lib/supabase';
 interface AppSettings {
   companyLogo: string | null;       // base64 data URL or null (use default)
   companyLogoIcon: string | null;   // smaller icon version for header
+  floatingLogo: string | null;      // logo for login floating animation (null = use companyLogo)
   loaded: boolean;
 }
 
 interface SettingsState extends AppSettings {
   loadSettings: () => Promise<void>;
   setCompanyLogo: (logo: string | null, icon: string | null) => Promise<boolean>;
+  setFloatingLogo: (logo: string | null) => Promise<boolean>;
 }
 
 export const useSettingsStore = create<SettingsState>()((set) => ({
   companyLogo: null,
   companyLogoIcon: null,
+  floatingLogo: null,
   loaded: false,
 
   loadSettings: async () => {
@@ -22,7 +25,7 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
       const { data, error } = await supabase
         .from('app_settings')
         .select('key, value')
-        .in('key', ['company_logo', 'company_logo_icon']);
+        .in('key', ['company_logo', 'company_logo_icon', 'floating_logo']);
 
       if (error) {
         // Table might not exist yet — use defaults
@@ -35,6 +38,7 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
       set({
         companyLogo: map.get('company_logo') ?? null,
         companyLogoIcon: map.get('company_logo_icon') ?? null,
+        floatingLogo: map.get('floating_logo') ?? null,
         loaded: true,
       });
     } catch {
@@ -63,6 +67,24 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
         companyLogo: logo,
         companyLogoIcon: icon,
       });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  setFloatingLogo: async (logo) => {
+    try {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert([{ key: 'floating_logo', value: logo ?? '' }], { onConflict: 'key' });
+
+      if (error) {
+        console.error('Failed to save floating logo:', error);
+        return false;
+      }
+
+      set({ floatingLogo: logo });
       return true;
     } catch {
       return false;

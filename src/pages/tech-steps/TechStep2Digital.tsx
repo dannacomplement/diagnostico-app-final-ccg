@@ -27,7 +27,7 @@ export default function TechStep2Digital() {
         Presencia Digital
       </h2>
       <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '36px' }}>
-        Evaluemos la presencia digital y canales en linea de su empresa.
+        Evaluemos la presencia digital y canales en línea de su empresa.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -45,7 +45,7 @@ export default function TechStep2Digital() {
 
           {dp.tieneWebsite && (
             <div className="flex items-center justify-between bg-white rounded-xl border border-border/30" style={{ padding: '12px 18px', marginLeft: '16px', marginBottom: '12px' }}>
-              <span className="text-ink font-medium" style={{ fontSize: '12px' }}>¿Esta actualizado?</span>
+              <span className="text-ink font-medium" style={{ fontSize: '12px' }}>¿Está actualizado?</span>
               <button
                 onClick={() => update({ websiteActualizado: !dp.websiteActualizado })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${dp.websiteActualizado ? 'bg-accent' : 'bg-border'}`}

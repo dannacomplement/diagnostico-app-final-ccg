@@ -108,15 +108,15 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
 
   /* Estructura y Organigrama */
   const estructuraBody: string[][] = [
-    ['Organigrama Formal', org.tieneOrganigrama ? 'Si' : 'No'],
+    ['Organigrama Formal', org.tieneOrganigrama ? 'Sí' : 'No'],
   ];
   if (org.tieneOrganigrama) {
-    estructuraBody.push(['Organigrama Actualizado', org.organigramaActualizado ? 'Si' : 'No']);
+    estructuraBody.push(['Organigrama Actualizado', org.organigramaActualizado ? 'Sí' : 'No']);
   }
   estructuraBody.push(
     ['Descripciones de Puesto', descLabel],
-    ['Tabulador de Sueldos', org.tieneTabulador ? 'Si' : 'No'],
-    ['Nomina Mensual Total', org.nominaMensualTotal !== null ? `$${org.nominaMensualTotal.toLocaleString('es-MX')}` : '---'],
+    ['Tabulador de Sueldos', org.tieneTabulador ? 'Sí' : 'No'],
+    ['Nómina Mensual Total', org.nominaMensualTotal !== null ? `$${org.nominaMensualTotal.toLocaleString('es-MX')}` : '---'],
   );
 
   autoTable(doc, {
@@ -132,7 +132,7 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 1) {
         const val = data.cell.raw as string;
-        if (val === 'Si') data.cell.styles.textColor = SUCCESS;
+        if (val === 'Sí') data.cell.styles.textColor = SUCCESS;
         if (val === 'No') data.cell.styles.textColor = ERROR;
         if (val === 'Ninguna') data.cell.styles.textColor = ERROR;
       }
@@ -150,7 +150,7 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
     a.nombre || '---',
     a.colaboradores !== null ? a.colaboradores.toString() : '---',
     a.sueldoPromedio !== null ? `$${a.sueldoPromedio.toLocaleString('es-MX')}` : '---',
-    a.tieneLider ? 'Si' : 'No',
+    a.tieneLider ? 'Sí' : 'No',
     a.colaboradores !== null && a.sueldoPromedio !== null
       ? `$${(a.colaboradores * a.sueldoPromedio).toLocaleString('es-MX')}`
       : '---',
@@ -158,7 +158,7 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
 
   autoTable(doc, {
     startY: y,
-    head: [['DETALLE POR AREA', 'Colaboradores', 'Sueldo Prom.', 'Lider', 'Nomina Area']],
+    head: [['DETALLE POR ÁREA', 'Colaboradores', 'Sueldo Prom.', 'Líder', 'Nómina Área']],
     body: areaBody,
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, textColor: INK },
@@ -171,7 +171,7 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
     },
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 3) {
-        data.cell.styles.textColor = data.cell.raw === 'Si' ? SUCCESS : ERROR;
+        data.cell.styles.textColor = data.cell.raw === 'Sí' ? SUCCESS : ERROR;
         data.cell.styles.fontStyle = 'bold';
       }
     },
@@ -193,8 +193,8 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
     head: [['TOTALES', '', '']],
     body: [[
       `Colaboradores: ${totalColab}`,
-      `Nomina Mensual: $${totalNomina.toLocaleString('es-MX')}`,
-      `Areas con Lider: ${areasConLider} de ${survey.areaDetails.length}`,
+      `Nómina Mensual: $${totalNomina.toLocaleString('es-MX')}`,
+      `Áreas con Líder: ${areasConLider} de ${survey.areaDetails.length}`,
     ]],
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 10, fontStyle: 'bold', textColor: ACCENT, halign: 'center' },
@@ -207,17 +207,17 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
 
   /* Talento y Procesos */
   const tp = survey.talentProcesses;
-  const evalLabel = tp.evaluacionesDesempeno === 'si' ? 'Si'
+  const evalLabel = tp.evaluacionesDesempeno === 'si' ? 'Sí'
     : tp.evaluacionesDesempeno === 'parcialmente' ? 'Parcialmente' : 'No';
   const compLabel = tp.competitividadSueldos === 'arriba' ? 'Arriba del mercado'
     : tp.competitividadSueldos === 'en_rango' ? 'En rango'
-    : tp.competitividadSueldos === 'debajo' ? 'Debajo del mercado' : 'No se';
+    : tp.competitividadSueldos === 'debajo' ? 'Debajo del mercado' : 'No sé';
 
   const talentoBody: string[][] = [
-    ['Proceso de Reclutamiento', tp.procesoReclutamiento ? 'Si' : 'No'],
-    ['Evaluaciones de Desempeno', evalLabel],
-    ['Programa de Capacitacion', tp.programaCapacitacion ? 'Si' : 'No'],
-    ['Rotacion Anual', tp.rotacionAnual !== null ? `${tp.rotacionAnual}%` : '---'],
+    ['Proceso de Reclutamiento', tp.procesoReclutamiento ? 'Sí' : 'No'],
+    ['Evaluaciones de Desempeño', evalLabel],
+    ['Programa de Capacitación', tp.programaCapacitacion ? 'Sí' : 'No'],
+    ['Rotación Anual', tp.rotacionAnual !== null ? `${tp.rotacionAnual}%` : '---'],
     ['Competitividad de Sueldos', compLabel],
   ];
   if (tp.retoCapitalHumano) {
@@ -237,7 +237,7 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 1) {
         const val = data.cell.raw as string;
-        if (val === 'Si') data.cell.styles.textColor = SUCCESS;
+        if (val === 'Sí') data.cell.styles.textColor = SUCCESS;
         if (val === 'No') data.cell.styles.textColor = ERROR;
         if (val === 'Parcialmente') data.cell.styles.textColor = MID;
       }

@@ -84,11 +84,11 @@ export default function OrgReportPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px', marginBottom: '14px' }}>
           <MetricBox label="Empresa" value={companyName || '—'} />
           <MetricBox label="Total Colaboradores" value={totalColab.toString()} highlight />
-          <MetricBox label="Nomina Mensual" value={`$${totalNomina.toLocaleString('es-MX')}`} />
-          <MetricBox label="Areas" value={areasTotal.toString()} />
+          <MetricBox label="Nómina Mensual" value={`$${totalNomina.toLocaleString('es-MX')}`} />
+          <MetricBox label="Áreas" value={areasTotal.toString()} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '14px' }}>
-          <MetricBox label="Areas con Lider" value={`${areasConLider} de ${areasTotal}`} />
+          <MetricBox label="Áreas con Líder" value={`${areasConLider} de ${areasTotal}`} />
           <MetricBox label="Madurez Organizacional" value={structureLevel} highlight />
           <MetricBox label="Score Estructura" value={`${structureScore}/100`} />
         </div>
@@ -97,9 +97,9 @@ export default function OrgReportPage() {
       {/* Estructura Organizacional */}
       <Section title="Estructura y Gobierno" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <StructureRow label="Organigrama formal" value={hasOrganigrama ? 'Si' : 'No'} positive={hasOrganigrama} />
+          <StructureRow label="Organigrama formal" value={hasOrganigrama ? 'Sí' : 'No'} positive={hasOrganigrama} />
           {hasOrganigrama && (
-            <StructureRow label="Organigrama actualizado" value={orgUpdated ? 'Si' : 'No'} positive={orgUpdated ?? false} />
+            <StructureRow label="Organigrama actualizado" value={orgUpdated ? 'Sí' : 'No'} positive={orgUpdated ?? false} />
           )}
           <StructureRow
             label="Descripciones de puesto"
@@ -107,9 +107,9 @@ export default function OrgReportPage() {
             positive={descPuesto === 'todas'}
             warning={descPuesto === 'algunas'}
           />
-          <StructureRow label="Tabulador de sueldos" value={hasTabulador ? 'Si' : 'No'} positive={hasTabulador} />
+          <StructureRow label="Tabulador de sueldos" value={hasTabulador ? 'Sí' : 'No'} positive={hasTabulador} />
           <StructureRow
-            label="Nomina mensual total"
+            label="Nómina mensual total"
             value={orgStructure.nominaMensualTotal ? `$${orgStructure.nominaMensualTotal.toLocaleString('es-MX')}` : 'No capturada'}
             positive={!!orgStructure.nominaMensualTotal}
           />
@@ -117,14 +117,14 @@ export default function OrgReportPage() {
       </Section>
 
       {/* Detalle por Area */}
-      <Section title="Detalle por Area" number={nextNum()}>
+      <Section title="Detalle por Área" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* Header row */}
           <div className="flex items-center text-muted font-medium uppercase tracking-wide" style={{ gap: '10px', padding: '6px 14px', fontSize: '9px' }}>
-            <span style={{ flex: 2 }}>Area</span>
+            <span style={{ flex: 2 }}>Área</span>
             <span style={{ width: '80px', textAlign: 'center' }}>Colaboradores</span>
             <span style={{ width: '100px', textAlign: 'center' }}>Sueldo Prom.</span>
-            <span style={{ width: '70px', textAlign: 'center' }}>Lider</span>
+            <span style={{ width: '70px', textAlign: 'center' }}>Líder</span>
             <span style={{ width: '80px', textAlign: 'center' }}>Subtotal</span>
           </div>
 
@@ -144,7 +144,7 @@ export default function OrgReportPage() {
                 </span>
                 <span className="text-center" style={{ width: '70px' }}>
                   <span className={`rounded-full font-semibold ${area.tieneLider ? 'bg-success/15 text-success' : 'bg-error/15 text-error'}`} style={{ fontSize: '10px', padding: '2px 8px' }}>
-                    {area.tieneLider ? 'Si' : 'No'}
+                    {area.tieneLider ? 'Sí' : 'No'}
                   </span>
                 </span>
                 <span className="text-ink font-medium text-center" style={{ width: '80px', fontSize: '11px' }}>
@@ -174,22 +174,22 @@ export default function OrgReportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
           <StructureRow
             label="Proceso de reclutamiento"
-            value={talentProcesses.procesoReclutamiento ? 'Si, formalizado' : 'No'}
+            value={talentProcesses.procesoReclutamiento ? 'Sí, formalizado' : 'No'}
             positive={talentProcesses.procesoReclutamiento}
           />
           <StructureRow
-            label="Evaluaciones de desempeno"
-            value={talentProcesses.evaluacionesDesempeno === 'si' ? 'Si' : talentProcesses.evaluacionesDesempeno === 'parcialmente' ? 'Parcialmente' : 'No'}
+            label="Evaluaciones de desempeño"
+            value={talentProcesses.evaluacionesDesempeno === 'si' ? 'Sí' : talentProcesses.evaluacionesDesempeno === 'parcialmente' ? 'Parcialmente' : 'No'}
             positive={talentProcesses.evaluacionesDesempeno === 'si'}
             warning={talentProcesses.evaluacionesDesempeno === 'parcialmente'}
           />
           <StructureRow
-            label="Programa de capacitacion"
-            value={talentProcesses.programaCapacitacion ? 'Si' : 'No'}
+            label="Programa de capacitación"
+            value={talentProcesses.programaCapacitacion ? 'Sí' : 'No'}
             positive={talentProcesses.programaCapacitacion}
           />
           <StructureRow
-            label="Rotacion anual"
+            label="Rotación anual"
             value={talentProcesses.rotacionAnual !== null ? `${talentProcesses.rotacionAnual}%` : 'No capturada'}
             positive={talentProcesses.rotacionAnual !== null && talentProcesses.rotacionAnual < 15}
             warning={talentProcesses.rotacionAnual !== null && talentProcesses.rotacionAnual >= 15 && talentProcesses.rotacionAnual < 30}
@@ -237,7 +237,7 @@ export default function OrgReportPage() {
           {liderPercentage < 100 && (
             <Recommendation
               priority={liderPercentage < 50 ? 'alta' : 'media'}
-              text={`Solo ${areasConLider} de ${areasTotal} areas tienen un lider designado (${liderPercentage}%). Se recomienda cubrir las posiciones de liderazgo faltantes.`}
+              text={`Solo ${areasConLider} de ${areasTotal} áreas tienen un líder designado (${liderPercentage}%). Se recomienda cubrir las posiciones de liderazgo faltantes.`}
             />
           )}
           {!talentProcesses.procesoReclutamiento && (

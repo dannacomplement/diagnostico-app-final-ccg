@@ -167,7 +167,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
           marginBottom: '8px',
           fontFamily: 'var(--font-serif)',
         }}>
-          Diagnostico Completado
+          Radiografía Completada
         </h1>
         <p style={{
           fontSize: '15px',

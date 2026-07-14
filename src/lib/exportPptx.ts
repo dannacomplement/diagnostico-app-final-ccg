@@ -20,7 +20,6 @@ import {
 const NAVY = '1B2A4A';
 const NAVY_LIGHT = '243756';
 const BRAND_ORANGE = 'D4922E';
-const ORANGE_LIGHT = 'F5E6D0';
 const WHITE = 'FFFFFF';
 const MUTED = '64748B';
 const INK = '334155';
@@ -75,7 +74,7 @@ const MARGIN_LABELS: Record<MarginLevel, string> = {
   arriba_industria: 'Arriba de industria',
   en_rango: 'En rango',
   debajo_industria: 'Debajo',
-  critico: 'Critico',
+  critico: 'Crítico',
 };
 
 const MARGIN_COLORS: Record<MarginLevel, string> = {
@@ -91,7 +90,13 @@ function sectorLabel(s: string): string {
 }
 
 function familiarLabel(ef: string): string {
-  const m: Record<string, string> = { si_1era: 'Si, 1a gen.', si_2da: 'Si, 2a gen.', si_3era: 'Si, 3a gen.', no: 'No' };
+  const m: Record<string, string> = {
+    si_1era: '1era Generación',
+    si_1era_transicion: '1era Gen. en transición',
+    si_2da: '2da Generación',
+    si_3era: '3era Generación',
+    no: 'No es familiar',
+  };
   return m[ef] || ef;
 }
 
@@ -230,7 +235,7 @@ function addTitleSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string)
   });
 
   // Subtitle
-  slide.addText('Diagnostico Empresarial', {
+  slide.addText('Radiografía Empresarial', {
     x: 1.2, y: 2.7, w: 10, h: 0.6,
     fontSize: 22, color: BRAND_ORANGE, fontFace: 'Arial', bold: true,
   });
@@ -253,9 +258,9 @@ function addTitleSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string)
 
   const metrics = [
     { label: 'Madurez', value: `${Math.round(maturity.score)}/100`, sub: maturity.level },
-    { label: 'Profesionalizacion', value: `${Math.round(d.profesionalizacion.average)}/100`, sub: d.profesionalizacion.level },
-    { label: 'Institucionalizacion', value: `${Math.round(d.institucionalizacion.average)}/100`, sub: d.institucionalizacion.level },
-    { label: 'Tamano', value: d.companySize.size, sub: `${d.situacionActual.empleadosTotales ?? '—'} empleados` },
+    { label: 'Profesionalización', value: `${Math.round(d.profesionalizacion.average)}/100`, sub: d.profesionalizacion.level },
+    { label: 'Institucionalización', value: `${Math.round(d.institucionalizacion.average)}/100`, sub: d.institucionalizacion.level },
+    { label: 'Tamaño', value: d.companySize.size, sub: `${d.situacionActual.empleadosTotales ?? '—'} empleados` },
     { label: 'Urgencia', value: d.urgenciaLevel, sub: '' },
   ];
 
@@ -283,7 +288,7 @@ function addTitleSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string)
 
   // Footer
   slide.addShape('rect', { x: 0, y: FOOTER_Y, w: W, h: 0.015, fill: { color: BRAND_ORANGE } });
-  slide.addText('Complement Consulting Group  |  Diagnostico Empresarial', {
+  slide.addText('Complement Consulting Group  |  Radiografía Empresarial', {
     x: 1.2, y: FOOTER_Y + 0.05, w: 8, h: 0.25,
     fontSize: 7, color: `${WHITE}60`, fontFace: 'Arial',
   });
@@ -298,7 +303,7 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
   const maturity = computeMaturityIndex(d);
   const narrative = generateDiagnosticNarrative(d, maturity);
 
-  addSlideHeader(slide, 'Panorama Ejecutivo', 'Informacion general y contexto de la empresa');
+  addSlideHeader(slide, 'Panorama Ejecutivo', 'Información general y contexto de la empresa');
 
   const startY = 1.05;
 
@@ -311,7 +316,7 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
   const items = [
     { label: 'Empresa', value: companyName },
     { label: 'Sector', value: sectorLabel(d.datosGenerales.sector) },
-    { label: 'Tamano', value: `${d.companySize.size} (TMC: ${d.companySize.tmcScore})` },
+    { label: 'Tamaño', value: `${d.companySize.size} (TMC: ${d.companySize.tmcScore})` },
     { label: 'Empleados', value: d.situacionActual.empleadosTotales?.toString() ?? '—' },
     { label: 'Emp. Familiares', value: d.situacionActual.empleadosFamiliares?.toString() ?? '—' },
     { label: 'Ventas Anuales', value: d.situacionActual.ventasAnualesMDP ? `$${d.situacionActual.ventasAnualesMDP} MDP` : '—' },
@@ -321,6 +326,8 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
     { label: 'Socios', value: d.situacionActual.socios || '—' },
     { label: 'Software', value: buildSoftwareLabel(d.datosGenerales) || '—' },
     { label: 'Productividad', value: d.companySize.productivityIndex ? `${d.companySize.productivityIndex.toFixed(1)} MDP/emp` : '—' },
+    { label: '% Ingreso Fiscal.', value: d.situacionActual.pctIngresoFiscalizado != null ? `${d.situacionActual.pctIngresoFiscalizado}%` : '—' },
+    { label: '% Egreso Fiscal.', value: d.situacionActual.pctEgresoFiscalizado != null ? `${d.situacionActual.pctEgresoFiscalizado}%` : '—' },
   ];
 
   items.forEach((item, i) => {
@@ -352,14 +359,20 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
     fontSize: 22, color: urgencyColor(d.urgenciaLevel), fontFace: 'Arial', bold: true,
   });
   const urgDesc = d.urgenciaSelection === 'muy_urgente'
-    ? 'Crecimiento y armonia dependen de ello'
+    ? 'Crecimiento y armonía dependen de ello'
     : d.urgenciaSelection === 'necesario'
     ? 'Necesario, pero no urgente'
-    : 'Deseable en algun momento';
+    : 'Deseable en algún momento';
   slide.addText(urgDesc, {
-    x: rightX + 0.15, y: urgY + 0.72, w: rightW - 0.3, h: 0.35,
+    x: rightX + 0.15, y: urgY + 0.72, w: rightW - 0.3, h: 0.25,
     fontSize: 8, color: INK, fontFace: 'Arial', wrap: true,
   });
+  if (d.tieneLiderInterno != null) {
+    slide.addText(`Líder interno: ${d.tieneLiderInterno ? 'Sí' : 'No'}`, {
+      x: rightX + 0.15, y: urgY + 0.95, w: rightW - 0.3, h: 0.2,
+      fontSize: 7, color: d.tieneLiderInterno ? '16A34A' : MUTED, fontFace: 'Arial', bold: true,
+    });
+  }
 
   // Quick scores summary
   const scoresY = urgY + urgH + gap;
@@ -402,7 +415,7 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
     // Left accent
     slide.addShape('rect', { x: MARGIN_L + 0.17, y: narY + 0.06, w: 0.04, h: 1.43, fill: { color: BRAND_ORANGE } });
 
-    slide.addText('NARRATIVA DEL DIAGNOSTICO', {
+    slide.addText('NARRATIVA DEL DIAGNÓSTICO', {
       x: MARGIN_L + 0.4, y: narY + 0.08, w: CONTENT_W - 0.7, h: 0.22,
       fontSize: 8, color: BRAND_ORANGE, fontFace: 'Arial', bold: true,
     });
@@ -414,7 +427,7 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
 
   // Business description (if present, add to narrative box or below)
   if (d.descripcionNegocio && !narrative) {
-    slide.addText('Descripcion del Negocio', {
+    slide.addText('Descripción del Negocio', {
       x: MARGIN_L + 0.4, y: narY + 0.08, w: CONTENT_W - 0.7, h: 0.22,
       fontSize: 8, color: BRAND_ORANGE, fontFace: 'Arial', bold: true,
     });
@@ -436,7 +449,7 @@ function addResultsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: strin
   const maturity = computeMaturityIndex(d);
   const growth = generateGrowthReadiness(d);
 
-  addSlideHeader(slide, 'Resultados de Evaluacion', 'Calificaciones, madurez empresarial y preparacion para el crecimiento');
+  addSlideHeader(slide, 'Resultados de Evaluación', 'Calificaciones, madurez empresarial y preparación para el crecimiento');
 
   const startY = 1.1;
 
@@ -446,14 +459,14 @@ function addResultsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: strin
 
   const scoreData = [
     {
-      label: 'Profesionalizacion',
+      label: 'Profesionalización',
       avg: d.profesionalizacion.average,
       level: d.profesionalizacion.level,
       answers: d.profesionalizacion.answers,
       category: 'profesionalizacion' as const,
     },
     {
-      label: 'Institucionalizacion',
+      label: 'Institucionalización',
       avg: d.institucionalizacion.average,
       level: d.institucionalizacion.level,
       answers: d.institucionalizacion.answers,
@@ -554,7 +567,7 @@ function addResultsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: strin
     x: MARGIN_L + 0.15, y: matY, w: matW, h: 0.4,
     fill: { color: NAVY },
   });
-  slide.addText('Indice de Madurez Empresarial', {
+  slide.addText('Índice de Madurez Empresarial', {
     x: MARGIN_L + 0.35, y: matY + 0.04, w: 4, h: 0.32,
     fontSize: 12, color: WHITE, fontFace: 'Arial', bold: true,
   });
@@ -584,14 +597,15 @@ function addResultsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: strin
   const barStartX = MARGIN_L + 2.3;
   const barW = matW - 2.5;
   const contribs = [
-    { label: 'Profesionalizacion', val: maturity.profContrib, max: 35, color: '3B82F6' },
-    { label: 'Institucionalizacion', val: maturity.instContrib, max: 25, color: '8B5CF6' },
+    { label: 'Profesionalización', val: maturity.profContrib, max: 35, color: '3B82F6' },
+    { label: 'Institucionalización', val: maturity.instContrib, max: 25, color: '8B5CF6' },
     { label: 'Gerencias', val: maturity.gerContrib, max: 20, color: BRAND_ORANGE },
-    { label: 'Margenes', val: maturity.marginContrib, max: 20, color: SUCCESS },
+    { label: 'Márgenes', val: maturity.marginContrib, max: 20, color: SUCCESS },
   ];
 
   contribs.forEach((c, i) => {
     const cy = matY + 0.55 + i * 0.52;
+    const pct = Math.round((c.val / c.max) * 100);
     slide.addText(c.label, {
       x: barStartX, y: cy, w: 1.8, h: 0.18,
       fontSize: 7.5, color: INK, fontFace: 'Arial', bold: true,
@@ -602,10 +616,10 @@ function addResultsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: strin
     slide.addShape('roundRect', { x: trackX, y: cy + 0.02, w: trackW, h: 0.14, rectRadius: 0.07, fill: { color: LIGHT_BORDER } });
     const fillW = Math.max(0.07, (c.val / c.max) * trackW);
     slide.addShape('roundRect', { x: trackX, y: cy + 0.02, w: fillW, h: 0.14, rectRadius: 0.07, fill: { color: c.color } });
-    // Value text
-    slide.addText(`${Math.round(c.val)}/${c.max}`, {
+    // Value text as percentage
+    slide.addText(`${pct}%`, {
       x: trackX + trackW + 0.08, y: cy, w: 0.6, h: 0.18,
-      fontSize: 7.5, color: MUTED, fontFace: 'Arial',
+      fontSize: 7.5, color: MUTED, fontFace: 'Arial', bold: true,
     });
   });
 
@@ -623,7 +637,7 @@ function addResultsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: strin
   // Header
   const grColor = growth.ready ? SUCCESS : WARN;
   slide.addShape('rect', { x: grX, y: matY, w: grW, h: 0.4, fill: { color: grColor } });
-  slide.addText('Preparacion para Crecer', {
+  slide.addText('Preparación para Crecer', {
     x: grX + 0.15, y: matY + 0.04, w: grW - 0.3, h: 0.32,
     fontSize: 12, color: WHITE, fontFace: 'Arial', bold: true,
   });
@@ -658,96 +672,121 @@ function addResultsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: strin
 }
 
 /* ══════════════════════════════════════════════════════
-   SLIDE 4 & 5: Criteria Detail (Prof + Inst)
+   SLIDE 4: Profesionalización e Institucionalización (combined)
    ══════════════════════════════════════════════════════ */
 
-function addCriteriaSlide(
-  pptx: PptxGenJS, d: SavedDiagnostic, companyName: string,
-  category: 'prof' | 'inst', slideNum: number
-) {
+function addCombinedCriteriaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
   const slide = pptx.addSlide();
-  const isProf = category === 'prof';
-  const title = isProf ? 'Criterios de Profesionalizacion' : 'Criterios de Institucionalizacion';
-  const answers = isProf ? d.profesionalizacion.answers : d.institucionalizacion.answers;
-  const score = isProf ? d.profesionalizacion : d.institucionalizacion;
-  const subtitle = `Calificacion general: ${Math.round(score.average)}/100 — Nivel: ${score.level}`;
 
-  addSlideHeader(slide, title, subtitle);
+  addSlideHeader(slide, 'Profesionalización e Institucionalización', 'Evaluación de criterios clave');
 
-  // ── Summary stats strip ──
-  const stripY = 1.0;
-  const appliedCount = answers.filter(a => a.siNo).length;
-  const avgRating = answers.filter(a => a.rating >= 0).reduce((sum, a) => sum + a.rating, 0) / (answers.filter(a => a.rating >= 0).length || 1);
-  const lowCount = answers.filter(a => a.rating >= 0 && a.rating <= 3).length;
-  const highCount = answers.filter(a => a.rating >= 7).length;
+  const startY = 1.05;
+  const halfW = (CONTENT_W - 0.5) / 2;
 
-  const stats = [
-    { label: 'Criterios Aplicados', value: `${appliedCount}/${answers.length}`, color: NAVY },
-    { label: 'Calificacion Promedio', value: `${avgRating.toFixed(1)}/10`, color: ratingColor(avgRating) },
-    { label: 'Criterios Altos (7+)', value: `${highCount}`, color: SUCCESS },
-    { label: 'Criterios Bajos (0-3)', value: `${lowCount}`, color: lowCount > 0 ? ERROR : SUCCESS },
+  const sections = [
+    {
+      title: 'Profesionalización',
+      score: d.profesionalizacion,
+      answers: d.profesionalizacion.answers,
+      color: '3B82F6',
+    },
+    {
+      title: 'Institucionalización',
+      score: d.institucionalizacion,
+      answers: d.institucionalizacion.answers,
+      color: '8B5CF6',
+    },
   ];
 
-  const statW = 2.5;
-  const statGap = 0.15;
-  stats.forEach((s, i) => {
-    const sx = MARGIN_L + 0.15 + i * (statW + statGap);
+  sections.forEach((sec, si) => {
+    const x = MARGIN_L + 0.15 + si * (halfW + 0.2);
+
+    // Section header card
+    const headerColor = levelColor(sec.score.level);
     slide.addShape('roundRect', {
-      x: sx, y: stripY, w: statW, h: 0.55,
-      rectRadius: 0.06, fill: { color: LIGHT_BG },
-      line: { color: LIGHT_BORDER, width: 0.5 },
+      x, y: startY, w: halfW, h: 0.7,
+      rectRadius: 0.08, fill: { color: NAVY },
     });
-    slide.addText(s.label.toUpperCase(), {
-      x: sx + 0.1, y: stripY + 0.04, w: statW - 0.2, h: 0.18,
-      fontSize: 6.5, color: MUTED, fontFace: 'Arial', bold: true,
+    slide.addText(sec.title, {
+      x: x + 0.15, y: startY + 0.06, w: halfW - 1.8, h: 0.28,
+      fontSize: 13, color: WHITE, fontFace: 'Arial', bold: true,
     });
-    slide.addText(s.value, {
-      x: sx + 0.1, y: stripY + 0.22, w: statW - 0.2, h: 0.28,
-      fontSize: 15, color: s.color, fontFace: 'Arial', bold: true,
+    slide.addText(`${Math.round(sec.score.average)}/100`, {
+      x: x + halfW - 1.6, y: startY + 0.06, w: 0.8, h: 0.28,
+      fontSize: 13, color: WHITE, fontFace: 'Arial', bold: true, align: 'right',
+    });
+    // Level badge
+    slide.addShape('roundRect', {
+      x: x + halfW - 0.7, y: startY + 0.08, w: 0.55, h: 0.24,
+      rectRadius: 0.12, fill: { color: headerColor + '40' },
+    });
+    slide.addText(sec.score.level, {
+      x: x + halfW - 0.7, y: startY + 0.08, w: 0.55, h: 0.24,
+      fontSize: 7, color: WHITE, fontFace: 'Arial', bold: true, align: 'center',
+    });
+    // Progress bar inside header
+    addProgressBar(slide, x + 0.15, startY + 0.46, halfW - 0.3, 0.1, sec.score.average, headerColor);
+
+    // Criteria list with visual indicators
+    const listY = startY + 0.85;
+    sec.answers.forEach((a, i) => {
+      const config = ALL_CRITERIA.find(c => c.id === a.criterionId);
+      if (!config) return;
+      const ry = listY + i * 0.42;
+      if (ry > 6.5) return;
+
+      const rowFill = i % 2 === 0 ? WHITE : LIGHT_BG;
+      slide.addShape('roundRect', {
+        x, y: ry, w: halfW, h: 0.38,
+        rectRadius: 0.04, fill: { color: rowFill },
+        line: { color: LIGHT_BORDER, width: 0.3 },
+      });
+
+      // Sí/No indicator dot
+      const siNoColor = a.siNo ? SUCCESS : ERROR;
+      slide.addShape('ellipse', {
+        x: x + 0.1, y: ry + 0.11, w: 0.16, h: 0.16,
+        fill: { color: siNoColor },
+      });
+      slide.addText(a.siNo ? 'Sí' : 'No', {
+        x: x + 0.1, y: ry + 0.11, w: 0.16, h: 0.16,
+        fontSize: 5, color: WHITE, fontFace: 'Arial', bold: true, align: 'center', valign: 'middle',
+      });
+
+      // Criterion name
+      slide.addText(config.shortLabel, {
+        x: x + 0.32, y: ry + 0.04, w: halfW - 1.6, h: 0.3,
+        fontSize: 8, color: INK, fontFace: 'Arial', valign: 'middle',
+      });
+
+      // Rating level badge (Alto/Medio/Bajo)
+      if (a.rating >= 0) {
+        const rl = ratingLabel(a.rating);
+        const rc = ratingColor(a.rating);
+        const rlBg = rl === 'Alto' ? SUCCESS_BG : rl === 'Medio' ? WARN_BG : ERROR_BG;
+        slide.addShape('roundRect', {
+          x: x + halfW - 1.15, y: ry + 0.07, w: 0.55, h: 0.24,
+          rectRadius: 0.12, fill: { color: rlBg },
+        });
+        slide.addText(rl, {
+          x: x + halfW - 1.15, y: ry + 0.07, w: 0.55, h: 0.24,
+          fontSize: 7, color: rc, fontFace: 'Arial', bold: true, align: 'center',
+        });
+        // Score
+        slide.addText(`${a.rating}/10`, {
+          x: x + halfW - 0.55, y: ry + 0.07, w: 0.45, h: 0.24,
+          fontSize: 8, color: rc, fontFace: 'Arial', bold: true, align: 'center',
+        });
+      } else {
+        slide.addText('—', {
+          x: x + halfW - 0.55, y: ry + 0.07, w: 0.45, h: 0.24,
+          fontSize: 8, color: MUTED, fontFace: 'Arial', align: 'center',
+        });
+      }
     });
   });
 
-  // ── Criteria table with visual bars ──
-  const tableY = stripY + 0.7;
-  const rows: PptxGenJS.TableRow[] = [];
-
-  rows.push([
-    { text: '#', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
-    { text: 'Criterio', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'left', valign: 'middle' } },
-    { text: 'Aplica', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
-    { text: 'Calif.', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
-    { text: 'Nivel', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
-    { text: 'Comentario', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'left', valign: 'middle' } },
-  ]);
-
-  answers.forEach((a, i) => {
-    const config = ALL_CRITERIA.find(c => c.id === a.criterionId);
-    if (!config) return;
-    const rl = a.rating >= 0 ? ratingLabel(a.rating) : '—';
-    const rc = a.rating >= 0 ? ratingColor(a.rating) : MUTED;
-    const ratingText = a.rating >= 0 ? `${a.rating}/10` : '—';
-    const rowFill = i % 2 === 0 ? WHITE : LIGHT_BG;
-    const comentario = a.comentario ? (a.comentario.length > 50 ? a.comentario.substring(0, 47) + '...' : a.comentario) : '—';
-
-    rows.push([
-      { text: `${i + 1}`, options: { fontSize: 8, color: MUTED, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
-      { text: config.shortLabel, options: { fontSize: 8, color: INK, fill: { color: rowFill }, align: 'left', valign: 'middle' } },
-      { text: a.siNo ? 'Si' : 'No', options: { fontSize: 8, color: a.siNo ? SUCCESS : ERROR, bold: true, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
-      { text: ratingText, options: { fontSize: 8, color: rc, bold: true, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
-      { text: rl, options: { fontSize: 8, color: rc, bold: true, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
-      { text: comentario, options: { fontSize: 7, color: MUTED, fill: { color: rowFill }, align: 'left', valign: 'middle' } },
-    ]);
-  });
-
-  slide.addTable(rows, {
-    x: MARGIN_L + 0.15, y: tableY, w: CONTENT_W - 0.3,
-    colW: [0.45, 3.2, 0.8, 0.9, 0.9, 5.58],
-    border: { type: 'solid', color: LIGHT_BORDER, pt: 0.5 },
-    rowH: 0.38,
-    margin: [2, 5, 2, 5],
-  });
-
-  addFooter(slide, companyName, slideNum);
+  addFooter(slide, companyName, 4);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -756,9 +795,8 @@ function addCriteriaSlide(
 
 function addGerenciasSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
   const slide = pptx.addSlide();
-  const isFamily = d.datosGenerales.empresaFamiliar !== 'no';
 
-  addSlideHeader(slide, 'Estructura Organizacional', 'Gerencias, puestos clave y analisis familiar');
+  addSlideHeader(slide, 'Estructura Organizacional', 'Gerencias, puestos clave y responsables');
 
   const startY = 1.05;
 
@@ -799,87 +837,100 @@ function addGerenciasSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: str
   const rows: PptxGenJS.TableRow[] = [];
 
   rows.push([
-    { text: 'Area', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'left', valign: 'middle' } },
+    { text: 'Área', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'left', valign: 'middle' } },
+    { text: 'Nombre', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'left', valign: 'middle' } },
     { text: 'Estado', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
-    { text: 'Calificacion', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
-    { text: 'Antiguedad', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
+    { text: 'Calificación', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
+    { text: 'Antigüedad', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
     { text: 'Familiar', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
     { text: 'Rango Sueldo', options: { fontSize: 8, bold: true, color: WHITE, fill: { color: NAVY }, align: 'center', valign: 'middle' } },
   ]);
 
   d.gerencias.forEach((g, i) => {
     const rowFill = i % 2 === 0 ? WHITE : LIGHT_BG;
-    const statusColor = g.cubierto ? SUCCESS : ERROR;
-    const statusText = g.cubierto ? 'Cubierto' : 'Sin cubrir';
+    const statusColor = g.cubierto ? (g.soyYo ? '0047AB' : SUCCESS) : ERROR;
+    const statusText = g.cubierto ? (g.soyYo ? 'Soy Yo' : 'Cubierto') : 'Sin cubrir';
     const calColor = calificadoColor(g.calificado);
+    const nombre = (g as unknown as Record<string, unknown>).nombre as string || '—';
 
     rows.push([
       { text: g.area, options: { fontSize: 8.5, color: INK, bold: true, fill: { color: rowFill }, align: 'left', valign: 'middle' } },
+      { text: nombre, options: { fontSize: 8, color: NAVY, fill: { color: rowFill }, align: 'left', valign: 'middle' } },
       { text: statusText, options: { fontSize: 8, color: statusColor, bold: true, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
       { text: calificadoLabel(g.calificado), options: { fontSize: 8, color: calColor, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
       { text: g.antiguedad || '—', options: { fontSize: 8, color: MUTED, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
-      { text: g.esFamiliar ? 'Si' : 'No', options: { fontSize: 8, color: g.esFamiliar ? BRAND_ORANGE : MUTED, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
+      { text: g.esFamiliar ? 'Sí' : 'No', options: { fontSize: 8, color: g.esFamiliar ? BRAND_ORANGE : MUTED, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
       { text: g.rangoSueldo || '—', options: { fontSize: 8, color: MUTED, fill: { color: rowFill }, align: 'center', valign: 'middle' } },
     ]);
   });
 
-  const tableW = isFamily ? 7.8 : CONTENT_W - 0.3;
+  const tableW = CONTENT_W - 0.3;
   slide.addTable(rows, {
     x: MARGIN_L + 0.15, y: tableY, w: tableW,
-    colW: isFamily ? [2.0, 1.1, 1.2, 1.1, 0.8, 1.6] : [2.8, 1.4, 1.8, 1.5, 1.0, 2.33],
+    colW: [2.2, 2.0, 1.2, 1.5, 1.2, 0.8, 1.93],
     border: { type: 'solid', color: LIGHT_BORDER, pt: 0.5 },
     rowH: 0.4,
     margin: [2, 5, 2, 5],
   });
 
-  // ── Family Analysis Panel (right side if family business) ──
-  if (isFamily && d.analisisFamiliar) {
-    const fa = d.analisisFamiliar;
-    const faX = MARGIN_L + 0.15 + tableW + 0.2;
-    const faW = CONTENT_W - tableW - 0.5;
+  // ── DG Evaluation score ──
+  const dg = d.gerencias[0];
+  const dgEv = dg?.dgEvaluation;
+  const dgEvY = tableY + (d.gerencias.length + 1) * 0.4 + 0.15;
+  if (dgEv && dgEv.nivelEstudios != null && dgEv.experienciaLaboral != null && dgEv.seguimientoResultados != null) {
+    const dgScore = dgEv.nivelEstudios * 0.4 + dgEv.experienciaLaboral * 0.4 + dgEv.seguimientoResultados * 0.2;
+    const dgColor = dgScore >= 8 ? SUCCESS : dgScore >= 5 ? WARN : ERROR;
+    const dgLabel = dgScore >= 8 ? 'Excelente' : dgScore >= 6 ? 'Bueno' : dgScore >= 4 ? 'Regular' : 'Bajo';
 
     slide.addShape('roundRect', {
-      x: faX, y: tableY, w: faW, h: 4.8,
-      rectRadius: 0.08, fill: { color: ORANGE_LIGHT },
-      line: { color: BRAND_ORANGE, width: 0.6 },
+      x: MARGIN_L + 0.15, y: dgEvY, w: 6.5, h: 0.55,
+      rectRadius: 0.06, fill: { color: LIGHT_BG },
+      line: { color: dgColor + '60', width: 0.7 },
+    });
+    slide.addText('CALIFICACIÓN DIRECTOR GENERAL', {
+      x: MARGIN_L + 0.3, y: dgEvY + 0.04, w: 3, h: 0.18,
+      fontSize: 7, color: MUTED, fontFace: 'Arial', bold: true,
+    });
+    slide.addText(`${dgScore.toFixed(1)} / 10`, {
+      x: MARGIN_L + 0.3, y: dgEvY + 0.22, w: 1.5, h: 0.28,
+      fontSize: 16, color: dgColor, fontFace: 'Arial', bold: true,
+    });
+    slide.addShape('roundRect', {
+      x: MARGIN_L + 1.9, y: dgEvY + 0.25, w: 0.7, h: 0.22,
+      rectRadius: 0.11, fill: { color: dgColor + '20' },
+    });
+    slide.addText(dgLabel, {
+      x: MARGIN_L + 1.9, y: dgEvY + 0.25, w: 0.7, h: 0.22,
+      fontSize: 7.5, color: dgColor, fontFace: 'Arial', bold: true, align: 'center',
     });
 
-    slide.addText('ANALISIS FAMILIAR', {
-      x: faX + 0.12, y: tableY + 0.08, w: faW - 0.24, h: 0.25,
-      fontSize: 8, color: BRAND_ORANGE, fontFace: 'Arial', bold: true,
-    });
-
-    const faItems = [
-      { label: 'Gobierno Familiar', value: fa.gobiernoFamiliar || '—' },
-      { label: 'Plan de Sucesion', value: fa.planSucesion || '—' },
-      { label: 'Protocolo Familiar', value: fa.protocoloFamiliar || '—' },
-      { label: 'Conflictos', value: fa.conflictosFamiliares || '—' },
-      { label: 'Roles en Operacion', value: fa.rolesOperacion || '—' },
-      { label: 'Profesionalizacion Fam.', value: fa.profesionalizacionFamiliares || '—' },
+    const dgDetails = [
+      { label: 'Estudios', value: dgEv.nivelEstudios, weight: '40%' },
+      { label: 'Experiencia', value: dgEv.experienciaLaboral, weight: '40%' },
+      { label: 'Seguimiento', value: dgEv.seguimientoResultados, weight: '20%' },
     ];
-
-    faItems.forEach((item, i) => {
-      const iy = tableY + 0.45 + i * 0.72;
-      slide.addText(item.label.toUpperCase(), {
-        x: faX + 0.12, y: iy, w: faW - 0.24, h: 0.18,
-        fontSize: 6.5, color: BRAND_ORANGE, fontFace: 'Arial', bold: true,
+    dgDetails.forEach((dd, i) => {
+      const dx = MARGIN_L + 3.2 + i * 1.1;
+      slide.addText(`${dd.label} (${dd.weight})`, {
+        x: dx, y: dgEvY + 0.04, w: 1.0, h: 0.18,
+        fontSize: 6, color: MUTED, fontFace: 'Arial',
       });
-      slide.addText(item.value, {
-        x: faX + 0.12, y: iy + 0.2, w: faW - 0.24, h: 0.45,
-        fontSize: 8, color: INK, fontFace: 'Arial', wrap: true, valign: 'top',
+      slide.addText(`${dd.value}/10`, {
+        x: dx, y: dgEvY + 0.22, w: 1.0, h: 0.28,
+        fontSize: 10, color: INK, fontFace: 'Arial', bold: true,
       });
     });
   }
 
   // ── Additional employee info below table ──
-  const empY = tableY + (d.gerencias.length + 1) * 0.4 + 0.2;
+  const empY = (dgEv && dgEv.nivelEstudios != null ? dgEvY + 0.7 : tableY + (d.gerencias.length + 1) * 0.4 + 0.2);
   if (empY < 6.5) {
     const empItems = [
       { label: 'Empleados Totales', value: d.situacionActual.empleadosTotales?.toString() ?? '—' },
       { label: 'Empleados Familiares', value: d.situacionActual.empleadosFamiliares?.toString() ?? '—' },
       { label: 'Socios', value: d.situacionActual.socios || '—' },
       { label: 'Familiares en Poder', value: d.situacionActual.familiaresEnPoder || '—' },
-      { label: 'Sueldo Mas Alto', value: d.situacionActual.sueldoMasAlto ? `$${d.situacionActual.sueldoMasAlto}` : '—' },
+      { label: 'Sueldo Más Alto', value: d.situacionActual.sueldoMasAlto ? `$${d.situacionActual.sueldoMasAlto}` : '—' },
     ];
 
     empItems.forEach((item, i) => {
@@ -890,18 +941,20 @@ function addGerenciasSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: str
     });
   }
 
-  addFooter(slide, companyName, 6);
+  addFooter(slide, companyName, 5);
 }
 
 /* ══════════════════════════════════════════════════════
-   SLIDE 7: Situacion Financiera (conditional)
+   SLIDE 6: Situación Financiera (conditional)
    ══════════════════════════════════════════════════════ */
 
 function addFinancialsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
-  if (!d.marginEvaluation || !d.marginData?.tieneDatosFinancieros) return;
+  const hasAnyMargin = d.marginData?.tieneDatosFinancieros ||
+    d.marginData?.conoceMargenBruto || d.marginData?.conoceMargenOperativo || d.marginData?.conoceMargenNeto;
+  if (!d.marginEvaluation || !hasAnyMargin) return;
 
   const slide = pptx.addSlide();
-  addSlideHeader(slide, 'Situacion Financiera', 'Margenes vs. benchmarks de la industria');
+  addSlideHeader(slide, 'Situación Financiera', 'Márgenes vs. benchmarks de la industria');
 
   const bench = DEFAULT_INDUSTRY_BENCHMARKS[d.datosGenerales.sector as Sector];
   const startY = 1.1;
@@ -997,7 +1050,7 @@ function addFinancialsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: st
     }
 
     // Tolerance info
-    slide.addText(`Tolerancia: ±${bench.tolerancia}%  |  Critico: -${bench.criticoUmbral}%`, {
+    slide.addText(`Tolerancia: ±${bench.tolerancia}%  |  Crítico: -${bench.criticoUmbral}%`, {
       x: x + 0.2, y: y + cardH - 0.35, w: cardW - 0.4, h: 0.2,
       fontSize: 6.5, color: MUTED, fontFace: 'Arial', align: 'center',
     });
@@ -1013,16 +1066,16 @@ function addFinancialsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: st
   let healthText: string;
   let healthColor: string;
   if (criticalCount >= 2) {
-    healthText = 'ALERTA: Multiples margenes en nivel critico. Se requiere un analisis urgente de estructura de costos y estrategia de precios para asegurar la viabilidad del negocio.';
+    healthText = 'ALERTA: Múltiples márgenes en nivel crítico. Se requiere un análisis urgente de estructura de costos y estrategia de precios para asegurar la viabilidad del negocio.';
     healthColor = ERROR;
   } else if (criticalCount === 1) {
-    healthText = 'ATENCION: Un margen en nivel critico. Es importante analizar la causa raiz y tomar acciones correctivas a corto plazo.';
+    healthText = 'ATENCIÓN: Un margen en nivel crítico. Es importante analizar la causa raíz y tomar acciones correctivas a corto plazo.';
     healthColor = WARN;
   } else if (aboveCount >= 2) {
-    healthText = 'POSITIVO: La mayoria de los margenes estan por encima del promedio de la industria. La empresa tiene una posicion financiera saludable para invertir en crecimiento.';
+    healthText = 'POSITIVO: La mayoría de los márgenes están por encima del promedio de la industria. La empresa tiene una posición financiera saludable para invertir en crecimiento.';
     healthColor = SUCCESS;
   } else {
-    healthText = 'Los margenes se encuentran dentro de los rangos esperados para la industria. Se recomienda monitorear continuamente y buscar optimizaciones incrementales.';
+    healthText = 'Los márgenes se encuentran dentro de los rangos esperados para la industria. Se recomienda monitorear continuamente y buscar optimizaciones incrementales.';
     healthColor = MID;
   }
 
@@ -1037,261 +1090,60 @@ function addFinancialsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: st
     fontSize: 9, color: INK, fontFace: 'Arial', wrap: true, valign: 'middle',
   });
 
+  addFooter(slide, companyName, 6);
+}
+
+/* ══════════════════════════════════════════════════════
+   SLIDE 7: Retos & Recomendaciones (combined)
+   ══════════════════════════════════════════════════════ */
+
+function addRetosSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
+  const retos = d.retos.filter(r => r);
+  if (retos.length === 0) return;
+
+  const slide = pptx.addSlide();
+  addSlideHeader(slide, 'Retos Principales', 'Desafíos identificados por la empresa');
+
+  const startY = 1.05;
+  const fullW = CONTENT_W - 0.3;
+  const retX = MARGIN_L + 0.15;
+
+  slide.addShape('roundRect', {
+    x: retX, y: startY, w: fullW, h: 0.35,
+    rectRadius: 0.06, fill: { color: WARN_BG },
+  });
+  slide.addText(`RETOS PRINCIPALES  (${retos.length})`, {
+    x: retX + 0.12, y: startY + 0.04, w: fullW - 0.24, h: 0.27,
+    fontSize: 9, color: WARN, fontFace: 'Arial', bold: true,
+  });
+
+  retos.forEach((reto, i) => {
+    const ry = startY + 0.5 + i * 1.15;
+    if (ry > 6.0) return;
+
+    slide.addShape('roundRect', {
+      x: retX, y: ry, w: fullW, h: 1.0,
+      rectRadius: 0.06, fill: { color: WHITE },
+      line: { color: LIGHT_BORDER, width: 0.5 },
+    });
+
+    slide.addShape('roundRect', { x: retX + 0.12, y: ry + 0.12, w: 0.4, h: 0.4, rectRadius: 0.2, fill: { color: BRAND_ORANGE } });
+    slide.addText(`${i + 1}`, {
+      x: retX + 0.12, y: ry + 0.12, w: 0.4, h: 0.4,
+      fontSize: 14, color: WHITE, fontFace: 'Arial', bold: true, align: 'center', valign: 'middle',
+    });
+
+    slide.addText(reto, {
+      x: retX + 0.65, y: ry + 0.08, w: fullW - 0.85, h: 0.84,
+      fontSize: 9.5, color: INK, fontFace: 'Arial', valign: 'middle', wrap: true,
+    });
+  });
+
   addFooter(slide, companyName, 7);
 }
 
 /* ══════════════════════════════════════════════════════
-   SLIDE 8: Risks & Opportunities (combined)
-   ══════════════════════════════════════════════════════ */
-
-function addRisksOpportunitiesSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
-  const risks = computeRiskProfile(d);
-  const opportunities = d.opportunityAreas;
-  if (risks.length === 0 && opportunities.length === 0) return;
-
-  const slide = pptx.addSlide();
-  addSlideHeader(slide, 'Mapa de Riesgos y Oportunidades', 'Perfil de riesgo identificado y areas de servicio prioritarias');
-
-  const startY = 1.05;
-  const halfW = (CONTENT_W - 0.6) / 2;
-
-  // ══ LEFT: RISKS ══
-  if (risks.length > 0) {
-    const riskX = MARGIN_L + 0.15;
-
-    // Section header
-    slide.addShape('roundRect', {
-      x: riskX, y: startY, w: halfW, h: 0.4,
-      rectRadius: 0.06, fill: { color: ERROR_BG },
-    });
-    slide.addText(`PERFIL DE RIESGO  (${risks.length} riesgos identificados)`, {
-      x: riskX + 0.12, y: startY + 0.05, w: halfW - 0.24, h: 0.3,
-      fontSize: 9, color: ERROR, fontFace: 'Arial', bold: true,
-    });
-
-    // Count by severity
-    const critCount = risks.filter(r => r.severity === 'critico').length;
-    const highCount = risks.filter(r => r.severity === 'alto').length;
-    const modCount = risks.filter(r => r.severity === 'moderado').length;
-
-    const sevY = startY + 0.5;
-    const sevItems = [
-      { label: 'Criticos', count: critCount, color: ERROR },
-      { label: 'Altos', count: highCount, color: WARN },
-      { label: 'Moderados', count: modCount, color: MID },
-    ];
-    sevItems.forEach((s, i) => {
-      const sx = riskX + i * 1.9;
-      slide.addShape('ellipse', { x: sx + 0.05, y: sevY + 0.04, w: 0.12, h: 0.12, fill: { color: s.color } });
-      slide.addText(`${s.count} ${s.label}`, {
-        x: sx + 0.22, y: sevY, w: 1.5, h: 0.2,
-        fontSize: 8, color: INK, fontFace: 'Arial',
-      });
-    });
-
-    // Risk cards
-    risks.forEach((r, i) => {
-      const ry = sevY + 0.35 + i * 0.82;
-      const sevColor = r.severity === 'critico' ? ERROR : r.severity === 'alto' ? WARN : MID;
-      const sevBg = r.severity === 'critico' ? ERROR_BG : r.severity === 'alto' ? WARN_BG : MID_BG;
-
-      slide.addShape('roundRect', {
-        x: riskX, y: ry, w: halfW, h: 0.72,
-        rectRadius: 0.06, fill: { color: WHITE },
-        line: { color: LIGHT_BORDER, width: 0.5 },
-      });
-      // Severity indicator
-      slide.addShape('rect', { x: riskX + 0.02, y: ry + 0.06, w: 0.04, h: 0.6, fill: { color: sevColor } });
-
-      // Severity badge
-      const sevLabel = r.severity === 'critico' ? 'CRITICO' : r.severity === 'alto' ? 'ALTO' : 'MODERADO';
-      slide.addShape('roundRect', {
-        x: riskX + 0.15, y: ry + 0.06, w: 0.75, h: 0.2,
-        rectRadius: 0.1, fill: { color: sevBg },
-      });
-      slide.addText(sevLabel, {
-        x: riskX + 0.15, y: ry + 0.06, w: 0.75, h: 0.2,
-        fontSize: 6, color: sevColor, fontFace: 'Arial', bold: true, align: 'center',
-      });
-
-      // Risk name
-      slide.addText(r.risk, {
-        x: riskX + 1.0, y: ry + 0.04, w: halfW - 1.15, h: 0.22,
-        fontSize: 8.5, color: NAVY, fontFace: 'Arial', bold: true,
-      });
-
-      // Impact
-      slide.addText(r.impact, {
-        x: riskX + 0.15, y: ry + 0.3, w: halfW - 0.3, h: 0.38,
-        fontSize: 7.5, color: MUTED, fontFace: 'Arial', wrap: true, valign: 'top',
-      });
-    });
-  }
-
-  // ══ RIGHT: OPPORTUNITIES ══
-  if (opportunities.length > 0) {
-    const oppX = MARGIN_L + 0.15 + halfW + 0.3;
-
-    // Section header
-    slide.addShape('roundRect', {
-      x: oppX, y: startY, w: halfW, h: 0.4,
-      rectRadius: 0.06, fill: { color: SUCCESS_BG },
-    });
-    slide.addText(`AREAS DE OPORTUNIDAD  (${opportunities.length} areas)`, {
-      x: oppX + 0.12, y: startY + 0.05, w: halfW - 0.24, h: 0.3,
-      fontSize: 9, color: SUCCESS, fontFace: 'Arial', bold: true,
-    });
-
-    // Opportunity cards
-    opportunities.forEach((area, i) => {
-      const oy = startY + 0.5 + i * 0.92;
-      if (oy > 6.3) return; // Don't overflow
-
-      const priColor = area.priority === 'alta' ? ERROR : area.priority === 'media' ? WARN : MID;
-      const priLabel = area.priority === 'alta' ? 'ALTA' : area.priority === 'media' ? 'MEDIA' : 'BAJA';
-
-      slide.addShape('roundRect', {
-        x: oppX, y: oy, w: halfW, h: 0.82,
-        rectRadius: 0.06, fill: { color: WHITE },
-        line: { color: LIGHT_BORDER, width: 0.5 },
-      });
-      // Priority indicator
-      slide.addShape('rect', { x: oppX + 0.02, y: oy + 0.06, w: 0.04, h: 0.7, fill: { color: priColor } });
-
-      // Number badge
-      slide.addShape('ellipse', { x: oppX + 0.14, y: oy + 0.08, w: 0.3, h: 0.3, fill: { color: NAVY } });
-      slide.addText(`${i + 1}`, {
-        x: oppX + 0.14, y: oy + 0.08, w: 0.3, h: 0.3,
-        fontSize: 10, color: WHITE, fontFace: 'Arial', bold: true, align: 'center', valign: 'middle',
-      });
-
-      // Service area name + icon
-      slide.addText(`${area.serviceArea.icon} ${area.serviceArea.name}`, {
-        x: oppX + 0.52, y: oy + 0.06, w: halfW - 1.5, h: 0.25,
-        fontSize: 9.5, color: NAVY, fontFace: 'Arial', bold: true,
-      });
-
-      // Priority badge
-      slide.addShape('roundRect', {
-        x: oppX + halfW - 0.9, y: oy + 0.08, w: 0.75, h: 0.22,
-        rectRadius: 0.11, fill: { color: priColor + '20' },
-      });
-      slide.addText(priLabel, {
-        x: oppX + halfW - 0.9, y: oy + 0.08, w: 0.75, h: 0.22,
-        fontSize: 7, color: priColor, fontFace: 'Arial', bold: true, align: 'center',
-      });
-
-      // Triggering criteria
-      const criterios = area.triggeringCriteria.map((c: { text: string }) => c.text).join(', ');
-      slide.addText(criterios, {
-        x: oppX + 0.15, y: oy + 0.38, w: halfW - 0.3, h: 0.38,
-        fontSize: 7, color: MUTED, fontFace: 'Arial', wrap: true, valign: 'top',
-      });
-    });
-  }
-
-  addFooter(slide, companyName, 8);
-}
-
-/* ══════════════════════════════════════════════════════
-   SLIDE 9: Retos & Recomendaciones (combined)
-   ══════════════════════════════════════════════════════ */
-
-function addRetosRecsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
-  const maturity = computeMaturityIndex(d);
-  const risks = computeRiskProfile(d);
-  const recs = generateSmartRecommendations(d, maturity, risks);
-  const retos = d.retos.filter(r => r);
-  if (retos.length === 0 && recs.length === 0) return;
-
-  const slide = pptx.addSlide();
-  addSlideHeader(slide, 'Retos y Plan de Accion', 'Desafios identificados y recomendaciones estrategicas');
-
-  const startY = 1.05;
-  const halfW = (CONTENT_W - 0.6) / 2;
-
-  // ══ LEFT: RETOS ══
-  if (retos.length > 0) {
-    const retX = MARGIN_L + 0.15;
-
-    slide.addShape('roundRect', {
-      x: retX, y: startY, w: halfW, h: 0.35,
-      rectRadius: 0.06, fill: { color: WARN_BG },
-    });
-    slide.addText(`RETOS PRINCIPALES  (${retos.length})`, {
-      x: retX + 0.12, y: startY + 0.04, w: halfW - 0.24, h: 0.27,
-      fontSize: 9, color: WARN, fontFace: 'Arial', bold: true,
-    });
-
-    retos.forEach((reto, i) => {
-      const ry = startY + 0.5 + i * 1.15;
-      if (ry > 6.0) return;
-
-      slide.addShape('roundRect', {
-        x: retX, y: ry, w: halfW, h: 1.0,
-        rectRadius: 0.06, fill: { color: WHITE },
-        line: { color: LIGHT_BORDER, width: 0.5 },
-      });
-
-      // Number badge
-      slide.addShape('roundRect', { x: retX + 0.12, y: ry + 0.12, w: 0.4, h: 0.4, rectRadius: 0.2, fill: { color: BRAND_ORANGE } });
-      slide.addText(`${i + 1}`, {
-        x: retX + 0.12, y: ry + 0.12, w: 0.4, h: 0.4,
-        fontSize: 14, color: WHITE, fontFace: 'Arial', bold: true, align: 'center', valign: 'middle',
-      });
-
-      // Text
-      slide.addText(reto, {
-        x: retX + 0.65, y: ry + 0.08, w: halfW - 0.85, h: 0.84,
-        fontSize: 9.5, color: INK, fontFace: 'Arial', valign: 'middle', wrap: true,
-      });
-    });
-  }
-
-  // ══ RIGHT: RECOMMENDATIONS ══
-  if (recs.length > 0) {
-    const recX = MARGIN_L + 0.15 + halfW + 0.3;
-
-    slide.addShape('roundRect', {
-      x: recX, y: startY, w: halfW, h: 0.35,
-      rectRadius: 0.06, fill: { color: SUCCESS_BG },
-    });
-    slide.addText(`RECOMENDACIONES  (${recs.length})`, {
-      x: recX + 0.12, y: startY + 0.04, w: halfW - 0.24, h: 0.27,
-      fontSize: 9, color: SUCCESS, fontFace: 'Arial', bold: true,
-    });
-
-    recs.forEach((rec, i) => {
-      const ry = startY + 0.5 + i * 0.88;
-      if (ry > 6.0) return;
-
-      slide.addShape('roundRect', {
-        x: recX, y: ry, w: halfW, h: 0.78,
-        rectRadius: 0.06, fill: { color: i < 2 ? `${NAVY}08` : WHITE },
-        line: { color: LIGHT_BORDER, width: 0.5 },
-      });
-
-      // Priority indicator (first 2 are most important)
-      const dotColor = i < 2 ? ERROR : i < 4 ? WARN : MID;
-      slide.addShape('ellipse', { x: recX + 0.1, y: ry + 0.12, w: 0.22, h: 0.22, fill: { color: dotColor } });
-      slide.addText(`${i + 1}`, {
-        x: recX + 0.1, y: ry + 0.12, w: 0.22, h: 0.22,
-        fontSize: 8, color: WHITE, fontFace: 'Arial', bold: true, align: 'center', valign: 'middle',
-      });
-
-      // Text
-      slide.addText(rec, {
-        x: recX + 0.4, y: ry + 0.05, w: halfW - 0.55, h: 0.68,
-        fontSize: 8, color: INK, fontFace: 'Arial', valign: 'middle', wrap: true, lineSpacingMultiple: 1.1,
-      });
-    });
-  }
-
-  addFooter(slide, companyName, 9);
-}
-
-/* ══════════════════════════════════════════════════════
-   SLIDE 10: Resumen Ejecutivo (dashboard)
+   SLIDE 8: Resumen Ejecutivo (dashboard)
    ══════════════════════════════════════════════════════ */
 
 function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
@@ -1300,7 +1152,7 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
   const growth = generateGrowthReadiness(d);
   const risks = computeRiskProfile(d);
 
-  addSlideHeader(slide, 'Resumen Ejecutivo', 'Vista consolidada de resultados y siguientes pasos');
+  addSlideHeader(slide, 'Resumen Ejecutivo', 'Vista consolidada de resultados y próximos pasos');
 
   const startY = 1.05;
 
@@ -1318,14 +1170,14 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
       bg: levelBg(maturity.level),
     },
     {
-      label: 'Profesionalizacion',
+      label: 'Profesionalización',
       value: `${Math.round(d.profesionalizacion.average)}`,
       sub: d.profesionalizacion.level,
       color: levelColor(d.profesionalizacion.level),
       bg: levelBg(d.profesionalizacion.level),
     },
     {
-      label: 'Institucionalizacion',
+      label: 'Institucionalización',
       value: `${Math.round(d.institucionalizacion.average)}`,
       sub: d.institucionalizacion.level,
       color: levelColor(d.institucionalizacion.level),
@@ -1341,7 +1193,7 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
     {
       label: 'Riesgos',
       value: `${risks.length}`,
-      sub: `${risks.filter(r => r.severity === 'critico').length} criticos`,
+      sub: `${risks.filter(r => r.severity === 'critico').length} críticos`,
       color: risks.filter(r => r.severity === 'critico').length > 0 ? ERROR : risks.length > 3 ? WARN : SUCCESS,
       bg: risks.filter(r => r.severity === 'critico').length > 0 ? ERROR_BG : risks.length > 3 ? WARN_BG : SUCCESS_BG,
     },
@@ -1414,13 +1266,15 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
   }
 
   // Financial summary card
-  if (d.marginEvaluation && d.marginData?.tieneDatosFinancieros) {
+  const hasAnyMarginExec = d.marginData?.tieneDatosFinancieros ||
+    d.marginData?.conoceMargenBruto || d.marginData?.conoceMargenOperativo || d.marginData?.conoceMargenNeto;
+  if (d.marginEvaluation && hasAnyMarginExec) {
     slide.addShape('roundRect', {
       x: MARGIN_L + 5.85, y: midY, w: CONTENT_W - 6, h: midH,
       rectRadius: 0.08, fill: { color: WHITE },
       line: { color: LIGHT_BORDER, width: 0.5 },
     });
-    slide.addText('SITUACION FINANCIERA', {
+    slide.addText('SITUACIÓN FINANCIERA', {
       x: MARGIN_L + 6.05, y: midY + 0.06, w: CONTENT_W - 6.4, h: 0.2,
       fontSize: 8, color: NAVY, fontFace: 'Arial', bold: true,
     });
@@ -1463,7 +1317,7 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
   // Left section: Summary
   slide.addShape('rect', { x: MARGIN_L + 0.17, y: takeY + 0.06, w: 0.04, h: 2.28, fill: { color: BRAND_ORANGE } });
 
-  slide.addText('CONCLUSION', {
+  slide.addText('CONCLUSIÓN', {
     x: MARGIN_L + 0.4, y: takeY + 0.06, w: 5.5, h: 0.22,
     fontSize: 8, color: BRAND_ORANGE, fontFace: 'Arial', bold: true,
   });
@@ -1473,7 +1327,7 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
   });
 
   // Right section: Top 3 recommendations
-  slide.addText('PROXIMOS PASOS', {
+  slide.addText('PRÓXIMOS PASOS', {
     x: MARGIN_L + 6.2, y: takeY + 0.06, w: 5.5, h: 0.22,
     fontSize: 8, color: BRAND_ORANGE, fontFace: 'Arial', bold: true,
   });
@@ -1494,11 +1348,11 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
     });
   });
 
-  addFooter(slide, companyName, 10);
+  addFooter(slide, companyName, 8);
 }
 
 /* ══════════════════════════════════════════════════════
-   SLIDE 11: Closing
+   SLIDE 9: Closing
    ══════════════════════════════════════════════════════ */
 
 function addClosingSlide(pptx: PptxGenJS, companyName: string) {
@@ -1520,7 +1374,7 @@ function addClosingSlide(pptx: PptxGenJS, companyName: string) {
 
   slide.addShape('rect', { x: 1.2, y: 3.9, w: 2.5, h: 0.03, fill: { color: BRAND_ORANGE } });
 
-  slide.addText('Complement Consulting Group\nDiagnostico Empresarial', {
+  slide.addText('Complement Consulting Group\nRadiografía Empresarial', {
     x: 1.2, y: 4.2, w: 5, h: 0.7,
     fontSize: 12, color: `${WHITE}80`, fontFace: 'Arial', lineSpacingMultiple: 1.4,
   });
@@ -1530,7 +1384,7 @@ function addClosingSlide(pptx: PptxGenJS, companyName: string) {
     x: 1.2, y: 5.4, w: 10.5, h: 0.6,
     rectRadius: 0.06, fill: { color: NAVY_LIGHT },
   });
-  slide.addText('Este diagnostico fue generado como herramienta de apoyo para la sesion de consultoria.  Los resultados se basan en la informacion proporcionada por la empresa.', {
+  slide.addText('Esta radiografía fue generada como herramienta de apoyo para la sesión de consultoría. Los resultados se basan en la información proporcionada por la empresa.', {
     x: 1.5, y: 5.45, w: 10, h: 0.5,
     fontSize: 8, color: `${WHITE}70`, fontFace: 'Arial', wrap: true, valign: 'middle',
   });
@@ -1548,24 +1402,22 @@ export async function exportToPptx(d: SavedDiagnostic): Promise<void> {
   const pptx = new PptxGenJS();
   pptx.author = 'Complement Consulting Group';
   pptx.company = 'Complement Consulting Group';
-  pptx.subject = `Diagnostico Empresarial - ${companyName}`;
-  pptx.title = `Diagnostico - ${companyName}`;
+  pptx.subject = `Radiografía Empresarial - ${companyName}`;
+  pptx.title = `Radiografía - ${companyName}`;
   pptx.layout = 'LAYOUT_WIDE'; // 13.33" x 7.5"
 
   // Build slides
   addTitleSlide(pptx, d, companyName);                      // 1
   addPanoramaSlide(pptx, d, companyName);                   // 2
   addResultsSlide(pptx, d, companyName);                    // 3
-  addCriteriaSlide(pptx, d, companyName, 'prof', 4);        // 4
-  addCriteriaSlide(pptx, d, companyName, 'inst', 5);        // 5
-  addGerenciasSlide(pptx, d, companyName);                  // 6
-  addFinancialsSlide(pptx, d, companyName);                 // 7 (conditional)
-  addRisksOpportunitiesSlide(pptx, d, companyName);         // 8
-  addRetosRecsSlide(pptx, d, companyName);                  // 9
-  addExecutiveSummarySlide(pptx, d, companyName);           // 10
-  addClosingSlide(pptx, companyName);                       // 11
+  addCombinedCriteriaSlide(pptx, d, companyName);           // 4
+  addGerenciasSlide(pptx, d, companyName);                  // 5
+  addFinancialsSlide(pptx, d, companyName);                 // 6 (conditional)
+  addRetosSlide(pptx, d, companyName);                       // 7
+  addExecutiveSummarySlide(pptx, d, companyName);           // 8
+  addClosingSlide(pptx, companyName);                       // 9
 
   // Download
   const safeName = companyName.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '').trim().replace(/\s+/g, '_');
-  await pptx.writeFile({ fileName: `Diagnostico_${safeName}.pptx` });
+  await pptx.writeFile({ fileName: `Radiografia_${safeName}.pptx` });
 }

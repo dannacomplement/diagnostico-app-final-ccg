@@ -6,6 +6,8 @@ export default function Step6RetosUrgencia() {
   const setReto = useDiagnosticStore(s => s.setReto);
   const urgencia = useDiagnosticStore(s => s.urgencia);
   const setUrgencia = useDiagnosticStore(s => s.setUrgencia);
+  const tieneLiderInterno = useDiagnosticStore(s => s.tieneLiderInterno);
+  const setTieneLiderInterno = useDiagnosticStore(s => s.setTieneLiderInterno);
 
   return (
     <div className="card">
@@ -29,7 +31,40 @@ export default function Step6RetosUrgencia() {
       </div>
 
       <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-        <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '10px' }}>Nivel de Urgencia</h3>
+        <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '10px' }}>Líder Interno del Proyecto</h3>
+        <p className="text-ink" style={{ fontSize: '13px', marginBottom: '16px' }}>
+          ¿Existe un posible líder interno para el proyecto de consultoría que no sea el Director General?
+        </p>
+        <div className="flex" style={{ gap: '10px' }}>
+          <button
+            type="button"
+            onClick={() => setTieneLiderInterno(true)}
+            className={`font-semibold transition-all cursor-pointer rounded-xl border ${
+              tieneLiderInterno === true
+                ? 'border-accent bg-accent/10 text-accent shadow-sm'
+                : 'border-border bg-white text-muted hover:border-mid/50'
+            }`}
+            style={{ padding: '10px 28px', fontSize: '13px' }}
+          >
+            Sí
+          </button>
+          <button
+            type="button"
+            onClick={() => setTieneLiderInterno(false)}
+            className={`font-semibold transition-all cursor-pointer rounded-xl border ${
+              tieneLiderInterno === false
+                ? 'border-navy/50 bg-navy/10 text-navy shadow-sm'
+                : 'border-border bg-white text-muted hover:border-mid/50'
+            }`}
+            style={{ padding: '10px 28px', fontSize: '13px' }}
+          >
+            No
+          </button>
+        </div>
+      </div>
+
+      <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
+        <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '10px' }}>Nivel de Urgencia<span className="text-error" style={{ marginLeft: '3px' }}>*</span></h3>
         <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
           Todos nuestros servicios se programan con anticipación. ¿Qué tan urgente considera empezar su proceso de profesionalización e institucionalización?
         </p>

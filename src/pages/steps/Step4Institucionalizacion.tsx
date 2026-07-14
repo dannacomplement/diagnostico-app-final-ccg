@@ -23,8 +23,8 @@ export default function Step4Institucionalizacion() {
         </div>
       )}
       <TypeformCriteria
-        title="Institucionalizacion"
-        description="Evalue el nivel de gobierno, propiedad y estructura formal de su empresa."
+        title="Institucionalización"
+        description="Evalúe el nivel de gobierno, propiedad y estructura formal de su empresa."
         criteria={visibleCriteria}
         answers={answers}
         onAnswerChange={(id, partial) => setCriterionAnswer('inst', id, partial)}

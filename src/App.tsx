@@ -1,20 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Header from './components/layout/Header';
-import WizardShell from './components/layout/WizardShell';
-import OrgWizardShell from './components/layout/OrgWizardShell';
-import TechWizardShell from './components/layout/TechWizardShell';
 import LoginPage from './pages/LoginPage';
-import HomePage from './pages/HomePage';
-import ResultPage from './pages/ResultPage';
-import ReportPage from './pages/ReportPage';
-import HistoryPage from './pages/HistoryPage';
-import DashboardPage from './pages/DashboardPage';
-import OrgResultPage from './pages/OrgResultPage';
-import OrgReportPage from './pages/OrgReportPage';
-import TechResultPage from './pages/TechResultPage';
-import TechReportPage from './pages/TechReportPage';
-import SettingsPage from './pages/SettingsPage';
+import LoginTransitionOverlay from './components/ui/LoginTransitionOverlay';
+
+const HomePage = lazy(() => import('./pages/HomePage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const WizardShell = lazy(() => import('./components/layout/WizardShell'));
+const OrgWizardShell = lazy(() => import('./components/layout/OrgWizardShell'));
+const TechWizardShell = lazy(() => import('./components/layout/TechWizardShell'));
+const ResultPage = lazy(() => import('./pages/ResultPage'));
+const ReportPage = lazy(() => import('./pages/ReportPage'));
+const HistoryPage = lazy(() => import('./pages/HistoryPage'));
+const OrgResultPage = lazy(() => import('./pages/OrgResultPage'));
+const OrgReportPage = lazy(() => import('./pages/OrgReportPage'));
+const TechResultPage = lazy(() => import('./pages/TechResultPage'));
+const TechReportPage = lazy(() => import('./pages/TechReportPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 import { useDiagnosticStore } from './store/diagnosticStore';
 import { useAuthStore } from './store/authStore';
 import { useSettingsStore } from './store/settingsStore';
@@ -112,29 +114,32 @@ export default function App() {
   return (
     <div className="min-h-screen bg-pale">
       <NavigationSync />
+      <LoginTransitionOverlay />
       {showHeader && <Header />}
-      <Routes>
-        {/* Public */}
-        <Route path="/login" element={<LoginPage />} />
+      <Suspense fallback={<div className="min-h-screen bg-pale flex items-center justify-center"><p className="text-muted" style={{ fontSize: '14px' }}>Cargando...</p></div>}>
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected */}
-        <Route path="/" element={<AuthGuard><HomePage /></AuthGuard>} />
-        <Route path="/diagnostico" element={<AuthGuard><WizardShell /></AuthGuard>} />
-        <Route path="/resultado" element={<AuthGuard><ResultPage /></AuthGuard>} />
-        <Route path="/reporte" element={<AuthGuard><ReportPage /></AuthGuard>} />
-        <Route path="/clientes" element={<AuthGuard><HistoryPage /></AuthGuard>} />
-        <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
-        <Route path="/estructura" element={<AuthGuard><OrgWizardShell /></AuthGuard>} />
-        <Route path="/estructura/resultado" element={<AuthGuard><OrgResultPage /></AuthGuard>} />
-        <Route path="/estructura/reporte" element={<AuthGuard><OrgReportPage /></AuthGuard>} />
-        <Route path="/tecnologia" element={<AuthGuard><TechWizardShell /></AuthGuard>} />
-        <Route path="/tecnologia/resultado" element={<AuthGuard><TechResultPage /></AuthGuard>} />
-        <Route path="/tecnologia/reporte" element={<AuthGuard><TechReportPage /></AuthGuard>} />
-        <Route path="/configuracion" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+          {/* Protected */}
+          <Route path="/" element={<AuthGuard><HomePage /></AuthGuard>} />
+          <Route path="/diagnostico" element={<AuthGuard><WizardShell /></AuthGuard>} />
+          <Route path="/resultado" element={<AuthGuard><ResultPage /></AuthGuard>} />
+          <Route path="/reporte" element={<AuthGuard><ReportPage /></AuthGuard>} />
+          <Route path="/clientes" element={<AuthGuard><HistoryPage /></AuthGuard>} />
+          <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
+          <Route path="/estructura" element={<AuthGuard><OrgWizardShell /></AuthGuard>} />
+          <Route path="/estructura/resultado" element={<AuthGuard><OrgResultPage /></AuthGuard>} />
+          <Route path="/estructura/reporte" element={<AuthGuard><OrgReportPage /></AuthGuard>} />
+          <Route path="/tecnologia" element={<AuthGuard><TechWizardShell /></AuthGuard>} />
+          <Route path="/tecnologia/resultado" element={<AuthGuard><TechResultPage /></AuthGuard>} />
+          <Route path="/tecnologia/reporte" element={<AuthGuard><TechReportPage /></AuthGuard>} />
+          <Route path="/configuracion" element={<AuthGuard><SettingsPage /></AuthGuard>} />
 
-        {/* Catch-all → redirect to login or home */}
-        <Route path="*" element={<Navigate to={user ? '/' : '/login'} replace />} />
-      </Routes>
+          {/* Catch-all → redirect to login or home */}
+          <Route path="*" element={<Navigate to={user ? '/' : '/login'} replace />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }

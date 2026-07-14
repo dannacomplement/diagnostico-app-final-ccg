@@ -4,7 +4,7 @@ import type { SavedDiagnostic, MarginLevel, Sector } from './types';
 import { ALL_CRITERIA } from '../config/questions';
 import { buildSoftwareLabel } from './formatters';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
-import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness, generateSmartRecommendations } from './diagnosticAnalysis';
+import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from './diagnosticAnalysis';
 
 /* -- Color palette (RGB arrays) -- */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -28,7 +28,7 @@ const MARGIN_LEVEL_LABELS: Record<MarginLevel, string> = {
   arriba_industria: 'Arriba de industria',
   en_rango: 'En rango',
   debajo_industria: 'Debajo de industria',
-  critico: 'Critico',
+  critico: 'Crítico',
 };
 
 const MARGIN_LEVEL_COLORS: Record<MarginLevel, [number, number, number]> = {
@@ -36,15 +36,6 @@ const MARGIN_LEVEL_COLORS: Record<MarginLevel, [number, number, number]> = {
   en_rango: MID,
   debajo_industria: WARN,
   critico: ERROR,
-};
-
-const FAMILY_ANALYSIS_LABELS: Record<string, string> = {
-  gobiernoFamiliar: 'Gobierno Familiar',
-  planSucesion: 'Plan de Sucesion',
-  protocoloFamiliar: 'Protocolo Familiar',
-  conflictosFamiliares: 'Conflictos Familiares',
-  rolesOperacion: 'Roles en Operacion',
-  profesionalizacionFamiliares: 'Profesionalizacion de Familiares',
 };
 
 /* -- Helpers -- */
@@ -126,7 +117,7 @@ function drawStatusDot(doc: jsPDF, x: number, y: number, diameter: number, color
 
 function drawUrgencyBattery(doc: jsPDF, x: number, y: number, level: string) {
   const segColors: [number, number, number][] = [SUCCESS, MID, WARN, ERROR];
-  const segLabels = ['Baja', 'Media', 'Alta', 'Critica'];
+  const segLabels = ['Baja', 'Media', 'Alta', 'Crítica'];
   const trackColor: [number, number, number] = [226, 232, 240];
 
   let activeLevels = 1;
@@ -310,7 +301,6 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   const risks = computeRiskProfile(diagnostic);
   const growth = generateGrowthReadiness(diagnostic);
   const narrative = generateDiagnosticNarrative(diagnostic, maturity);
-  const smartRecs = generateSmartRecommendations(diagnostic, maturity, risks);
 
   /* ============================
      PAGE 1: BRANDED COVER PAGE
@@ -351,7 +341,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(26);
   doc.setTextColor(...WHITE);
-  const companyName = dg.nombreComercial || 'Diagnostico Empresarial';
+  const companyName = dg.nombreComercial || 'Radiografía Empresarial';
   const splitName = doc.splitTextToSize(companyName, contentWidth - 10);
   doc.text(splitName, pageWidth / 2, dividerY + 20, { align: 'center' });
 
@@ -363,7 +353,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.text('REPORTE EJECUTIVO', pageWidth / 2, nameEndY + 10, { align: 'center' });
   doc.setFontSize(10);
   doc.setTextColor(148, 163, 184);
-  doc.text('DIAGNOSTICO EMPRESARIAL', pageWidth / 2, nameEndY + 20, { align: 'center' });
+  doc.text('RADIOGRAFÍA EMPRESARIAL', pageWidth / 2, nameEndY + 20, { align: 'center' });
 
   // Date
   doc.setFont('helvetica', 'normal');
@@ -374,7 +364,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   // Cover badges — Tamano | Sector | Madurez
   const badgeY = pageHeight - 55;
   const badges = [
-    { label: 'Tamano', value: diagnostic.companySize.size },
+    { label: 'Tamaño', value: diagnostic.companySize.size },
     { label: 'Sector', value: sectorLabel },
     { label: 'Madurez', value: `${maturity.score}%` },
   ];
@@ -436,7 +426,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...NAVY);
-  doc.text('INDICE DE MADUREZ EMPRESARIAL', margin + 38, y + 8);
+  doc.text('ÍNDICE DE MADUREZ EMPRESARIAL', margin + 38, y + 8);
 
   // Level badge
   drawRoundedRect(doc, margin + 38, y + 11, 30, 8, 2, maturityColor(maturity.score));
@@ -449,10 +439,10 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   const breakdownX = margin + 38;
   const breakdownY = y + 23;
   const contribs = [
-    { label: 'Profesionalizacion', value: maturity.profContrib, max: 35 },
-    { label: 'Institucionalizacion', value: maturity.instContrib, max: 25 },
+    { label: 'Profesionalización', value: maturity.profContrib, max: 35 },
+    { label: 'Institucionalización', value: maturity.instContrib, max: 25 },
     { label: 'Gerencias', value: maturity.gerContrib, max: 20 },
-    { label: 'Rentabilidad', value: maturity.marginContrib, max: 20 },
+    { label: 'Márgenes', value: maturity.marginContrib, max: 20 },
   ];
   const contribBarW = (contentWidth - 44) / 4;
   contribs.forEach((c, i) => {
@@ -482,7 +472,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6);
   doc.setTextColor(...MUTED);
-  doc.text('PROFESIONALIZACION', profX + indicatorWidth / 2, y + 6, { align: 'center' });
+  doc.text('PROFESIONALIZACIÓN', profX + indicatorWidth / 2, y + 6, { align: 'center' });
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(...levelColor(profLevel));
@@ -503,7 +493,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6);
   doc.setTextColor(...MUTED);
-  doc.text('INSTITUCIONALIZACION', instX + indicatorWidth / 2, y + 6, { align: 'center' });
+  doc.text('INSTITUCIONALIZACIÓN', instX + indicatorWidth / 2, y + 6, { align: 'center' });
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(...levelColor(instLevel));
@@ -538,7 +528,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(...WHITE);
-  doc.text('DIAGNOSTICO DE SU EMPRESA', margin + 6, y + 6);
+  doc.text('DIAGNÓSTICO DE SU EMPRESA', margin + 6, y + 6);
   y += 10;
 
   doc.setFont('helvetica', 'normal');
@@ -572,14 +562,16 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   y += 20;
 
   // --- MARGINS with benchmark comparison ---
-  if (diagnostic.marginData?.tieneDatosFinancieros && diagnostic.marginEvaluation) {
+  const pdfHasAnyMargin = diagnostic.marginData?.tieneDatosFinancieros ||
+    diagnostic.marginData?.conoceMargenBruto || diagnostic.marginData?.conoceMargenOperativo || diagnostic.marginData?.conoceMargenNeto;
+  if (pdfHasAnyMargin && diagnostic.marginEvaluation) {
     const bench = DEFAULT_INDUSTRY_BENCHMARKS[dg.sector as Sector];
     drawRoundedRect(doc, margin, y, contentWidth, 34, 2, PALE);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
     doc.setTextColor(...NAVY);
-    doc.text('MARGENES FINANCIEROS', margin + 6, y + 6);
+    doc.text('MÁRGENES FINANCIEROS', margin + 6, y + 6);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(5.5);
     doc.setTextColor(...MUTED);
@@ -694,7 +686,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
      PAGE 3: STRATEGIC ANALYSIS
      ============================ */
   doc.addPage();
-  y = drawBrandedHeader(doc, 'ANALISIS ESTRATEGICO', pageWidth, margin);
+  y = drawBrandedHeader(doc, 'ANÁLISIS ESTRATÉGICO', pageWidth, margin);
 
   // --- RISK PROFILE ---
   if (risks.length > 0) {
@@ -702,7 +694,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(...WHITE);
-    doc.text('PERFIL DE RIESGO — HALLAZGOS CRITICOS', margin + 6, y + 6);
+    doc.text('PERFIL DE RIESGO — HALLAZGOS CRÍTICOS', margin + 6, y + 6);
     y += 12;
 
     risks.forEach(risk => {
@@ -723,7 +715,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
       doc.setTextColor(...NAVY);
       doc.text(risk.risk, margin + 6, y + 5.5);
 
-      const sevText = risk.severity === 'critico' ? 'CRITICO' : risk.severity === 'alto' ? 'ALTO' : 'MODERADO';
+      const sevText = risk.severity === 'critico' ? 'CRÍTICO' : risk.severity === 'alto' ? 'ALTO' : 'MODERADO';
       const sevW = doc.getTextWidth(sevText) + 5;
       drawRoundedRect(doc, pageWidth - margin - sevW - 3, y + 1, sevW, 6.5, 2, severityColor);
       doc.setFont('helvetica', 'bold');
@@ -752,7 +744,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(...WHITE);
-  doc.text('PREPARACION PARA CRECIMIENTO', margin + 6, y + 6);
+  doc.text('PREPARACIÓN PARA CRECIMIENTO', margin + 6, y + 6);
   y += 12;
 
   // Score + status
@@ -789,7 +781,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   y += 28;
 
   // --- SECTOR BENCHMARK ---
-  if (diagnostic.marginData?.tieneDatosFinancieros && diagnostic.marginEvaluation) {
+  if (pdfHasAnyMargin && diagnostic.marginEvaluation) {
     y = ensureSpace(doc, y, 40, margin);
     const bench = DEFAULT_INDUSTRY_BENCHMARKS[dg.sector as Sector];
 
@@ -869,7 +861,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(...WHITE);
-    doc.text('AREAS DE OPORTUNIDAD PRINCIPALES', margin + 6, y + 6);
+    doc.text('ÁREAS DE OPORTUNIDAD PRINCIPALES', margin + 6, y + 6);
     y += 10;
 
     diagnostic.opportunityAreas.slice(0, 5).forEach(area => {
@@ -899,33 +891,6 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     y += 4;
   }
 
-  // Smart Recommendations
-  y = ensureSpace(doc, y, 40, margin);
-  drawRoundedRect(doc, margin, y, contentWidth, 8, 2, BRAND_ORANGE);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...WHITE);
-  doc.text('RECOMENDACIONES ESPECIFICAS', margin + 6, y + 6);
-  y += 11;
-
-  smartRecs.forEach((rec, i) => {
-    y = ensureSpace(doc, y, 12, margin);
-
-    // Number badge
-    drawRoundedRect(doc, margin, y, 6, 6, 1, BRAND_ORANGE);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6);
-    doc.setTextColor(...WHITE);
-    doc.text(`${i + 1}`, margin + 3, y + 4.5, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...INK);
-    const lines = doc.splitTextToSize(rec, contentWidth - 12);
-    doc.text(lines, margin + 9, y + 4);
-    y += lines.length * 3.5 + 4;
-  });
-
   // Next steps
   y = ensureSpace(doc, y, 30, margin);
   y += 2;
@@ -937,9 +902,9 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   y += 11;
 
   const nextSteps = [
-    'Agendar una sesion de revision de resultados con un consultor de Complement.',
-    'Priorizar las areas de oportunidad con mayor impacto para su empresa.',
-    'Definir un plan de accion con plazos y responsables para cada area.',
+    'Agendar una sesión de revisión de resultados con un consultor de Complement.',
+    'Priorizar las áreas de oportunidad con mayor impacto para su empresa.',
+    'Definir un plan de acción con plazos y responsables para cada área.',
     'Implementar mejoras de forma gradual, comenzando por los focos rojos identificados.',
   ];
   nextSteps.forEach((step) => {
@@ -958,10 +923,14 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   y = drawBrandedHeader(doc, 'DETALLE DE DATOS', pageWidth, margin);
 
   /* -- DATOS GENERALES -- */
-  const familiarLabel = dg.empresaFamiliar === 'no' ? 'No'
-    : dg.empresaFamiliar === 'si_1era' ? 'Si, 1a gen.'
-    : dg.empresaFamiliar === 'si_2da' ? 'Si, 2a gen.'
-    : 'Si, 3a gen.';
+  const familiarLabelMap: Record<string, string> = {
+    si_1era: '1era Generación',
+    si_1era_transicion: '1era Gen. en transición',
+    si_2da: '2da Generación',
+    si_3era: '3era Generación',
+    no: 'No es familiar',
+  };
+  const familiarLabel = familiarLabelMap[dg.empresaFamiliar] || dg.empresaFamiliar;
 
   const softwareLabel = buildSoftwareLabel(dg);
   const socioLabel = dg.esSocio === 'si'
@@ -973,14 +942,15 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     head: [['DATOS GENERALES', '']],
     body: [
       ['Sector', sectorLabel],
-      ['Antiguedad Constituida', dg.antiguedadConstituida ? `${dg.antiguedadConstituida} anos` : '—'],
-      ['Antiguedad Operativa', dg.antiguedadOperativa ? `${dg.antiguedadOperativa} anos` : '—'],
+      ['Ubicación', (dg as any).ubicacion || '—'],
+      ['Antigüedad Constituida', dg.antiguedadConstituida ? `${dg.antiguedadConstituida} años` : '—'],
+      ['Antigüedad Operativa', dg.antiguedadOperativa ? `${dg.antiguedadOperativa} años` : '—'],
       ['Empresa Familiar', familiarLabel],
       ['Respondente', dg.respondente || '—'],
-      ['Correo electronico', dg.email || '—'],
+      ['Correo electrónico', dg.email || '—'],
       ['Puesto en la Empresa', dg.puestoEmpresa || dg.puestoEmpresaFamilia || '—'],
-      ['Es socio?', socioLabel],
-      ['Software de Gestion', softwareLabel],
+      ['¿Es socio?', socioLabel],
+      ['Software de Gestión', softwareLabel],
     ],
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, textColor: INK },
@@ -992,29 +962,32 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   });
   y = (doc as any).lastAutoTable.finalY + 6;
 
-  /* -- SITUACION ACTUAL -- */
+  /* -- SITUACIÓN ACTUAL -- */
   const sitBody: string[][] = [
     ['Ventas Anuales', sa.ventasAnualesMDP !== null ? `$${sa.ventasAnualesMDP} MDP` : '—'],
     ['Empleados Totales', sa.empleadosTotales?.toString() ?? '—'],
-    ['Numero de Socios', sa.socios || '—'],
+    ['Número de Socios', sa.socios || '—'],
   ];
   if (sa.empleadosFamiliares !== null && sa.empleadosFamiliares !== undefined) {
     sitBody.splice(2, 0, ['Empleados Familiares', sa.empleadosFamiliares.toString()]);
   }
-  // Socios detail
   if (sa.sociosDetalle && sa.sociosDetalle.length > 0) {
     sa.sociosDetalle.forEach((s: any, i: number) => {
+      const nombre = s.nombre || '';
       const fam = s.esFamiliar === true ? 'Familiar' : s.esFamiliar === false ? 'No familiar' : '—';
       const pct = s.porcentaje ? `${s.porcentaje}%` : '—';
-      sitBody.push([`  Socio ${i + 1}`, `${fam}  |  ${pct}`]);
+      const label = nombre ? `  ${nombre}` : `  Socio ${i + 1}`;
+      sitBody.push([label, `${fam}  |  ${pct}`]);
     });
   }
   if (sa.familiaresEnPoder) sitBody.push(['Familiares en el Poder', sa.familiaresEnPoder]);
-  if (sa.sueldoMasAlto) sitBody.push(['Sueldo mas alto mensual', `$${Number(sa.sueldoMasAlto).toLocaleString('es-MX')}`]);
+  if (sa.sueldoMasAlto) sitBody.push(['Sueldo más alto mensual', `$${Number(sa.sueldoMasAlto).toLocaleString('es-MX')}`]);
+  if (sa.pctIngresoFiscalizado != null) sitBody.push(['% Ingreso Fiscalizado', `${sa.pctIngresoFiscalizado}%`]);
+  if (sa.pctEgresoFiscalizado != null) sitBody.push(['% Egreso Fiscalizado', `${sa.pctEgresoFiscalizado}%`]);
 
   autoTable(doc, {
     startY: y,
-    head: [['SITUACION ACTUAL', '']],
+    head: [['SITUACIÓN ACTUAL', '']],
     body: sitBody,
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, textColor: INK },
@@ -1032,10 +1005,10 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(...WHITE);
-  doc.text('CLASIFICACION DE EMPRESA', margin + 6, y + 6);
+  doc.text('CLASIFICACIÓN DE EMPRESA', margin + 6, y + 6);
   y += 12;
 
-  const sizeOptions = ['Micro', 'Pequena', 'Mediana', 'Grande'];
+  const sizeOptions = ['Micro', 'Pequeña', 'Mediana', 'Grande'];
   const scaleBoxW = (contentWidth - 12) / 4;
   const scaleBoxH = 14;
   sizeOptions.forEach((size, i) => {
@@ -1061,7 +1034,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(5.5);
   doc.setTextColor(...MUTED);
-  doc.text('PRODUCTIVIDAD PER CAPITA', margin + metricHalfW / 2, y + 5.5, { align: 'center' });
+  doc.text('PRODUCTIVIDAD PER CÁPITA', margin + metricHalfW / 2, y + 5.5, { align: 'center' });
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(...NAVY);
@@ -1072,12 +1045,12 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(5.5);
   doc.setTextColor(...MUTED);
-  doc.text('ANTIGUEDAD', antX + metricHalfW / 2, y + 5.5, { align: 'center' });
+  doc.text('ANTIGÜEDAD', antX + metricHalfW / 2, y + 5.5, { align: 'center' });
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...NAVY);
-  const antConstStr = dg.antiguedadConstituida ? `${dg.antiguedadConstituida} anos constituida` : '';
-  const antOperStr = dg.antiguedadOperativa ? `${dg.antiguedadOperativa} anos operativa` : '';
+  const antConstStr = dg.antiguedadConstituida ? `${dg.antiguedadConstituida} años constituida` : '';
+  const antOperStr = dg.antiguedadOperativa ? `${dg.antiguedadOperativa} años operativa` : '';
   doc.text(antConstStr || antOperStr || '—', antX + metricHalfW / 2, y + 12, { align: 'center' });
   if (antConstStr && antOperStr) {
     doc.setFont('helvetica', 'normal');
@@ -1087,8 +1060,8 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   }
   y += 24;
 
-  /* -- MARGENES FINANCIEROS TABLE -- */
-  if (diagnostic.marginData?.tieneDatosFinancieros && diagnostic.marginEvaluation) {
+  /* -- MÁRGENES FINANCIEROS TABLE -- */
+  if (pdfHasAnyMargin && diagnostic.marginEvaluation) {
     y = ensureSpace(doc, y, 30, margin);
     const marginBody = (['margenBruto', 'margenOperativo', 'margenNeto'] as const).map(key => {
       const ev = diagnostic.marginEvaluation![key];
@@ -1098,7 +1071,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
 
     autoTable(doc, {
       startY: y,
-      head: [['MARGENES FINANCIEROS', 'Valor', 'Evaluacion']],
+      head: [['MÁRGENES FINANCIEROS', 'Valor', 'Evaluación']],
       body: marginBody,
       headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9, textColor: INK },
@@ -1119,7 +1092,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     y = (doc as any).lastAutoTable.finalY + 6;
   }
 
-  /* -- PROFESIONALIZACION with visual bars -- */
+  /* -- PROFESIONALIZACIÓN with visual bars -- */
   y = ensureSpace(doc, y, 30, margin);
   const profRatings = diagnostic.profesionalizacion.answers.map(a => a.rating);
   const profBody = diagnostic.profesionalizacion.answers.map(a => {
@@ -1129,7 +1102,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
 
   autoTable(doc, {
     startY: y,
-    head: [[`PROFESIONALIZACION (${diagnostic.profesionalizacion.average.toFixed(0)}/100 — ${diagnostic.profesionalizacion.level})`, 'Calificacion', 'Comentario']],
+    head: [[`PROFESIONALIZACIÓN (${diagnostic.profesionalizacion.average.toFixed(0)}/100 — ${diagnostic.profesionalizacion.level})`, 'Calificación', 'Comentario']],
     body: profBody,
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 8, textColor: INK, minCellHeight: 8 },
@@ -1153,7 +1126,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   });
   y = (doc as any).lastAutoTable.finalY + 6;
 
-  /* -- INSTITUCIONALIZACION with visual bars -- */
+  /* -- INSTITUCIONALIZACIÓN with visual bars -- */
   y = ensureSpace(doc, y, 30, margin);
   const instRatings = diagnostic.institucionalizacion.answers.map(a => a.rating);
   const instBody = diagnostic.institucionalizacion.answers.map(a => {
@@ -1163,7 +1136,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
 
   autoTable(doc, {
     startY: y,
-    head: [[`INSTITUCIONALIZACION (${diagnostic.institucionalizacion.average.toFixed(0)}/100 — ${diagnostic.institucionalizacion.level})`, 'Calificacion', 'Comentario']],
+    head: [[`INSTITUCIONALIZACIÓN (${diagnostic.institucionalizacion.average.toFixed(0)}/100 — ${diagnostic.institucionalizacion.level})`, 'Calificación', 'Comentario']],
     body: instBody,
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 8, textColor: INK, minCellHeight: 8 },
@@ -1200,7 +1173,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
 
     autoTable(doc, {
       startY: y,
-      head: [['AREAS DE OPORTUNIDAD', 'Prioridad', 'Score', 'Criterios']],
+      head: [['ÁREAS DE OPORTUNIDAD', 'Prioridad', 'Score', 'Criterios']],
       body: aoBody,
       headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 8, textColor: INK },
@@ -1267,21 +1240,23 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(...NAVY);
-    doc.text(g.area, margin + 14, y + 7);
+    const gerNombre = (g as any).nombre as string || '';
+    const areaLabel = gerNombre ? `${g.area} — ${gerNombre}` : g.area;
+    doc.text(areaLabel, margin + 14, y + 7);
 
     const statusText = !g.cubierto ? 'No cubierto'
+      : g.soyYo ? 'Soy Yo'
       : g.calificado === 'si' ? 'Calificado'
       : g.calificado === 'no' ? 'No calificado'
-      : 'No lo se';
+      : 'No lo sé';
     const statusColor = !g.cubierto ? ERROR : g.calificado === 'si' ? SUCCESS : g.calificado === 'no' ? ERROR : WARN;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(...statusColor);
     doc.text(statusText, margin + 75, y + 7);
 
-    // Additional info: salary range, family, tenure
     const infoParts: string[] = [];
-    if (g.antiguedad) infoParts.push(`${g.antiguedad} anos`);
+    if (g.antiguedad) infoParts.push(`${g.antiguedad} años`);
     if ((g as any).rangoSueldo) infoParts.push((g as any).rangoSueldo);
     if ((g as any).esFamiliar === true) infoParts.push('Familiar');
 
@@ -1302,12 +1277,66 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.text(`${coveredCount} de ${totalGerencias} puestos cubiertos`, margin + 5, y);
   y += 8;
 
+  // DG Evaluation
+  const dgGer = diagnostic.gerencias[0];
+  const dgEv = dgGer?.dgEvaluation;
+  if (dgEv && dgEv.nivelEstudios != null && dgEv.experienciaLaboral != null && dgEv.seguimientoResultados != null) {
+    y = ensureSpace(doc, y, 24, margin);
+    const dgScore = dgEv.nivelEstudios * 0.4 + dgEv.experienciaLaboral * 0.4 + dgEv.seguimientoResultados * 0.2;
+    const dgColor: [number, number, number] = dgScore >= 8 ? SUCCESS : dgScore >= 5 ? WARN : ERROR;
+    const dgLabel = dgScore >= 8 ? 'Excelente' : dgScore >= 6 ? 'Bueno' : dgScore >= 4 ? 'Regular' : 'Bajo';
+
+    drawRoundedRect(doc, margin, y, contentWidth, 20, 2, PALE);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...NAVY);
+    doc.text('CALIFICACIÓN DIRECTOR GENERAL', margin + 5, y + 5.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(...dgColor);
+    doc.text(`${dgScore.toFixed(1)}`, margin + 5, y + 15);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text('/ 10', margin + 20, y + 15);
+
+    drawRoundedRect(doc, margin + 30, y + 9, 18, 7, 2, dgColor);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...WHITE);
+    doc.text(dgLabel, margin + 39, y + 14, { align: 'center' });
+
+    const dgItems = [
+      { label: 'Estudios (40%)', value: dgEv.nivelEstudios },
+      { label: 'Experiencia (40%)', value: dgEv.experienciaLaboral },
+      { label: 'Seguimiento (20%)', value: dgEv.seguimientoResultados },
+    ];
+    dgItems.forEach((item, i) => {
+      const dx = margin + 55 + i * 38;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(...MUTED);
+      doc.text(item.label, dx, y + 6);
+      drawProgressBar(doc, dx, y + 8, 30, 3, item.value, 10, ACCENT);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...NAVY);
+      doc.text(`${item.value}/10`, dx, y + 16);
+    });
+    y += 24;
+  }
+
   /* -- RETOS -- */
   const filteredRetos = diagnostic.retos.filter(r => r);
   if (filteredRetos.length > 0) {
     y = ensureSpace(doc, y, 20, margin);
     const retosBody = filteredRetos.map((reto, i) => [`Reto ${i + 1}`, reto]);
     retosBody.push(['Urgencia', diagnostic.urgenciaLevel]);
+    if (diagnostic.tieneLiderInterno != null) {
+      retosBody.push(['Líder Interno', diagnostic.tieneLiderInterno ? 'Sí' : 'No']);
+    }
 
     autoTable(doc, {
       startY: y,
@@ -1324,44 +1353,40 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     y = (doc as any).lastAutoTable.finalY + 6;
   }
 
-  /* -- ANALISIS FAMILIAR -- */
-  if (diagnostic.analisisFamiliar) {
-    const famEntries = Object.entries(diagnostic.analisisFamiliar).filter(([, v]) => v);
-    if (famEntries.length > 0) {
-      y = ensureSpace(doc, y, 20, margin);
-      const famBody = famEntries.map(([key, value]) => [
-        FAMILY_ANALYSIS_LABELS[key] || key,
-        value as string,
-      ]);
-
-      autoTable(doc, {
-        startY: y,
-        head: [['ANALISIS FAMILIAR', '']],
-        body: famBody,
-        headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
-        bodyStyles: { fontSize: 9, textColor: INK },
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50, textColor: NAVY } },
-        alternateRowStyles: { fillColor: PALE },
-        margin: { left: margin, right: margin },
-        theme: 'grid',
-        styles: { lineColor: BORDER, lineWidth: 0.2, cellPadding: 3 },
-      });
-      y = (doc as any).lastAutoTable.finalY + 6;
-    }
-  }
-
-  /* -- DESCRIPCION DEL NEGOCIO -- */
+  /* -- DESCRIPCIÓN DEL NEGOCIO -- */
   if (diagnostic.descripcionNegocio) {
     y = ensureSpace(doc, y, 20, margin);
     autoTable(doc, {
       startY: y,
-      head: [['DESCRIPCION DEL NEGOCIO']],
+      head: [['DESCRIPCIÓN DEL NEGOCIO']],
       body: [[diagnostic.descripcionNegocio]],
       headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9, textColor: INK },
       margin: { left: margin, right: margin },
       theme: 'grid',
       styles: { lineColor: BORDER, lineWidth: 0.2, cellPadding: 4 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 6;
+  }
+
+  /* -- LÍNEAS DE NEGOCIO -- */
+  if ((diagnostic as any).lineasNegocio && (diagnostic as any).lineasNegocio.length > 0) {
+    y = ensureSpace(doc, y, 20, margin);
+    const lineasBody = (diagnostic as any).lineasNegocio.map((l: { nombre: string; porcentaje: string }) => [
+      l.nombre || '—',
+      l.porcentaje ? `${l.porcentaje}%` : '—',
+    ]);
+    autoTable(doc, {
+      startY: y,
+      head: [['LÍNEAS DE NEGOCIO', 'Porcentaje']],
+      body: lineasBody,
+      headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9, textColor: INK },
+      columnStyles: { 0: { fontStyle: 'bold', textColor: NAVY }, 1: { halign: 'center', fontStyle: 'bold' } },
+      alternateRowStyles: { fillColor: PALE },
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+      styles: { lineColor: BORDER, lineWidth: 0.2, cellPadding: 3 },
     });
   }
 
@@ -1391,7 +1416,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     doc.setTextColor(...BRAND_ORANGE);
     doc.text('·', margin + 53, ph - 8);
     doc.setTextColor(...MUTED);
-    doc.text('Diagnostico Empresarial', margin + 56, ph - 8);
+    doc.text('Radiografía Empresarial', margin + 56, ph - 8);
 
     // Page number on the right
     doc.setFont('helvetica', 'bold');
@@ -1405,7 +1430,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
 
 export function exportToPdf(diagnostic: SavedDiagnostic): void {
   const doc = buildPdfDoc(diagnostic);
-  const safeName = (diagnostic.datosGenerales.nombreComercial || 'diagnostico')
+  const safeName = (diagnostic.datosGenerales.nombreComercial || 'radiografia')
     .replace(/[^a-zA-Z0-9 ]/g, '')
     .trim()
     .replace(/\s+/g, '_');

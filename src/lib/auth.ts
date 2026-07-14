@@ -1,69 +1,96 @@
 import { supabase } from './supabase';
 import type { AppUser, SurveyType } from './types';
 
-const SESSION_KEY = 'ccg_current_user';
-
 const ALL_SURVEYS: SurveyType[] = ['diagnostico_empresarial', 'estructura_organizacional', 'prueba_tecnologia'];
 const DEFAULT_PERMISSIONS: SurveyType[] = ['diagnostico_empresarial'];
 
-export async function loginUser(identifier: string, password: string): Promise<AppUser | null> {
-  let data: any = null;
-
-  // Try login by email first, then by username for backward compatibility
-  const isEmail = identifier.includes('@');
-
-  const res1 = await supabase
-    .from('users')
-    .select('id, username, password, role, display_name, email, survey_permissions, logo_url')
-    .eq(isEmail ? 'email' : 'username', identifier)
-    .single();
-
-  if (res1.error && (res1.error.message?.includes('survey_permissions') || res1.error.message?.includes('logo_url') || res1.error.message?.includes('email'))) {
-    // Columns don't exist yet — query with basic columns
-    const res2 = await supabase
-      .from('users')
-      .select('id, username, password, role, display_name')
-      .eq('username', identifier)
-      .single();
-    if (res2.error || !res2.data) return null;
-    data = res2.data;
-  } else if (res1.error || !res1.data) {
-    // If email login failed, try username as fallback
-    if (isEmail) {
-      const res3 = await supabase
-        .from('users')
-        .select('id, username, password, role, display_name, email, survey_permissions, logo_url')
-        .eq('username', identifier)
-        .single();
-      if (res3.error || !res3.data) return null;
-      data = res3.data;
-    } else {
-      return null;
-    }
-  } else {
-    data = res1.data;
-  }
-
-  if (data.password !== password) return null;
-
-  const isMasterRole = data.role === 'master';
-
+function profileToAppUser(profile: any, email?: string): AppUser {
+  const isMaster = profile.role === 'master';
   return {
-    id: data.id,
-    username: data.username,
-    role: data.role as AppUser['role'],
-    displayName: data.display_name || data.username,
-    email: (data.email as string | null) ?? undefined,
-    surveyPermissions: isMasterRole
+    id: profile.id,
+    username: profile.username ?? email ?? '',
+    role: profile.role as AppUser['role'],
+    displayName: profile.display_name || profile.username || email || '',
+    email: profile.email ?? email ?? undefined,
+    surveyPermissions: isMaster
       ? ALL_SURVEYS
-      : (data.survey_permissions as SurveyType[] | null) ?? DEFAULT_PERMISSIONS,
-    logoUrl: (data.logo_url as string | null) ?? undefined,
+      : (profile.survey_permissions as SurveyType[] | null) ?? DEFAULT_PERMISSIONS,
+    logoUrl: (profile.logo_url as string | null) ?? undefined,
+    status: (profile.status as AppUser['status']) ?? 'activo',
+    createdAt: (profile.created_at as string | null) ?? undefined,
   };
 }
 
+export async function loginUser(identifier: string, password: string): Promise<AppUser | null> {
+  let email = identifier;
+
+  // If identifier doesn't look like an email, look up the email from profiles
+  if (!identifier.includes('@')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('username', identifier)
+      .single();
+
+    if (!profile?.email) return null;
+    email = profile.email;
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user) return null;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', data.user.id)
+    .single();
+
+  if (!profile) return null;
+
+  return profileToAppUser(profile, data.user.email ?? undefined);
+}
+
+export async function getCurrentSession(): Promise<AppUser | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return null;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!profile) return null;
+
+  return profileToAppUser(profile, session.user.email ?? undefined);
+}
+
+export async function getAccessToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
+
+export async function refreshSession(): Promise<boolean> {
+  const { data, error } = await supabase.auth.refreshSession();
+  return !error && !!data.session;
+}
+
+export async function ensureFreshSession(): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+  const expiresAt = session.expires_at ?? 0;
+  const nowSecs = Math.floor(Date.now() / 1000);
+  // Refresh if less than 5 minutes left
+  if (expiresAt - nowSecs < 300) {
+    await supabase.auth.refreshSession();
+  }
+}
+
 export function getCurrentUser(): AppUser | null {
+  // Synchronous read — used by stores that need user.id immediately.
+  // Reads from the Zustand store via a lazy import to avoid circular deps.
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem('ccg_auth_user');
     if (!raw) return null;
     return JSON.parse(raw) as AppUser;
   } catch {
@@ -71,18 +98,15 @@ export function getCurrentUser(): AppUser | null {
   }
 }
 
-export function setCurrentUser(user: AppUser): void {
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+export function persistUserLocally(user: AppUser | null): void {
+  if (user) {
+    localStorage.setItem('ccg_auth_user', JSON.stringify(user));
+  } else {
+    localStorage.removeItem('ccg_auth_user');
+  }
 }
 
-export function logout(): void {
-  sessionStorage.removeItem(SESSION_KEY);
-}
-
-export function isLoggedIn(): boolean {
-  return getCurrentUser() !== null;
-}
-
-export function isMaster(): boolean {
-  return getCurrentUser()?.role === 'master';
+export async function logout(): Promise<void> {
+  localStorage.removeItem('ccg_auth_user');
+  await supabase.auth.signOut();
 }

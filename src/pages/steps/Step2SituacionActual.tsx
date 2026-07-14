@@ -29,8 +29,8 @@ export default function Step2SituacionActual() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Situacion Actual</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '40px' }}>Informacion financiera y operativa para clasificar su empresa.</p>
+      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Situación Actual</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '40px' }}>Información financiera y operativa para clasificar su empresa.</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
         <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '20px' }}>
@@ -41,7 +41,7 @@ export default function Step2SituacionActual() {
                 value={situacion.ventasAnualesMDP ?? ''}
                 onChange={e => update({ ventasAnualesMDP: e.target.value ? Number(e.target.value) : null })}
                 onBlur={() => setVentasFocused(false)}
-                placeholder="Ej: 25"
+                placeholder=""
                 step="0.1"
                 min="0"
                 className="input-field"
@@ -55,7 +55,7 @@ export default function Step2SituacionActual() {
                 style={{ maxWidth: '160px', minHeight: '38px', display: 'flex', alignItems: 'center' }}
               >
                 <span className={situacion.ventasAnualesMDP ? 'text-ink font-semibold' : 'text-muted'} style={{ fontSize: '13px' }}>
-                  {situacion.ventasAnualesMDP ? formatMDP(situacion.ventasAnualesMDP) : 'Ej: 25'}
+                  {situacion.ventasAnualesMDP ? formatMDP(situacion.ventasAnualesMDP) : '$0 MDP'}
                 </span>
               </div>
             )}
@@ -65,7 +65,7 @@ export default function Step2SituacionActual() {
               type="number"
               value={situacion.empleadosTotales ?? ''}
               onChange={e => update({ empleadosTotales: e.target.value ? Number(e.target.value) : null })}
-              placeholder="Ej: 45"
+              placeholder=""
               min="1"
               className="input-field"
               style={{ maxWidth: '140px' }}
@@ -75,12 +75,12 @@ export default function Step2SituacionActual() {
 
         {isFamily && (
           <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '20px' }}>
-            <InlineField label="Empleados familiares">
+            <InlineField label="Empleados familiares" required>
               <input
                 type="number"
                 value={situacion.empleadosFamiliares ?? ''}
                 onChange={e => update({ empleadosFamiliares: e.target.value ? Number(e.target.value) : null })}
-                placeholder="Ej: 5"
+                placeholder=""
                 min="0"
                 className="input-field"
                 style={{ maxWidth: '140px' }}
@@ -91,7 +91,7 @@ export default function Step2SituacionActual() {
                 type="number"
                 value={situacion.familiaresEnPoder}
                 onChange={e => update({ familiaresEnPoder: e.target.value })}
-                placeholder="Ej: 3"
+                placeholder=""
                 min="0"
                 className="input-field"
                 style={{ maxWidth: '100px' }}
@@ -102,12 +102,28 @@ export default function Step2SituacionActual() {
 
         <SociosSection />
 
+        <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
+          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '20px' }}>Fiscalización</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <FiscalSlider
+              label="Ingreso Fiscalizado"
+              value={situacion.pctIngresoFiscalizado}
+              onChange={v => update({ pctIngresoFiscalizado: v })}
+            />
+            <FiscalSlider
+              label="Egreso Fiscalizado"
+              value={situacion.pctEgresoFiscalizado}
+              onChange={v => update({ pctEgresoFiscalizado: v })}
+            />
+          </div>
+        </div>
+
         {sizeResult && (
           <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-            <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '24px' }}>Resultado del analisis</h3>
+            <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '24px' }}>Resultado del análisis</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '20px' }}>
               <div className={`rounded-xl border-2 text-center ${(SIZE_COLORS as any)[sizeResult.size] || 'border-border bg-pale'}`} style={{ padding: '20px 16px' }}>
-                <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: '10px', marginBottom: '6px' }}>Tamano de empresa</p>
+                <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: '10px', marginBottom: '6px' }}>Tamaño de empresa</p>
                 <p className="font-bold" style={{ fontSize: '18px' }}>{sizeResult.size}</p>
                 <p className="opacity-70" style={{ fontSize: '11px', marginTop: '6px' }}>TMC: {sizeResult.tmcScore}</p>
               </div>
@@ -129,72 +145,70 @@ export default function Step2SituacionActual() {
         <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
           <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '10px' }}>Datos Financieros</h3>
           <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
-            Cuenta con informacion de los margenes financieros de su empresa?
+            Indique qué márgenes financieros conoce de su empresa.
           </p>
-          <div className="flex" style={{ gap: '10px', marginBottom: marginData.tieneDatosFinancieros ? '28px' : '0' }}>
-            <button
-              type="button"
-              onClick={() => updateMarginData({ tieneDatosFinancieros: true })}
-              className={`font-semibold border transition-all cursor-pointer ${
-                marginData.tieneDatosFinancieros
-                  ? 'border-accent bg-accent/5 text-accent'
-                  : 'border-border text-muted hover:border-mid/50'
-              }`}
-              style={{ padding: '8px 22px', borderRadius: '10px', fontSize: '13px' }}
-            >
-              Si
-            </button>
-            <button
-              type="button"
-              onClick={() => updateMarginData({ tieneDatosFinancieros: false, margenBruto: null, margenOperativo: null, margenNeto: null })}
-              className={`font-semibold border transition-all cursor-pointer ${
-                !marginData.tieneDatosFinancieros
-                  ? 'border-accent bg-accent/5 text-accent'
-                  : 'border-border text-muted hover:border-mid/50'
-              }`}
-              style={{ padding: '8px 22px', borderRadius: '10px', fontSize: '13px' }}
-            >
-              No
-            </button>
-          </div>
 
-          {marginData.tieneDatosFinancieros && (
-            <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '20px' }}>
-              <InlineField label="Margen Bruto" suffix="%">
-                <input
-                  type="number"
-                  value={marginData.margenBruto ?? ''}
-                  onChange={e => updateMarginData({ margenBruto: e.target.value ? Number(e.target.value) : null })}
-                  placeholder="Ej: 35"
-                  step="0.1"
-                  className="input-field"
-                  style={{ maxWidth: '90px' }}
-                />
-              </InlineField>
-              <InlineField label="M. Operativo" suffix="%">
-                <input
-                  type="number"
-                  value={marginData.margenOperativo ?? ''}
-                  onChange={e => updateMarginData({ margenOperativo: e.target.value ? Number(e.target.value) : null })}
-                  placeholder="Ej: 12"
-                  step="0.1"
-                  className="input-field"
-                  style={{ maxWidth: '90px' }}
-                />
-              </InlineField>
-              <InlineField label="M. Neto" suffix="%">
-                <input
-                  type="number"
-                  value={marginData.margenNeto ?? ''}
-                  onChange={e => updateMarginData({ margenNeto: e.target.value ? Number(e.target.value) : null })}
-                  placeholder="Ej: 8"
-                  step="0.1"
-                  className="input-field"
-                  style={{ maxWidth: '90px' }}
-                />
-              </InlineField>
+          <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '20px' }}>
+            {/* Margen Bruto */}
+            <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px' }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
+                <span className="font-medium text-ink" style={{ fontSize: '12px' }}>Margen Bruto</span>
+                <div className="flex" style={{ gap: '4px' }}>
+                  <button type="button" onClick={() => updateMarginData({ conoceMargenBruto: true })}
+                    className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenBruto ? 'bg-accent text-white' : 'bg-white text-muted border border-border'}`}
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>Sí</button>
+                  <button type="button" onClick={() => updateMarginData({ conoceMargenBruto: false, margenBruto: null })}
+                    className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenBruto === false ? 'bg-navy/70 text-white' : 'bg-white text-muted border border-border'}`}
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>No</button>
+                </div>
+              </div>
+              {marginData.conoceMargenBruto && (
+                <InlineField label="" suffix="%">
+                  <input type="number" value={marginData.margenBruto ?? ''} onChange={e => updateMarginData({ margenBruto: e.target.value ? Number(e.target.value) : null })} step="0.1" className="input-field" style={{ maxWidth: '90px' }} />
+                </InlineField>
+              )}
             </div>
-          )}
+
+            {/* Margen Operativo */}
+            <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px' }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
+                <span className="font-medium text-ink" style={{ fontSize: '12px' }}>M. Operativo</span>
+                <div className="flex" style={{ gap: '4px' }}>
+                  <button type="button" onClick={() => updateMarginData({ conoceMargenOperativo: true })}
+                    className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenOperativo ? 'bg-accent text-white' : 'bg-white text-muted border border-border'}`}
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>Sí</button>
+                  <button type="button" onClick={() => updateMarginData({ conoceMargenOperativo: false, margenOperativo: null })}
+                    className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenOperativo === false ? 'bg-navy/70 text-white' : 'bg-white text-muted border border-border'}`}
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>No</button>
+                </div>
+              </div>
+              {marginData.conoceMargenOperativo && (
+                <InlineField label="" suffix="%">
+                  <input type="number" value={marginData.margenOperativo ?? ''} onChange={e => updateMarginData({ margenOperativo: e.target.value ? Number(e.target.value) : null })} step="0.1" className="input-field" style={{ maxWidth: '90px' }} />
+                </InlineField>
+              )}
+            </div>
+
+            {/* Margen Neto */}
+            <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px' }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
+                <span className="font-medium text-ink" style={{ fontSize: '12px' }}>M. Neto</span>
+                <div className="flex" style={{ gap: '4px' }}>
+                  <button type="button" onClick={() => updateMarginData({ conoceMargenNeto: true })}
+                    className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenNeto ? 'bg-accent text-white' : 'bg-white text-muted border border-border'}`}
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>Sí</button>
+                  <button type="button" onClick={() => updateMarginData({ conoceMargenNeto: false, margenNeto: null })}
+                    className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenNeto === false ? 'bg-navy/70 text-white' : 'bg-white text-muted border border-border'}`}
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>No</button>
+                </div>
+              </div>
+              {marginData.conoceMargenNeto && (
+                <InlineField label="" suffix="%">
+                  <input type="number" value={marginData.margenNeto ?? ''} onChange={e => updateMarginData({ margenNeto: e.target.value ? Number(e.target.value) : null })} step="0.1" className="input-field" style={{ maxWidth: '90px' }} />
+                </InlineField>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -205,12 +219,17 @@ export default function Step2SituacionActual() {
 function SociosSection() {
   const situacion = useDiagnosticStore(s => s.situacionActual);
   const update = useDiagnosticStore(s => s.updateSituacionActual);
+  const datos = useDiagnosticStore(s => s.datosGenerales);
+
+  const respondentIsSocio = datos.esSocio === 'si';
+  const respondentPct = datos.porcentajeAcciones;
+  const respondentName = datos.respondente;
 
   const numSociosRaw = parseInt(situacion.socios, 10) || 0;
   const numSocios = Math.min(numSociosRaw, 15);
   const detalle = situacion.sociosDetalle ?? [];
 
-  // Sync the detail array length with the socios count
+  // Sync the detail array length with the socios count, pre-fill first socio with respondent data
   useEffect(() => {
     if (numSocios < 1) {
       if (detalle.length > 0) update({ sociosDetalle: [] });
@@ -220,7 +239,11 @@ function SociosSection() {
 
     const next: SocioDetail[] = [];
     for (let i = 0; i < numSocios; i++) {
-      next.push(detalle[i] ?? { esFamiliar: null, porcentaje: '' });
+      if (i === 0 && !detalle[0] && respondentIsSocio) {
+        next.push({ nombre: respondentName || '', esFamiliar: null, porcentaje: respondentPct || '' });
+      } else {
+        next.push(detalle[i] ?? { nombre: '', esFamiliar: null, porcentaje: '' });
+      }
     }
     update({ sociosDetalle: next });
   }, [numSocios]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -233,12 +256,12 @@ function SociosSection() {
 
   return (
     <div>
-      <InlineField label="Numero de socios">
+      <InlineField label="Número de socios" required>
         <input
           type="number"
           value={situacion.socios}
           onChange={e => update({ socios: e.target.value })}
-          placeholder="Ej: 3"
+          placeholder=""
           min="0"
           max="15"
           className="input-field"
@@ -255,15 +278,34 @@ function SociosSection() {
             Detalle de cada socio:
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {detalle.map((s, i) => (
+            {detalle.map((s, i) => {
+              const isRespondent = i === 0 && respondentIsSocio;
+              return (
               <div
                 key={i}
-                className="flex items-center flex-wrap bg-white rounded-xl border border-border/40"
+                className={`flex items-center flex-wrap rounded-xl border ${isRespondent ? 'bg-accent/5 border-accent/30' : 'bg-white border-border/40'}`}
                 style={{ padding: '10px 16px', gap: '12px' }}
               >
-                <span className="font-bold text-navy shrink-0" style={{ fontSize: '12px', minWidth: '68px' }}>
-                  Socio {i + 1}
-                </span>
+                <div className="shrink-0" style={{ minWidth: '50px' }}>
+                  <span className="font-bold text-navy block" style={{ fontSize: '12px' }}>
+                    Socio {i + 1}
+                  </span>
+                  {isRespondent && (
+                    <span className="text-accent font-semibold block" style={{ fontSize: '9px' }}>
+                      (Respondiente)
+                    </span>
+                  )}
+                </div>
+
+                {/* Nombre */}
+                <input
+                  type="text"
+                  value={s.nombre ?? ''}
+                  onChange={e => setSocio(i, { nombre: e.target.value })}
+                  placeholder="Nombre del socio"
+                  className="input-field"
+                  style={{ maxWidth: '160px', fontSize: '12px', padding: '4px 8px' }}
+                />
 
                 {/* Es familiar? */}
                 <div className="flex items-center" style={{ gap: '6px' }}>
@@ -301,7 +343,7 @@ function SociosSection() {
                     type="number"
                     value={s.porcentaje}
                     onChange={e => setSocio(i, { porcentaje: e.target.value })}
-                    placeholder="Ej: 33"
+                    placeholder=""
                     min="0"
                     max="100"
                     className="input-field"
@@ -310,7 +352,8 @@ function SociosSection() {
                   <span className="text-muted" style={{ fontSize: '11px' }}>%</span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Total % indicator */}
@@ -336,6 +379,44 @@ function SociosSection() {
           })()}
         </div>
       )}
+    </div>
+  );
+}
+
+function FiscalSlider({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number) => void }) {
+  const pct = value ?? 0;
+  const color = pct >= 75 ? 'var(--color-success)' : pct >= 40 ? 'var(--color-accent)' : 'var(--color-warn)';
+
+  return (
+    <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px 20px' }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
+        <span className="font-medium text-ink" style={{ fontSize: '13px' }}>{label}</span>
+        <span className="font-bold" style={{ fontSize: '20px', color, minWidth: '52px', textAlign: 'right' }}>
+          {pct}%
+        </span>
+      </div>
+      <div style={{ position: 'relative' }}>
+        <div className="rounded-full" style={{ height: '8px', background: 'var(--color-border)', width: '100%', position: 'absolute', top: '50%', transform: 'translateY(-50%)' }}>
+          <div className="rounded-full transition-all" style={{ height: '100%', width: `${pct}%`, background: color }} />
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={pct}
+          onChange={e => onChange(Number(e.target.value))}
+          className="fiscal-slider"
+          style={{ width: '100%', position: 'relative', cursor: 'pointer' }}
+        />
+      </div>
+      <div className="flex justify-between" style={{ marginTop: '6px' }}>
+        <span className="text-muted" style={{ fontSize: '9px' }}>0%</span>
+        <span className="text-muted" style={{ fontSize: '9px' }}>25%</span>
+        <span className="text-muted" style={{ fontSize: '9px' }}>50%</span>
+        <span className="text-muted" style={{ fontSize: '9px' }}>75%</span>
+        <span className="text-muted" style={{ fontSize: '9px' }}>100%</span>
+      </div>
     </div>
   );
 }

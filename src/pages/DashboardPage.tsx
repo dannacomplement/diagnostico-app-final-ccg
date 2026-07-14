@@ -3,7 +3,8 @@ import { useAuthStore } from '../store/authStore';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useOrgSurveyStore } from '../store/orgSurveyStore';
 import { useTechSurveyStore } from '../store/techSurveyStore';
-import { getDiagnosticsByUser, getOrgSurveysByUser, getTechSurveysByUser, getPrefillForUser, deletePrefill } from '../lib/storage';
+import { useSettingsStore } from '../store/settingsStore';
+import { getDiagnosticsByUser, getOrgSurveysByUser, getTechSurveysByUser, getPrefillForUser } from '../lib/storage';
 import type { PrefillData } from '../lib/storage';
 import { exportToExcel } from '../lib/export';
 import { exportToPdf } from '../lib/exportPdf';
@@ -42,10 +43,10 @@ const MATURITY_COLORS: Record<string, string> = {
   lider_digital: 'text-accent',
 };
 const MATURITY_LABELS: Record<string, string> = {
-  basico: 'Basico',
+  basico: 'Básico',
   intermedio: 'Intermedio',
   avanzado: 'Avanzado',
-  lider_digital: 'Lider Digital',
+  lider_digital: 'Líder Digital',
 };
 
 const DIAG_TOTAL_STEPS = 7;
@@ -76,6 +77,8 @@ export default function DashboardPage() {
   const loadPrefill = useDiagnosticStore(s => s.loadPrefill);
   const resetOrgSurvey = useOrgSurveyStore(s => s.resetOrgSurvey);
   const resetTechSurvey = useTechSurveyStore(s => s.resetTechSurvey);
+  const companyLogo = useSettingsStore(s => s.companyLogo);
+  const companyLogoIcon = useSettingsStore(s => s.companyLogoIcon);
 
   const diagDraftActive = useDiagnosticStore(s => s.draftActive);
   const diagDraftStep = useDiagnosticStore(s => s.currentStep);
@@ -120,10 +123,8 @@ export default function DashboardPage() {
   function handleDiscardTechDraft() { resetTechSurvey(); }
 
   function handleNewDiagnostic() {
-    if (diagPrefill && user) {
+    if (diagPrefill) {
       loadPrefill(diagPrefill);
-      deletePrefill(user.id, 'diagnostico_empresarial').catch(() => {});
-      setDiagPrefill(null);
       return;
     }
     resetDiagnostic();
@@ -159,7 +160,7 @@ export default function DashboardPage() {
   ] : null;
 
   return (
-    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '0 24px 48px' }}>
+    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '0 clamp(16px, 3vw, 24px) 48px' }}>
 
       {/* ═══ A1 — BRANDED HEADER ═══ */}
       <div className="stagger-1" style={{ marginBottom: '32px' }}>
@@ -171,18 +172,18 @@ export default function DashboardPage() {
             {user.logoUrl ? (
               <img src={user.logoUrl} alt="Logo" className="rounded-xl object-cover shrink-0" style={{ width: '52px', height: '52px', border: '2px solid var(--color-border)' }} />
             ) : (
-              <img src="/icon-complement.svg" alt="Complement" className="shrink-0" style={{ height: '40px' }} />
+              <img src={companyLogoIcon || '/icon-complement.svg'} alt="Complement" className="shrink-0" style={{ height: '40px' }} />
             )}
             <div>
               <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '2px' }}>
-                Pagina Principal
+                Página Principal
               </h1>
               <p className="text-muted" style={{ fontSize: '13px' }}>
                 Bienvenido, <span className="font-semibold text-ink">{user.displayName}</span>
               </p>
             </div>
           </div>
-          <img src="/logo-complement.svg" alt="Complement" className="hidden sm:block" style={{ height: '28px', opacity: 0.5 }} />
+          <img src={companyLogo || '/logo-complement.svg'} alt="Complement" className="hidden sm:block" style={{ height: '28px', opacity: 0.5 }} />
         </div>
       </div>
 
@@ -196,7 +197,7 @@ export default function DashboardPage() {
           {(diagDraftActive || orgDraftActive || techDraftActive) && (
             <div className="stagger-1" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {diagDraftActive && hasDiagPerm && (
-                <DraftBanner icon="📋" label="Diagnostico Empresarial" step={diagDraftStep + 1} totalSteps={DIAG_TOTAL_STEPS} onResume={handleResumeDiagDraft} onDiscard={handleDiscardDiagDraft} />
+                <DraftBanner icon="📋" label="Radiografía Empresarial" step={diagDraftStep + 1} totalSteps={DIAG_TOTAL_STEPS} onResume={handleResumeDiagDraft} onDiscard={handleDiscardDiagDraft} />
               )}
               {orgDraftActive && hasOrgPerm && (
                 <DraftBanner icon="🏗️" label="Estructura Organizacional" step={orgDraftStep + 1} totalSteps={ORG_TOTAL_STEPS} onResume={handleResumeOrgDraft} onDiscard={handleDiscardOrgDraft} />
@@ -215,13 +216,13 @@ export default function DashboardPage() {
                 style={{ borderColor: '#d4922e33', background: 'linear-gradient(135deg, #fffbf5 0%, #fff8ef 30%, #f8fafc 100%)' }}
               >
                 {/* Branded top bar */}
-                <div style={{ background: 'linear-gradient(90deg, #1b2a4a, #0a2a52)', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+                <div style={{ background: 'linear-gradient(90deg, #1b2a4a, #0a2a52)', padding: 'clamp(10px, 2vw, 14px) clamp(16px, 3vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '8px' }}>
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: '#d4922e' }} />
                   <div className="flex items-center" style={{ gap: '10px' }}>
                     <span style={{ fontSize: '9px', padding: '3px 10px', borderRadius: '6px', letterSpacing: '0.1em', background: '#d4922e', color: 'white', fontWeight: 700, textTransform: 'uppercase' }}>
                       Core
                     </span>
-                    <h2 className="font-serif text-white" style={{ fontSize: '16px' }}>Diagnostico Empresarial</h2>
+                    <h2 className="font-serif text-white" style={{ fontSize: '16px' }}>Radiografía Empresarial</h2>
                   </div>
                   {latestDiag ? (
                     <span style={{ fontSize: '10px', padding: '3px 12px', borderRadius: '6px', background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontWeight: 700, border: '1px solid rgba(34,197,94,0.3)' }}>Completado</span>
@@ -232,9 +233,9 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                <div style={{ padding: '28px 32px' }}>
+                <div style={{ padding: 'clamp(18px, 3vw, 28px) clamp(16px, 3vw, 32px)' }}>
                   <p className="text-muted leading-relaxed" style={{ fontSize: '12px', marginBottom: '20px', maxWidth: '520px' }}>
-                    Evaluacion integral de profesionalizacion, institucionalizacion, gerencias, situacion financiera y areas de oportunidad de la empresa.
+                    Evaluación integral de profesionalización, institucionalización, gerencias, situación financiera y áreas de oportunidad de la empresa.
                   </p>
 
                   {latestDiag && (
@@ -250,14 +251,14 @@ export default function DashboardPage() {
                       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                         <AnimatedGauge
                           value={latestDiag.profesionalizacion.average}
-                          label="Profesionalizacion"
+                          label="Profesionalización"
                           sublabel={latestDiag.profesionalizacion.level}
                           size={90}
                           delay={200}
                         />
                         <AnimatedGauge
                           value={latestDiag.institucionalizacion.average}
-                          label="Institucionalizacion"
+                          label="Institucionalización"
                           sublabel={latestDiag.institucionalizacion.level}
                           size={90}
                           delay={400}
@@ -269,7 +270,7 @@ export default function DashboardPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect width="16" height="16" rx="3" fill="#1b2a4a" opacity="0.1"/><text x="8" y="12" textAnchor="middle" fontSize="10" fill="#1b2a4a" fontWeight="700">{latestDiag.companySize.size.charAt(0)}</text></svg>
                           <div>
-                            <p style={{ fontSize: '8px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tamano</p>
+                            <p style={{ fontSize: '8px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tamaño</p>
                             <p style={{ fontSize: '13px', fontWeight: 700, color: '#1b2a4a' }}>{latestDiag.companySize.size}</p>
                           </div>
                         </div>
@@ -316,7 +317,7 @@ export default function DashboardPage() {
                         <button onClick={handleNewDiagnostic} style={{ fontSize: '14px', padding: '12px 36px', borderRadius: '12px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', boxShadow: '0 4px 16px rgba(212,146,46,0.25)', transition: 'all 0.2s' }}
                           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(212,146,46,0.35)'; }}
                           onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(212,146,46,0.25)'; }}>
-                          {diagPrefill ? 'Contestar Diagnostico (Pre-llenado)' : 'Comenzar Diagnostico'}
+                          {diagPrefill ? 'Contestar Radiografía (Pre-llenado)' : 'Comenzar Radiografía'}
                         </button>
                         {diagPrefill && (
                           <p style={{ fontSize: '11px', marginTop: '8px', color: '#d4922e', fontWeight: 500 }}>
@@ -338,7 +339,7 @@ export default function DashboardPage() {
                 Encuestas Complementarias
               </h2>
 
-              <div style={{ display: 'grid', gridTemplateColumns: hasOrgPerm && hasTechPerm ? 'repeat(2, 1fr)' : '1fr', gap: '14px' }}>
+              <div className="mobile-col" style={{ display: 'grid', gridTemplateColumns: hasOrgPerm && hasTechPerm ? 'repeat(2, 1fr)' : '1fr', gap: '14px' }}>
 
                 {hasOrgPerm && (
                   <div className="bg-white rounded-2xl border border-border/40 shadow-sm card-hover-lift" style={{ padding: '22px 24px' }}>
@@ -367,7 +368,7 @@ export default function DashboardPage() {
                         <div className="flex flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
                           <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Colaboradores</p><p className="text-ink font-bold" style={{ fontSize: '12px' }}>{totalColab}</p></div>
                           <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Areas</p><p className="text-ink font-bold" style={{ fontSize: '12px' }}>{latestOrg.areaDetails.length}</p></div>
-                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Organigrama</p><p className="text-ink font-semibold" style={{ fontSize: '12px' }}>{latestOrg.orgStructure.tieneOrganigrama ? 'Si' : 'No'}</p></div>
+                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Organigrama</p><p className="text-ink font-semibold" style={{ fontSize: '12px' }}>{latestOrg.orgStructure.tieneOrganigrama ? 'Sí' : 'No'}</p></div>
                         </div>
                       );
                     })()}
@@ -411,7 +412,7 @@ export default function DashboardPage() {
                       <div className="flex flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
                         <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Score</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: '12px' }}>{latestTech.maturityScore}/100</p></div>
                         <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Nivel</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: '12px' }}>{MATURITY_LABELS[latestTech.maturityLevel] || latestTech.maturityLevel}</p></div>
-                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>ERP</p><p className="text-ink font-semibold" style={{ fontSize: '12px' }}>{latestTech.tools.tieneERP ? 'Si' : 'No'}</p></div>
+                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>ERP</p><p className="text-ink font-semibold" style={{ fontSize: '12px' }}>{latestTech.tools.tieneERP ? 'Sí' : 'No'}</p></div>
                       </div>
                     )}
 
@@ -485,7 +486,7 @@ export default function DashboardPage() {
           {/* ═══ A1 — BRANDED FOOTER ═══ */}
           <div className="stagger-5" style={{ marginTop: '40px', textAlign: 'center' }}>
             <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #d4922e40, transparent)', marginBottom: '16px' }} />
-            <img src="/icon-complement.svg" alt="Complement" style={{ height: '20px', opacity: 0.3, marginBottom: '6px' }} />
+            <img src={companyLogoIcon || '/icon-complement.svg'} alt="Complement" style={{ height: '20px', opacity: 0.3, marginBottom: '6px' }} />
             <p style={{ fontSize: '10px', color: '#9ca3af', letterSpacing: '0.05em' }}>
               Complement Consulting Group
             </p>
@@ -543,7 +544,7 @@ function SurveyHistorySection({
 
   // Build available tabs
   const tabs: { key: TabKey; label: string; count: number; icon: string; color: string }[] = [];
-  if (hasDiagPerm && diagnostics.length > 0) tabs.push({ key: 'diag', label: 'Diagnostico', count: diagnostics.length, icon: '📋', color: '#d4922e' });
+  if (hasDiagPerm && diagnostics.length > 0) tabs.push({ key: 'diag', label: 'Radiografía', count: diagnostics.length, icon: '📋', color: '#d4922e' });
   if (hasOrgPerm && orgSurveys.length > 0) tabs.push({ key: 'org', label: 'Estructura', count: orgSurveys.length, icon: '🏗️', color: '#6366f1' });
   if (hasTechPerm && techSurveys.length > 0) tabs.push({ key: 'tech', label: 'Tecnologia', count: techSurveys.length, icon: '💻', color: '#0047AB' });
 
@@ -631,77 +632,77 @@ function DiagRow({ diag, isLatest, onViewReport, onExportPdf, onExportExcel }: {
 
   return (
     <div
-      className="flex items-center"
       style={{
-        gap: '14px',
         padding: '14px 0',
         borderBottom: '1px solid #f3f4f6',
       }}
     >
-      {/* Timeline dot */}
-      <div className="shrink-0 flex flex-col items-center" style={{ width: '36px' }}>
-        <div style={{
-          width: '10px', height: '10px', borderRadius: '50%',
-          background: isLatest ? '#d4922e' : '#d1d5db',
-          border: isLatest ? '2px solid #d4922e40' : '2px solid #e5e7eb',
-        }} />
-      </div>
+      <div className="flex items-start" style={{ gap: '14px' }}>
+        {/* Timeline dot */}
+        <div className="shrink-0 flex flex-col items-center" style={{ width: '36px', paddingTop: '4px' }}>
+          <div style={{
+            width: '10px', height: '10px', borderRadius: '50%',
+            background: isLatest ? '#d4922e' : '#d1d5db',
+            border: isLatest ? '2px solid #d4922e40' : '2px solid #e5e7eb',
+          }} />
+        </div>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
-          <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>
-            {diag.datosGenerales.nombreComercial || 'Sin nombre'}
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
+            <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>
+              {diag.datosGenerales.nombreComercial || 'Sin nombre'}
+            </p>
+            {isLatest && (
+              <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Más reciente
+              </span>
+            )}
+          </div>
+          <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
+            {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
-          {isLatest && (
-            <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Mas reciente
+          <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
+            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+              Prof. <span className="font-bold text-navy">{profAvg}%</span>
             </span>
-          )}
-        </div>
-        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
-          {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-        <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Prof. <span className="font-bold text-navy">{profAvg}%</span>
-          </span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Inst. <span className="font-bold text-navy">{instAvg}%</span>
-          </span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Urgencia <span className={`font-bold ${diag.urgenciaLevel === 'Crítica' ? 'text-error' : diag.urgenciaLevel === 'Alta' ? 'text-warn' : 'text-success'}`}>{diag.urgenciaLevel}</span>
-          </span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Tamano <span className="font-bold text-navy">{diag.companySize.size}</span>
-          </span>
-        </div>
-      </div>
+            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+              Inst. <span className="font-bold text-navy">{instAvg}%</span>
+            </span>
+            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+              Urgencia <span className={`font-bold ${diag.urgenciaLevel === 'Crítica' ? 'text-error' : diag.urgenciaLevel === 'Alta' ? 'text-warn' : 'text-success'}`}>{diag.urgenciaLevel}</span>
+            </span>
+            <span className="hidden sm:inline" style={{ fontSize: '10px', color: '#6b7280' }}>
+              Tamaño <span className="font-bold text-navy">{diag.companySize.size}</span>
+            </span>
+          </div>
 
-      {/* Actions */}
-      <div className="flex items-center shrink-0" style={{ gap: '6px' }}>
-        <button
-          onClick={() => onViewReport(diag)}
-          style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#c07f20'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#d4922e'; }}
-        >
-          Ver
-        </button>
-        <button
-          onClick={() => onExportPdf(diag)}
-          className="border border-navy/20 text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer"
-          style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
-        >
-          PDF
-        </button>
-        <button
-          onClick={() => onExportExcel(diag)}
-          className="border border-border text-muted font-medium hover:border-mid/50 hover:text-ink transition-all cursor-pointer"
-          style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
-        >
-          Excel
-        </button>
+          {/* Actions — inline on desktop, below on mobile */}
+          <div className="flex items-center flex-wrap" style={{ gap: '6px', marginTop: '8px' }}>
+            <button
+              onClick={() => onViewReport(diag)}
+              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#c07f20'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#d4922e'; }}
+            >
+              Ver
+            </button>
+            <button
+              onClick={() => onExportPdf(diag)}
+              className="border border-navy/20 text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer"
+              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+            >
+              PDF
+            </button>
+            <button
+              onClick={() => onExportExcel(diag)}
+              className="border border-border text-muted font-medium hover:border-mid/50 hover:text-ink transition-all cursor-pointer"
+              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+            >
+              Excel
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -713,54 +714,56 @@ function OrgRow({ survey, isLatest }: { survey: SavedOrgSurvey; isLatest: boolea
   const totalColab = survey.areaDetails.reduce((sum, a) => sum + (a.colaboradores ?? 0), 0);
 
   return (
-    <div className="flex items-center" style={{ gap: '14px', padding: '14px 0', borderBottom: '1px solid #f3f4f6' }}>
-      <div className="shrink-0 flex flex-col items-center" style={{ width: '36px' }}>
-        <div style={{
-          width: '10px', height: '10px', borderRadius: '50%',
-          background: isLatest ? '#6366f1' : '#d1d5db',
-          border: isLatest ? '2px solid #6366f140' : '2px solid #e5e7eb',
-        }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
-          <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{survey.companyName || 'Sin nombre'}</p>
-          {isLatest && (
-            <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#6366f115', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Mas reciente
+    <div style={{ padding: '14px 0', borderBottom: '1px solid #f3f4f6' }}>
+      <div className="flex items-start" style={{ gap: '14px' }}>
+        <div className="shrink-0 flex flex-col items-center" style={{ width: '36px', paddingTop: '4px' }}>
+          <div style={{
+            width: '10px', height: '10px', borderRadius: '50%',
+            background: isLatest ? '#6366f1' : '#d1d5db',
+            border: isLatest ? '2px solid #6366f140' : '2px solid #e5e7eb',
+          }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
+            <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{survey.companyName || 'Sin nombre'}</p>
+            {isLatest && (
+              <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#6366f115', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Más reciente
+              </span>
+            )}
+          </div>
+          <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
+            {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+          <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
+            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+              Colaboradores <span className="font-bold text-navy">{totalColab}</span>
             </span>
-          )}
+            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+              Areas <span className="font-bold text-navy">{survey.areaDetails.length}</span>
+            </span>
+            <span className="hidden sm:inline" style={{ fontSize: '10px', color: '#6b7280' }}>
+              Organigrama <span className="font-bold text-navy">{survey.orgStructure.tieneOrganigrama ? 'Sí' : 'No'}</span>
+            </span>
+          </div>
+          <div className="flex items-center flex-wrap" style={{ gap: '6px', marginTop: '8px' }}>
+            <button
+              onClick={() => nav(survey)}
+              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#6366f1', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#4f46e5'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#6366f1'; }}
+            >
+              Ver
+            </button>
+            <button
+              onClick={() => exportOrgSurveyToPdf(survey)}
+              className="border border-mid/30 text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer"
+              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+            >
+              PDF
+            </button>
+          </div>
         </div>
-        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
-          {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-        <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Colaboradores <span className="font-bold text-navy">{totalColab}</span>
-          </span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Areas <span className="font-bold text-navy">{survey.areaDetails.length}</span>
-          </span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Organigrama <span className="font-bold text-navy">{survey.orgStructure.tieneOrganigrama ? 'Si' : 'No'}</span>
-          </span>
-        </div>
-      </div>
-      <div className="flex items-center shrink-0" style={{ gap: '6px' }}>
-        <button
-          onClick={() => nav(survey)}
-          style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#6366f1', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#4f46e5'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#6366f1'; }}
-        >
-          Ver
-        </button>
-        <button
-          onClick={() => exportOrgSurveyToPdf(survey)}
-          className="border border-mid/30 text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer"
-          style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
-        >
-          PDF
-        </button>
       </div>
     </div>
   );
@@ -771,54 +774,56 @@ function TechRow({ survey, isLatest }: { survey: SavedTechSurvey; isLatest: bool
   const date = new Date(survey.savedAt);
 
   return (
-    <div className="flex items-center" style={{ gap: '14px', padding: '14px 0', borderBottom: '1px solid #f3f4f6' }}>
-      <div className="shrink-0 flex flex-col items-center" style={{ width: '36px' }}>
-        <div style={{
-          width: '10px', height: '10px', borderRadius: '50%',
-          background: isLatest ? '#0047AB' : '#d1d5db',
-          border: isLatest ? '2px solid #0047AB40' : '2px solid #e5e7eb',
-        }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
-          <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{survey.companyName || 'Sin nombre'}</p>
-          {isLatest && (
-            <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#0047AB15', color: '#0047AB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Mas reciente
+    <div style={{ padding: '14px 0', borderBottom: '1px solid #f3f4f6' }}>
+      <div className="flex items-start" style={{ gap: '14px' }}>
+        <div className="shrink-0 flex flex-col items-center" style={{ width: '36px', paddingTop: '4px' }}>
+          <div style={{
+            width: '10px', height: '10px', borderRadius: '50%',
+            background: isLatest ? '#0047AB' : '#d1d5db',
+            border: isLatest ? '2px solid #0047AB40' : '2px solid #e5e7eb',
+          }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
+            <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{survey.companyName || 'Sin nombre'}</p>
+            {isLatest && (
+              <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#0047AB15', color: '#0047AB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Más reciente
+              </span>
+            )}
+          </div>
+          <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
+            {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+          <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
+            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+              Score <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{survey.maturityScore}/100</span>
             </span>
-          )}
+            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+              Nivel <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{MATURITY_LABELS[survey.maturityLevel] || survey.maturityLevel}</span>
+            </span>
+            <span className="hidden sm:inline" style={{ fontSize: '10px', color: '#6b7280' }}>
+              ERP <span className="font-bold text-navy">{survey.tools.tieneERP ? 'Sí' : 'No'}</span>
+            </span>
+          </div>
+          <div className="flex items-center flex-wrap" style={{ gap: '6px', marginTop: '8px' }}>
+            <button
+              onClick={() => nav(survey)}
+              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#0047AB', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#003680'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#0047AB'; }}
+            >
+              Ver
+            </button>
+            <button
+              onClick={() => exportTechSurveyToPdf(survey)}
+              className="border border-accent/30 text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
+              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+            >
+              PDF
+            </button>
+          </div>
         </div>
-        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
-          {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-        <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Score <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{survey.maturityScore}/100</span>
-          </span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            Nivel <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{MATURITY_LABELS[survey.maturityLevel] || survey.maturityLevel}</span>
-          </span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>
-            ERP <span className="font-bold text-navy">{survey.tools.tieneERP ? 'Si' : 'No'}</span>
-          </span>
-        </div>
-      </div>
-      <div className="flex items-center shrink-0" style={{ gap: '6px' }}>
-        <button
-          onClick={() => nav(survey)}
-          style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#0047AB', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#003680'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#0047AB'; }}
-        >
-          Ver
-        </button>
-        <button
-          onClick={() => exportTechSurveyToPdf(survey)}
-          className="border border-accent/30 text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-          style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
-        >
-          PDF
-        </button>
       </div>
     </div>
   );
@@ -827,24 +832,26 @@ function TechRow({ survey, isLatest }: { survey: SavedTechSurvey; isLatest: bool
 function DraftBanner({ icon, label, step, totalSteps, onResume, onDiscard }: { icon: string; label: string; step: number; totalSteps: number; onResume: () => void; onDiscard: () => void; }) {
   const pct = Math.round((step / totalSteps) * 100);
   return (
-    <div className="rounded-2xl border-2 border-accent/30 bg-accent/5 shadow-sm animate-fade-up" style={{ padding: '18px 24px' }}>
-      <div className="flex items-center" style={{ gap: '14px' }}>
-        <div className="inline-flex items-center justify-center rounded-full bg-accent/15 shrink-0" style={{ width: '40px', height: '40px' }}>
-          <span style={{ fontSize: '18px' }}>{icon}</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center" style={{ gap: '8px', marginBottom: '4px' }}>
-            <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{label}</p>
-            <span className="bg-warn/15 text-warn font-bold border border-warn/30 shrink-0" style={{ fontSize: '9px', padding: '2px 8px', borderRadius: '6px' }}>En progreso</span>
+    <div className="rounded-2xl border-2 border-accent/30 bg-accent/5 shadow-sm animate-fade-up" style={{ padding: 'clamp(14px, 2vw, 18px) clamp(16px, 3vw, 24px)' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '10px' }}>
+        <div className="flex items-center flex-1 min-w-0" style={{ gap: '14px' }}>
+          <div className="inline-flex items-center justify-center rounded-full bg-accent/15 shrink-0" style={{ width: '40px', height: '40px' }}>
+            <span style={{ fontSize: '18px' }}>{icon}</span>
           </div>
-          <div className="flex items-center" style={{ gap: '8px' }}>
-            <div className="flex-1 rounded-full bg-border/40" style={{ height: '4px', maxWidth: '120px' }}>
-              <div className="rounded-full progress-shimmer" style={{ height: '4px', width: `${pct}%`, transition: 'width 0.3s' }} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center" style={{ gap: '8px', marginBottom: '4px' }}>
+              <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{label}</p>
+              <span className="bg-warn/15 text-warn font-bold border border-warn/30 shrink-0" style={{ fontSize: '9px', padding: '2px 8px', borderRadius: '6px' }}>En progreso</span>
             </div>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: '10px' }}>Paso {step} de {totalSteps}</span>
+            <div className="flex items-center" style={{ gap: '8px' }}>
+              <div className="flex-1 rounded-full bg-border/40" style={{ height: '4px', maxWidth: '120px' }}>
+                <div className="rounded-full progress-shimmer" style={{ height: '4px', width: `${pct}%`, transition: 'width 0.3s' }} />
+              </div>
+              <span className="text-muted font-medium shrink-0" style={{ fontSize: '10px' }}>Paso {step} de {totalSteps}</span>
+            </div>
           </div>
         </div>
-        <div className="flex items-center shrink-0" style={{ gap: '8px' }}>
+        <div className="flex items-center shrink-0 self-end sm:self-auto" style={{ gap: '8px' }}>
           <button onClick={onDiscard} className="text-muted hover:text-error font-medium transition-all cursor-pointer" style={{ fontSize: '11px', padding: '6px 10px', background: 'none' }}>Descartar</button>
           <button onClick={onResume} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm" style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '10px' }}>Continuar →</button>
         </div>

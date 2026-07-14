@@ -17,6 +17,7 @@ import type {
   MarginData,
   MarginEvaluation,
   SoftwareSelections,
+  LineaNegocio,
 } from '../lib/types';
 import { calculateCompanySize, calculateScore, mapOpportunityAreas, calculateUrgency, evaluateMargins } from '../lib/calculations';
 import { useBenchmarkStore } from './benchmarkStore';
@@ -55,6 +56,7 @@ function migrateSoftwareField(
 function defaultDatosGenerales(): DatosGenerales {
   return {
     nombreComercial: '',
+    ubicacion: '',
     antiguedadConstituida: '',
     antiguedadOperativa: '',
     empresaFamiliar: 'no',
@@ -78,6 +80,8 @@ function defaultSituacionActual(): SituacionActual {
     sociosDetalle: [],
     familiaresEnPoder: '',
     sueldoMasAlto: '',
+    pctIngresoFiscalizado: null,
+    pctEgresoFiscalizado: null,
   };
 }
 
@@ -88,7 +92,8 @@ function defaultCriterionAnswers(criteria: { id: string }[]): CriterionAnswer[] 
 function defaultGerencias(): Gerencia[] {
   return GERENCIA_AREAS.map(area => ({
     area,
-    cubierto: false,
+    nombre: '',
+    cubierto: null,
     antiguedad: '',
     calificado: 'por_evaluar' as CalificadoStatus,
   }));
@@ -97,6 +102,9 @@ function defaultGerencias(): Gerencia[] {
 function defaultMarginData(): MarginData {
   return {
     tieneDatosFinancieros: false,
+    conoceMargenBruto: false,
+    conoceMargenOperativo: false,
+    conoceMargenNeto: false,
     margenBruto: null,
     margenOperativo: null,
     margenNeto: null,
@@ -123,11 +131,13 @@ interface DiagnosticState {
   datosGenerales: DatosGenerales;
   situacionActual: SituacionActual;
   descripcionNegocio: string;
+  lineasNegocio: LineaNegocio[];
   profAnswers: CriterionAnswer[];
   instAnswers: CriterionAnswer[];
   gerencias: Gerencia[];
   retos: string[];
   urgencia: UrgencySelection | null;
+  tieneLiderInterno: boolean | null;
   analisisFamiliar: FamilyAnalysis;
   marginData: MarginData;
   savedResultId: string | null;
@@ -154,6 +164,7 @@ interface DiagnosticState {
   updateDatosGenerales: (partial: Partial<DatosGenerales>) => void;
   updateSituacionActual: (partial: Partial<SituacionActual>) => void;
   setDescripcionNegocio: (text: string) => void;
+  setLineasNegocio: (lineas: LineaNegocio[]) => void;
   setCriterionAnswer: (category: 'prof' | 'inst', id: string, answer: Partial<CriterionAnswer>) => void;
   setGerencia: (index: number, data: Partial<Gerencia>) => void;
   setReto: (index: number, text: string) => void;
@@ -173,8 +184,10 @@ interface DiagnosticState {
   loadDiagnosticForReport: (d: SavedDiagnostic) => void;
   loadDiagnosticForEdit: (d: SavedDiagnostic) => void;
   startPrefillMode: (userId: string) => void;
+  editPrefillMode: (userId: string, data: PrefillData) => void;
   loadPrefill: (data: PrefillData) => void;
   savePrefillData: () => Promise<boolean>;
+  setTieneLiderInterno: (v: boolean | null) => void;
 }
 
 export const useDiagnosticStore = create<DiagnosticState>()(
@@ -186,11 +199,13 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       datosGenerales: defaultDatosGenerales(),
       situacionActual: defaultSituacionActual(),
       descripcionNegocio: '',
+      lineasNegocio: [],
       profAnswers: defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
       instAnswers: defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
       gerencias: defaultGerencias(),
       retos: ['', '', ''],
       urgencia: null,
+      tieneLiderInterno: null,
       analisisFamiliar: defaultFamilyAnalysis(),
       marginData: defaultMarginData(),
       savedResultId: null,
@@ -215,6 +230,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         set((state) => ({ situacionActual: { ...state.situacionActual, ...partial } })),
 
       setDescripcionNegocio: (text) => set({ descripcionNegocio: text }),
+      setLineasNegocio: (lineas) => set({ lineasNegocio: lineas }),
 
       setCriterionAnswer: (category, id, answer) =>
         set((state) => {
@@ -240,6 +256,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         }),
 
       setUrgencia: (level) => set({ urgencia: level }),
+      setTieneLiderInterno: (v) => set({ tieneLiderInterno: v }),
 
       updateAnalisisFamiliar: (partial) =>
         set((state) => ({ analisisFamiliar: { ...state.analisisFamiliar, ...partial } })),
@@ -249,7 +266,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
 
       isFamilyBusiness: () => {
         const ef = get().datosGenerales.empresaFamiliar;
-        return ef === 'si_1era' || ef === 'si_2da' || ef === 'si_3era';
+        return ef === 'si_1era' || ef === 'si_1era_transicion' || ef === 'si_2da' || ef === 'si_3era';
       },
 
       getCompanySize: () => {
@@ -295,7 +312,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
 
       getMarginEvaluation: () => {
         const { marginData, datosGenerales } = get();
-        if (!marginData.tieneDatosFinancieros) return null;
+        const hasAny = marginData.conoceMargenBruto || marginData.conoceMargenOperativo || marginData.conoceMargenNeto || marginData.tieneDatosFinancieros;
+        if (!hasAny) return null;
         const benchmarks = useBenchmarkStore.getState().benchmarks;
         const benchmark = benchmarks[datosGenerales.sector];
         return evaluateMargins(marginData, benchmark);
@@ -323,11 +341,13 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           opportunityAreas,
           gerencias: [...state.gerencias],
           descripcionNegocio: state.descripcionNegocio,
+          lineasNegocio: state.lineasNegocio.length > 0 ? [...state.lineasNegocio] : undefined,
           retos: [...state.retos],
           urgenciaSelection: state.urgencia ?? 'deseable',
           urgenciaLevel: urgencyLevel,
+          tieneLiderInterno: state.tieneLiderInterno,
           analisisFamiliar: state.isFamilyBusiness() ? { ...state.analisisFamiliar } : null,
-          marginData: state.marginData.tieneDatosFinancieros ? { ...state.marginData } : undefined,
+          marginData: (state.marginData.conoceMargenBruto || state.marginData.conoceMargenOperativo || state.marginData.conoceMargenNeto) ? { ...state.marginData, tieneDatosFinancieros: true } : undefined,
           marginEvaluation: marginEval ?? undefined,
           wasPrefilled: state.originatedFromPrefill,
         };
@@ -355,11 +375,13 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           datosGenerales: defaultDatosGenerales(),
           situacionActual: defaultSituacionActual(),
           descripcionNegocio: '',
+          lineasNegocio: [],
           profAnswers: defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
           instAnswers: defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
           gerencias: defaultGerencias(),
           retos: ['', '', ''],
           urgencia: null,
+          tieneLiderInterno: null,
           analisisFamiliar: defaultFamilyAnalysis(),
           marginData: defaultMarginData(),
           savedResultId: null,
@@ -391,13 +413,15 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           datosGenerales: dg,
           situacionActual: { ...defaultSituacionActual(), ...d.situacionActual },
           descripcionNegocio: d.descripcionNegocio ?? '',
+          lineasNegocio: d.lineasNegocio ?? [],
           profAnswers: d.profesionalizacion.answers.map(a => ({ ...a })),
           instAnswers: d.institucionalizacion.answers.map(a => ({ ...a })),
-          gerencias: d.gerencias.map(g => ({ ...g })),
+          gerencias: d.gerencias.map(g => ({ ...g, nombre: g.nombre ?? '' })),
           retos: [...d.retos],
           urgencia: d.urgenciaSelection,
+          tieneLiderInterno: (d as any).tieneLiderInterno ?? null,
           analisisFamiliar: d.analisisFamiliar ? { ...d.analisisFamiliar } : defaultFamilyAnalysis(),
-          marginData: d.marginData ? { ...d.marginData } : defaultMarginData(),
+          marginData: d.marginData ? { ...d.marginData, conoceMargenBruto: d.marginData.conoceMargenBruto ?? false, conoceMargenOperativo: d.marginData.conoceMargenOperativo ?? false, conoceMargenNeto: d.marginData.conoceMargenNeto ?? false } : defaultMarginData(),
           view: 'report',
         });
       },
@@ -419,13 +443,15 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           datosGenerales: dg,
           situacionActual: { ...defaultSituacionActual(), ...d.situacionActual },
           descripcionNegocio: d.descripcionNegocio ?? '',
+          lineasNegocio: d.lineasNegocio ?? [],
           profAnswers: d.profesionalizacion.answers.map(a => ({ ...a })),
           instAnswers: d.institucionalizacion.answers.map(a => ({ ...a })),
-          gerencias: d.gerencias.map(g => ({ ...g })),
+          gerencias: d.gerencias.map(g => ({ ...g, nombre: g.nombre ?? '' })),
           retos: [...d.retos],
           urgencia: d.urgenciaSelection,
+          tieneLiderInterno: (d as any).tieneLiderInterno ?? null,
           analisisFamiliar: d.analisisFamiliar ? { ...d.analisisFamiliar } : defaultFamilyAnalysis(),
-          marginData: d.marginData ? { ...d.marginData } : defaultMarginData(),
+          marginData: d.marginData ? { ...d.marginData, conoceMargenBruto: d.marginData.conoceMargenBruto ?? false, conoceMargenOperativo: d.marginData.conoceMargenOperativo ?? false, conoceMargenNeto: d.marginData.conoceMargenNeto ?? false } : defaultMarginData(),
           editMode: true,
           editDiagnosticId: d.id,
           testMode: false,
@@ -449,11 +475,13 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           datosGenerales: defaultDatosGenerales(),
           situacionActual: defaultSituacionActual(),
           descripcionNegocio: '',
+          lineasNegocio: [],
           profAnswers: defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
           instAnswers: defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
           gerencias: defaultGerencias(),
           retos: ['', '', ''],
           urgencia: null,
+          tieneLiderInterno: null,
           analisisFamiliar: defaultFamilyAnalysis(),
           marginData: defaultMarginData(),
           savedResultId: null,
@@ -464,6 +492,37 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           prefillTargetUserId: userId,
           originatedFromPrefill: false,
         }),
+
+      editPrefillMode: (userId: string, data: PrefillData) => {
+        const dg = { ...defaultDatosGenerales(), ...(data.datosGenerales ?? {}) };
+        if (!dg.softwareSelections) dg.softwareSelections = defaultSoftwareSelections();
+        dg.puestoEmpresa = dg.puestoEmpresa ?? '';
+        dg.puestoFamilia = dg.puestoFamilia ?? '';
+        dg.email = dg.email ?? '';
+
+        set({
+          view: 'wizard',
+          currentStep: 0,
+          datosGenerales: dg,
+          situacionActual: { ...defaultSituacionActual(), ...(data.situacionActual ?? {}) },
+          descripcionNegocio: data.descripcionNegocio ?? '',
+          lineasNegocio: data.lineasNegocio ?? [],
+          profAnswers: data.profAnswers ?? defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
+          instAnswers: data.instAnswers ?? defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
+          gerencias: data.gerencias ?? defaultGerencias(),
+          retos: data.retos ?? ['', '', ''],
+          urgencia: data.urgencia ?? null,
+          tieneLiderInterno: data.tieneLiderInterno ?? null,
+          analisisFamiliar: data.analisisFamiliar ?? defaultFamilyAnalysis(),
+          marginData: data.marginData ?? defaultMarginData(),
+          savedResultId: null,
+          emailStatus: 'idle',
+          draftActive: false,
+          prefillMode: true,
+          prefillTargetUserId: userId,
+          originatedFromPrefill: false,
+        });
+      },
 
       loadPrefill: (data: PrefillData) => {
         // Deep-merge with defaults so every field exists
@@ -479,11 +538,13 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           datosGenerales: dg,
           situacionActual: { ...defaultSituacionActual(), ...(data.situacionActual ?? {}) },
           descripcionNegocio: data.descripcionNegocio ?? '',
+          lineasNegocio: data.lineasNegocio ?? [],
           profAnswers: data.profAnswers ?? defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
           instAnswers: data.instAnswers ?? defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
           gerencias: data.gerencias ?? defaultGerencias(),
           retos: data.retos ?? ['', '', ''],
           urgencia: data.urgencia ?? null,
+          tieneLiderInterno: data.tieneLiderInterno ?? null,
           analisisFamiliar: data.analisisFamiliar ?? defaultFamilyAnalysis(),
           marginData: data.marginData ?? defaultMarginData(),
           savedResultId: null,
@@ -502,11 +563,13 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           datosGenerales: { ...state.datosGenerales },
           situacionActual: { ...state.situacionActual },
           descripcionNegocio: state.descripcionNegocio,
+          lineasNegocio: [...state.lineasNegocio],
           profAnswers: state.profAnswers.map(a => ({ ...a })),
           instAnswers: state.instAnswers.map(a => ({ ...a })),
           gerencias: state.gerencias.map(g => ({ ...g })),
           retos: [...state.retos],
           urgencia: state.urgencia,
+          tieneLiderInterno: state.tieneLiderInterno,
           analisisFamiliar: { ...state.analisisFamiliar },
           marginData: { ...state.marginData },
         };
@@ -605,6 +668,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         gerencias: state.gerencias,
         retos: state.retos,
         urgencia: state.urgencia,
+        tieneLiderInterno: state.tieneLiderInterno,
         analisisFamiliar: state.analisisFamiliar,
         marginData: state.marginData,
       }),

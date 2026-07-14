@@ -7,10 +7,10 @@ import { computeTechMaturityScore, TECH_AREAS } from '../config/techQuestions';
 import type { SavedTechSurvey, TechMaturityLevel } from '../lib/types';
 
 const LEVEL_CONFIG: Record<TechMaturityLevel, { label: string; emoji: string; className: string; barClass: string }> = {
-  basico: { label: 'Basico', emoji: '🔴', className: 'bg-error/10 border-error/20 text-error', barClass: 'bg-error' },
+  basico: { label: 'Básico', emoji: '🔴', className: 'bg-error/10 border-error/20 text-error', barClass: 'bg-error' },
   intermedio: { label: 'Intermedio', emoji: '🟡', className: 'bg-warn/10 border-warn/20 text-warn', barClass: 'bg-warn' },
   avanzado: { label: 'Avanzado', emoji: '🟢', className: 'bg-success/10 border-success/20 text-success', barClass: 'bg-success' },
-  lider_digital: { label: 'Lider Digital', emoji: '💎', className: 'bg-accent/10 border-accent/20 text-accent', barClass: 'bg-accent' },
+  lider_digital: { label: 'Líder Digital', emoji: '💎', className: 'bg-accent/10 border-accent/20 text-accent', barClass: 'bg-accent' },
 };
 
 function getBarColor(score: number): string {
@@ -72,27 +72,27 @@ export default function TechReportPage() {
   if (tools.tieneCRM) findings.push('Cuenta con CRM' + (tools.crmNombre ? ` (${tools.crmNombre})` : ''));
   if (digitalPresence.tieneWebsite) findings.push('Tiene presencia web' + (digitalPresence.tieneEcommerce ? ' con e-commerce' : ''));
   else findings.push('No tiene sitio web');
-  if (aiAdoption.usaIAEnEmpresa) findings.push('Ya utiliza IA en la operacion');
-  else if (aiAdoption.conoceIA) findings.push('Conoce la IA pero aun no la implementa');
+  if (aiAdoption.usaIAEnEmpresa) findings.push('Ya utiliza IA en la operación');
+  else if (aiAdoption.conoceIA) findings.push('Conoce la IA pero aún no la implementa');
   else findings.push('No ha explorado la IA');
   if (security.usaNube) findings.push('Opera en la nube' + (security.proveedorNube ? ` (${security.proveedorNube})` : ''));
-  if (dataAnalytics.tieneKPIs) findings.push('Mide KPIs de desempeno');
+  if (dataAnalytics.tieneKPIs) findings.push('Mide KPIs de desempeño');
   if (culture.equipoTI) findings.push(`Tiene equipo de TI${culture.equipoTISize ? ` (${culture.equipoTISize} personas)` : ''}`);
 
   // Recommendations based on weak areas
   const recommendations: { priority: 'alta' | 'media' | 'baja'; text: string }[] = [];
-  if (areaScores.tools <= 30) recommendations.push({ priority: 'alta', text: 'Implementar un sistema ERP/CRM para profesionalizar la gestion empresarial.' });
+  if (areaScores.tools <= 30) recommendations.push({ priority: 'alta', text: 'Implementar un sistema ERP/CRM para profesionalizar la gestión empresarial.' });
   if (areaScores.digital_presence <= 30) recommendations.push({ priority: 'alta', text: 'Desarrollar presencia digital con sitio web actualizado y estrategia de redes sociales.' });
-  if (areaScores.automation <= 30) recommendations.push({ priority: 'alta', text: 'Automatizar procesos clave como facturacion electronica y gestion documental.' });
-  else if (areaScores.automation <= 60) recommendations.push({ priority: 'media', text: 'Ampliar la automatizacion a mas areas de la operacion.' });
+  if (areaScores.automation <= 30) recommendations.push({ priority: 'alta', text: 'Automatizar procesos clave como facturación electrónica y gestión documental.' });
+  else if (areaScores.automation <= 60) recommendations.push({ priority: 'media', text: 'Ampliar la automatización a más áreas de la operación.' });
   if (areaScores.data_analytics <= 30) recommendations.push({ priority: 'alta', text: 'Establecer KPIs y dashboards para toma de decisiones basada en datos.' });
-  else if (areaScores.data_analytics <= 60) recommendations.push({ priority: 'media', text: 'Implementar herramientas de Business Intelligence para analisis avanzado.' });
-  if (areaScores.ai <= 30) recommendations.push({ priority: 'media', text: 'Explorar casos de uso de IA como chatbots, generacion de contenido y analisis predictivo.' });
-  if (areaScores.security <= 40) recommendations.push({ priority: 'alta', text: 'Fortalecer la ciberseguridad: antivirus, respaldos automaticos y politicas formales.' });
-  else if (areaScores.security <= 70) recommendations.push({ priority: 'media', text: 'Completar la estrategia de seguridad con capacitacion al personal y migracion a la nube.' });
-  if (areaScores.culture <= 30) recommendations.push({ priority: 'alta', text: 'Invertir en cultura digital: capacitacion tecnologica, equipo de TI y presupuesto asignado.' });
-  else if (areaScores.culture <= 60) recommendations.push({ priority: 'media', text: 'Reducir resistencia al cambio con programas de capacitacion continua.' });
-  if (score >= 75) recommendations.push({ priority: 'baja', text: 'El nivel tecnologico es avanzado. Continuar con innovacion y adopcion de tecnologias emergentes.' });
+  else if (areaScores.data_analytics <= 60) recommendations.push({ priority: 'media', text: 'Implementar herramientas de Business Intelligence para análisis avanzado.' });
+  if (areaScores.ai <= 30) recommendations.push({ priority: 'media', text: 'Explorar casos de uso de IA como chatbots, generación de contenido y análisis predictivo.' });
+  if (areaScores.security <= 40) recommendations.push({ priority: 'alta', text: 'Fortalecer la ciberseguridad: antivirus, respaldos automáticos y políticas formales.' });
+  else if (areaScores.security <= 70) recommendations.push({ priority: 'media', text: 'Completar la estrategia de seguridad con capacitación al personal y migración a la nube.' });
+  if (areaScores.culture <= 30) recommendations.push({ priority: 'alta', text: 'Invertir en cultura digital: capacitación tecnológica, equipo de TI y presupuesto asignado.' });
+  else if (areaScores.culture <= 60) recommendations.push({ priority: 'media', text: 'Reducir resistencia al cambio con programas de capacitación continua.' });
+  if (score >= 75) recommendations.push({ priority: 'baja', text: 'El nivel tecnológico es avanzado. Continuar con innovación y adopción de tecnologías emergentes.' });
 
   let sectionNum = 0;
   const nextNum = () => String(++sectionNum).padStart(2, '0');
@@ -102,7 +102,7 @@ export default function TechReportPage() {
 
       {/* Header */}
       <div className="text-center animate-fade-up" style={{ marginBottom: '36px' }}>
-        <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '6px' }}>Reporte — Prueba de Tecnologia</h1>
+        <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '6px' }}>Reporte — Prueba de Tecnología</h1>
         <p className="text-muted" style={{ fontSize: '12px' }}>
           {companyName || 'Empresa'} — {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
@@ -112,7 +112,7 @@ export default function TechReportPage() {
       <Section title="Resumen Ejecutivo" number={nextNum()}>
         <div className="flex items-center justify-center" style={{ gap: '24px', marginBottom: '24px' }}>
           <div className="text-center">
-            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '6px' }}>Madurez Tecnologica</p>
+            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '6px' }}>Madurez Tecnológica</p>
             <p className="font-bold text-navy" style={{ fontSize: '42px', lineHeight: 1 }}>{score}</p>
             <p className="text-muted" style={{ fontSize: '10px' }}>de 100</p>
           </div>
@@ -125,12 +125,12 @@ export default function TechReportPage() {
           <MetricBox label="Empresa" value={companyName || '—'} />
           <MetricBox label="Score General" value={`${score}/100`} highlight />
           <MetricBox label="Nivel" value={levelCfg.label} />
-          <MetricBox label="Areas Evaluadas" value="7" />
+          <MetricBox label="Áreas Evaluadas" value="7" />
         </div>
       </Section>
 
       {/* Score por Area */}
-      <Section title="Desglose por Area" number={nextNum()}>
+      <Section title="Desglose por Área" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {TECH_AREAS.map(area => {
             const areaScore = areaScores[area.id] ?? 0;
@@ -189,7 +189,7 @@ export default function TechReportPage() {
         />
         <h3 className="font-serif text-white" style={{ fontSize: '13px', marginBottom: '4px' }}>COMPLEMENT Consulting Group</h3>
         <p className="text-white/60 mx-auto" style={{ fontSize: '10px', marginBottom: '20px', maxWidth: '400px' }}>
-          Reporte generado automaticamente. Contacte a nuestro equipo para profundizar.
+          Reporte generado automáticamente. Contacte a nuestro equipo para profundizar.
         </p>
         <div className="flex justify-center flex-wrap" style={{ gap: '10px' }}>
           <button

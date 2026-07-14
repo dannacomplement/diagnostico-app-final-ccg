@@ -2,8 +2,8 @@ import { useTechSurveyStore } from '../../store/techSurveyStore';
 
 const RESPALDOS_OPTIONS = [
   { value: 'nunca' as const, label: 'No se hacen respaldos', icon: '🔴' },
-  { value: 'manual' as const, label: 'Manual / esporadico', icon: '🟡' },
-  { value: 'automatico' as const, label: 'Automatico / programado', icon: '🟢' },
+  { value: 'manual' as const, label: 'Manual / esporádico', icon: '🟡' },
+  { value: 'automatico' as const, label: 'Automático / programado', icon: '🟢' },
 ];
 
 export default function TechStep6Security() {
@@ -17,7 +17,7 @@ export default function TechStep6Security() {
           🔒 Ciberseguridad
         </h2>
         <p className="text-muted" style={{ fontSize: '12px' }}>
-          Medidas de seguridad informatica, respaldos y uso de la nube.
+          Medidas de seguridad informática, respaldos y uso de la nube.
         </p>
       </div>
 
@@ -33,7 +33,7 @@ export default function TechStep6Security() {
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.tieneAntivirus === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
               style={{ padding: '12px', fontSize: '13px' }}
             >
-              {val ? 'Si' : 'No'}
+              {val ? 'Sí' : 'No'}
             </button>
           ))}
         </div>
@@ -59,7 +59,7 @@ export default function TechStep6Security() {
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
         <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
-          ¿Tiene politicas de seguridad informatica documentadas?
+          ¿Tiene políticas de seguridad informática documentadas?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
           {[true, false].map(val => (
@@ -69,7 +69,7 @@ export default function TechStep6Security() {
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.politicasSeguridad === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
               style={{ padding: '12px', fontSize: '13px' }}
             >
-              {val ? 'Si' : 'No'}
+              {val ? 'Sí' : 'No'}
             </button>
           ))}
         </div>
@@ -77,7 +77,7 @@ export default function TechStep6Security() {
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
         <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
-          ¿Da capacitacion en ciberseguridad a los empleados?
+          ¿Da capacitación en ciberseguridad a los empleados?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
           {[true, false].map(val => (
@@ -87,7 +87,7 @@ export default function TechStep6Security() {
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.capacitacionSeguridad === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
               style={{ padding: '12px', fontSize: '13px' }}
             >
-              {val ? 'Si' : 'No'}
+              {val ? 'Sí' : 'No'}
             </button>
           ))}
         </div>
@@ -105,7 +105,7 @@ export default function TechStep6Security() {
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.usaNube === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
               style={{ padding: '12px', fontSize: '13px' }}
             >
-              {val ? 'Si' : 'No'}
+              {val ? 'Sí' : 'No'}
             </button>
           ))}
         </div>

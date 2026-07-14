@@ -6,20 +6,24 @@ export default function SettingsPage() {
   const setView = useDiagnosticStore(s => s.setView);
   const companyLogo = useSettingsStore(s => s.companyLogo);
   const companyLogoIcon = useSettingsStore(s => s.companyLogoIcon);
+  const floatingLogo = useSettingsStore(s => s.floatingLogo);
   const setCompanyLogo = useSettingsStore(s => s.setCompanyLogo);
+  const setFloatingLogo = useSettingsStore(s => s.setFloatingLogo);
 
   const [preview, setPreview] = useState<string | null>(null);
   const [previewIcon, setPreviewIcon] = useState<string | null>(null);
+  const [previewFloating, setPreviewFloating] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const iconFileRef = useRef<HTMLInputElement>(null);
+  const floatingFileRef = useRef<HTMLInputElement>(null);
 
   // Whether we have unsaved changes
-  const hasChanges = preview !== null || previewIcon !== null;
+  const hasChanges = preview !== null || previewIcon !== null || previewFloating !== null;
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>, target: 'logo' | 'icon') {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>, target: 'logo' | 'icon' | 'floating') {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -41,8 +45,10 @@ export default function SettingsPage() {
       const dataUrl = reader.result as string;
       if (target === 'logo') {
         setPreview(dataUrl);
-      } else {
+      } else if (target === 'icon') {
         setPreviewIcon(dataUrl);
+      } else {
+        setPreviewFloating(dataUrl);
       }
     };
     reader.readAsDataURL(file);
@@ -58,9 +64,14 @@ export default function SettingsPage() {
 
     const ok = await setCompanyLogo(logoToSave, iconToSave);
 
+    if (previewFloating !== null) {
+      await setFloatingLogo(previewFloating);
+    }
+
     if (ok) {
       setPreview(null);
       setPreviewIcon(null);
+      setPreviewFloating(null);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } else {
@@ -106,7 +117,7 @@ export default function SettingsPage() {
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '6px' }}>
-            Configuracion
+            Configuración
           </h1>
           <p className="text-muted" style={{ fontSize: '13px' }}>
             Personalice la apariencia del sistema para todas las cuentas.
@@ -119,7 +130,7 @@ export default function SettingsPage() {
             Logo principal
           </h2>
           <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
-            Este logo aparece en la pagina de inicio de sesion y en la portada principal. Se recomienda una imagen horizontal (PNG o SVG) con fondo transparente.
+            Este logo aparece en la página de inicio de sesión y en la portada principal. Se recomienda una imagen horizontal (PNG o SVG) con fondo transparente.
           </p>
 
           {/* Current logo preview */}
@@ -179,7 +190,7 @@ export default function SettingsPage() {
             Icono del encabezado
           </h2>
           <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
-            Icono pequeno que aparece en la barra de navegacion superior. Se recomienda una imagen cuadrada (PNG o SVG) con fondo transparente.
+            Icono pequeño que aparece en la barra de navegación superior. Se recomienda una imagen cuadrada (PNG o SVG) con fondo transparente.
           </p>
 
           {/* Current icon preview */}
@@ -199,7 +210,7 @@ export default function SettingsPage() {
                 {displayIcon ? 'Icono personalizado' : 'Icono por defecto'}
               </p>
               <p className="text-muted" style={{ fontSize: '11px' }}>
-                Se muestra en la barra superior de navegacion.
+                Se muestra en la barra superior de navegación.
               </p>
             </div>
           </div>
@@ -220,6 +231,74 @@ export default function SettingsPage() {
             >
               Seleccionar icono
             </button>
+          </div>
+        </div>
+
+        {/* Logo flotante (login) */}
+        <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '32px', marginBottom: '20px' }}>
+          <h2 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '4px' }}>
+            Logo flotante (inicio de sesión)
+          </h2>
+          <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
+            Imagen que flota en el fondo de la pantalla de inicio de sesión. Si no se configura, se usa el logo principal. Se recomienda una imagen con fondo transparente (PNG o SVG).
+          </p>
+
+          {/* Preview */}
+          <div className="flex items-center" style={{ gap: '20px', marginBottom: '20px' }}>
+            <div
+              className="flex items-center justify-center rounded-xl"
+              style={{ width: '100px', height: '100px', overflow: 'hidden', background: 'linear-gradient(135deg, #001845, #002060)' }}
+            >
+              <img
+                src={(previewFloating ?? floatingLogo) || companyLogo || '/logo-complement.svg'}
+                alt="Logo flotante"
+                className="object-contain"
+                style={{ maxWidth: '70px', maxHeight: '70px', filter: 'brightness(0) invert(1)', opacity: 0.5 }}
+              />
+            </div>
+            <div>
+              <p className="text-ink font-medium" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                {(previewFloating ?? floatingLogo) ? 'Logo flotante personalizado' : 'Usando logo principal'}
+              </p>
+              <p className="text-muted" style={{ fontSize: '11px' }}>
+                Se muestra como animación de fondo en la pantalla de login.
+              </p>
+            </div>
+          </div>
+
+          {/* Upload button */}
+          <div className="flex items-center" style={{ gap: '10px' }}>
+            <input
+              ref={floatingFileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/svg+xml,image/webp"
+              onChange={(e) => handleFileSelect(e, 'floating')}
+              className="hidden"
+            />
+            <button
+              onClick={() => floatingFileRef.current?.click()}
+              className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer"
+              style={{ fontSize: '12px', padding: '10px 20px', borderRadius: '10px' }}
+            >
+              Seleccionar imagen
+            </button>
+            {(previewFloating ?? floatingLogo) && (
+              <button
+                onClick={async () => {
+                  setSaving(true);
+                  await setFloatingLogo(null);
+                  setPreviewFloating(null);
+                  setSaving(false);
+                  setSuccess(true);
+                  setTimeout(() => setSuccess(false), 3000);
+                }}
+                disabled={saving}
+                className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer"
+                style={{ fontSize: '12px', padding: '10px 16px', borderRadius: '10px' }}
+              >
+                Usar logo principal
+              </button>
+            )}
           </div>
         </div>
 
@@ -250,7 +329,7 @@ export default function SettingsPage() {
         {/* Info note */}
         <div className="bg-accent/5 rounded-xl" style={{ padding: '16px 20px', marginTop: '24px' }}>
           <p className="text-muted" style={{ fontSize: '11px', lineHeight: '1.6' }}>
-            <strong className="text-ink">Nota:</strong> Los cambios de logo se aplican globalmente a todas las cuentas del sistema, incluyendo la pagina de inicio de sesion, el panel principal y los reportes en pantalla. Para que los cambios tomen efecto en la tabla <code className="bg-pale text-ink rounded px-1">app_settings</code>, asegurese de que exista en Supabase con columnas <code className="bg-pale text-ink rounded px-1">key (text PK)</code> y <code className="bg-pale text-ink rounded px-1">value (text)</code>.
+            <strong className="text-ink">Nota:</strong> Los cambios de logo se aplican globalmente a todas las cuentas del sistema, incluyendo la página de inicio de sesión, el panel principal y los reportes en pantalla. Para que los cambios tomen efecto en la tabla <code className="bg-pale text-ink rounded px-1">app_settings</code>, asegúrese de que exista en Supabase con columnas <code className="bg-pale text-ink rounded px-1">key (text PK)</code> y <code className="bg-pale text-ink rounded px-1">value (text)</code>.
           </p>
         </div>
       </div>

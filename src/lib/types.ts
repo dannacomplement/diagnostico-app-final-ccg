@@ -6,7 +6,7 @@ export type ServiceAreaId =
   | 'investigacion_mercado'
   | 'juntas_directivas';
 
-export type EmpresaFamiliar = 'si_1era' | 'si_2da' | 'si_3era' | 'no';
+export type EmpresaFamiliar = 'si_1era' | 'si_1era_transicion' | 'si_2da' | 'si_3era' | 'no';
 export type Sector = 'manufactura' | 'comercio' | 'servicios';
 /** @deprecated Use SoftwareOption[] via softwareSelections instead */
 export type SoftwareGestion = 'erp_crm' | 'excel' | 'nada';
@@ -34,6 +34,7 @@ export interface CriterionConfig {
   requiresFamilyBusiness: boolean;
   serviceAreaMappings: ServiceAreaId[];
   weight: number;
+  notApplicableLabel?: string;
 }
 
 export interface ServiceAreaConfig {
@@ -45,6 +46,7 @@ export interface ServiceAreaConfig {
 
 export interface DatosGenerales {
   nombreComercial: string;
+  ubicacion: string;
   antiguedadConstituida: string;
   antiguedadOperativa: string;
   empresaFamiliar: EmpresaFamiliar;
@@ -65,7 +67,13 @@ export interface DatosGenerales {
 }
 
 export interface SocioDetail {
+  nombre: string;
   esFamiliar: boolean | null;
+  porcentaje: string;
+}
+
+export interface LineaNegocio {
+  nombre: string;
   porcentaje: string;
 }
 
@@ -77,6 +85,8 @@ export interface SituacionActual {
   sociosDetalle: SocioDetail[];
   familiaresEnPoder: string;
   sueldoMasAlto: string;
+  pctIngresoFiscalizado: number | null;
+  pctEgresoFiscalizado: number | null;
 }
 
 export interface CriterionAnswer {
@@ -88,13 +98,22 @@ export interface CriterionAnswer {
 
 export type CalificadoStatus = 'si' | 'no' | 'por_evaluar';
 
+export interface DGEvaluation {
+  nivelEstudios: number | null;
+  experienciaLaboral: number | null;
+  seguimientoResultados: number | null;
+}
+
 export interface Gerencia {
   area: string;
-  cubierto: boolean;
+  nombre: string;
+  cubierto: boolean | null;
   antiguedad: string;
   calificado: CalificadoStatus;
   rangoSueldo?: string;
   esFamiliar?: boolean;
+  soyYo?: boolean;
+  dgEvaluation?: DGEvaluation;
 }
 
 export interface FamilyAnalysis {
@@ -129,6 +148,9 @@ export type MarginLevel = 'arriba_industria' | 'en_rango' | 'debajo_industria' |
 
 export interface MarginData {
   tieneDatosFinancieros: boolean;
+  conoceMargenBruto: boolean;
+  conoceMargenOperativo: boolean;
+  conoceMargenNeto: boolean;
   margenBruto: number | null;
   margenOperativo: number | null;
   margenNeto: number | null;
@@ -154,6 +176,7 @@ export type DiagnosticClassification = 'prospecto' | 'en_proceso' | 'cerrado' | 
 
 export type UserRole = 'master' | 'client';
 export type SurveyType = 'diagnostico_empresarial' | 'estructura_organizacional' | 'prueba_tecnologia';
+export type ClientStatus = 'activo' | 'inactivo' | 'prospecto';
 
 export interface AppUser {
   id: string;
@@ -163,6 +186,8 @@ export interface AppUser {
   email?: string;
   surveyPermissions?: SurveyType[];
   logoUrl?: string;
+  status?: ClientStatus;
+  createdAt?: string;
 }
 
 /* ── Estructura Organizacional Survey ──────────────────── */
@@ -215,9 +240,11 @@ export interface SavedDiagnostic {
   opportunityAreas: OpportunityArea[];
   gerencias: Gerencia[];
   descripcionNegocio?: string;
+  lineasNegocio?: LineaNegocio[];
   retos: string[];
   urgenciaSelection: UrgencySelection;
   urgenciaLevel: UrgencyLevel;
+  tieneLiderInterno?: boolean | null;
   analisisFamiliar: FamilyAnalysis | null;
   marginData?: MarginData;
   marginEvaluation?: MarginEvaluation;
