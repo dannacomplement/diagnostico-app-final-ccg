@@ -69,12 +69,12 @@ export default function OrgReportPage() {
   const nextNum = () => String(++sectionNum).padStart(2, '0');
 
   return (
-    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ width: '100%', maxWidth: '930px', margin: '0 auto', padding: 'var(--sp-pagepad)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
       {/* Header */}
       <div className="text-center animate-fade-up" style={{ marginBottom: '36px' }}>
-        <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '6px' }}>Reporte de Estructura Organizacional</h1>
-        <p className="text-muted" style={{ fontSize: '12px' }}>
+        <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '6px' }}>Reporte de Estructura Organizacional</h1>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
           {companyName || 'Empresa'} — {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function OrgReportPage() {
       <Section title="Detalle por Área" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* Header row */}
-          <div className="flex items-center text-muted font-medium uppercase tracking-wide" style={{ gap: '10px', padding: '6px 14px', fontSize: '9px' }}>
+          <div className="flex items-center text-muted font-medium uppercase tracking-wide" style={{ gap: '10px', padding: 'var(--sp-btn-d)', fontSize: 'var(--fs-9)' }}>
             <span style={{ flex: 2 }}>Área</span>
             <span style={{ width: '80px', textAlign: 'center' }}>Colaboradores</span>
             <span style={{ width: '100px', textAlign: 'center' }}>Sueldo Prom.</span>
@@ -132,22 +132,22 @@ export default function OrgReportPage() {
             const subtotal = (area.colaboradores ?? 0) * (area.sueldoPromedio ?? 0);
             return (
               <div key={i} className="flex items-center rounded-lg bg-pale" style={{ gap: '10px', padding: '12px 14px' }}>
-                <span className="font-medium text-ink" style={{ flex: 2, fontSize: '12px' }}>
-                  {area.isCustom && <span className="text-accent" style={{ fontSize: '10px', marginRight: '4px' }}>*</span>}
+                <span className="font-medium text-ink" style={{ flex: 2, fontSize: 'var(--fs-12)' }}>
+                  {area.isCustom && <span className="text-accent" style={{ fontSize: 'var(--fs-10)', marginRight: '4px' }}>*</span>}
                   {area.nombre || 'Sin nombre'}
                 </span>
-                <span className="text-ink font-semibold text-center" style={{ width: '80px', fontSize: '12px' }}>
+                <span className="text-ink font-semibold text-center" style={{ width: '80px', fontSize: 'var(--fs-12)' }}>
                   {area.colaboradores ?? '—'}
                 </span>
-                <span className="text-ink text-center" style={{ width: '100px', fontSize: '12px' }}>
+                <span className="text-ink text-center" style={{ width: '100px', fontSize: 'var(--fs-12)' }}>
                   {area.sueldoPromedio ? `$${area.sueldoPromedio.toLocaleString('es-MX')}` : '—'}
                 </span>
                 <span className="text-center" style={{ width: '70px' }}>
-                  <span className={`rounded-full font-semibold ${area.tieneLider ? 'bg-success/15 text-success' : 'bg-error/15 text-error'}`} style={{ fontSize: '10px', padding: '2px 8px' }}>
+                  <span className={`rounded-full font-semibold ${area.tieneLider ? 'bg-success/15 text-success' : 'bg-error/15 text-error'}`} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
                     {area.tieneLider ? 'Sí' : 'No'}
                   </span>
                 </span>
-                <span className="text-ink font-medium text-center" style={{ width: '80px', fontSize: '11px' }}>
+                <span className="text-ink font-medium text-center" style={{ width: '80px', fontSize: 'var(--fs-11)' }}>
                   ${subtotal.toLocaleString('es-MX')}
                 </span>
               </div>
@@ -156,13 +156,13 @@ export default function OrgReportPage() {
 
           {/* Totals row */}
           <div className="flex items-center rounded-lg bg-navy/5 border border-navy/10 font-semibold" style={{ gap: '10px', padding: '14px 14px' }}>
-            <span className="text-navy" style={{ flex: 2, fontSize: '12px' }}>TOTAL</span>
-            <span className="text-navy text-center" style={{ width: '80px', fontSize: '13px' }}>{totalColab}</span>
+            <span className="text-navy" style={{ flex: 2, fontSize: 'var(--fs-12)' }}>TOTAL</span>
+            <span className="text-navy text-center" style={{ width: '80px', fontSize: 'var(--fs-13)' }}>{totalColab}</span>
             <span style={{ width: '100px' }} />
             <span className="text-center" style={{ width: '70px' }}>
-              <span className="text-navy" style={{ fontSize: '11px' }}>{areasConLider}/{areasTotal}</span>
+              <span className="text-navy" style={{ fontSize: 'var(--fs-11)' }}>{areasConLider}/{areasTotal}</span>
             </span>
-            <span className="text-navy text-center" style={{ width: '80px', fontSize: '12px' }}>
+            <span className="text-navy text-center" style={{ width: '80px', fontSize: 'var(--fs-12)' }}>
               ${totalNomina.toLocaleString('es-MX')}
             </span>
           </div>
@@ -201,8 +201,8 @@ export default function OrgReportPage() {
           const comp = COMPETITIVENESS_LABELS[talentProcesses.competitividadSueldos] ?? COMPETITIVENESS_LABELS.no_se;
           return (
             <div className={`rounded-xl text-center border ${comp.className}`} style={{ padding: '16px 14px', marginBottom: '20px' }}>
-              <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: '9px', marginBottom: '4px' }}>Competitividad salarial</p>
-              <p className="font-bold" style={{ fontSize: '14px' }}>{comp.label}</p>
+              <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: 'var(--fs-9)', marginBottom: '4px' }}>Competitividad salarial</p>
+              <p className="font-bold" style={{ fontSize: 'var(--fs-14)' }}>{comp.label}</p>
             </div>
           );
         })()}
@@ -210,8 +210,8 @@ export default function OrgReportPage() {
         {/* Reto de capital humano */}
         {talentProcesses.retoCapitalHumano && (
           <div className="rounded-lg bg-navy/5 border border-navy/10" style={{ padding: '16px 20px' }}>
-            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px', marginBottom: '6px' }}>Principal reto de capital humano</p>
-            <p className="text-ink leading-relaxed" style={{ fontSize: '12px' }}>{talentProcesses.retoCapitalHumano}</p>
+            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px' }}>Principal reto de capital humano</p>
+            <p className="text-ink leading-relaxed" style={{ fontSize: 'var(--fs-12)' }}>{talentProcesses.retoCapitalHumano}</p>
           </div>
         )}
       </Section>
@@ -262,30 +262,30 @@ export default function OrgReportPage() {
       </Section>
 
       {/* Footer */}
-      <div className="w-full bg-navy rounded-2xl text-center" style={{ padding: '40px 32px', marginTop: '4px' }}>
+      <div className="w-full bg-navy rounded-2xl text-center" style={{ padding: 'var(--sp-footer)', marginTop: '4px' }}>
         <img
           src={companyLogo || '/logo-complement.png'}
           alt="Complement"
           className="mx-auto object-contain"
-          style={{ height: '36px', marginBottom: '10px' }}
+          style={{ height: 'var(--sz-logo-footer-sm)', marginBottom: '10px' }}
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
-        <h3 className="font-serif text-white" style={{ fontSize: '13px', marginBottom: '4px' }}>COMPLEMENT Consulting Group</h3>
-        <p className="text-white/60 mx-auto" style={{ fontSize: '10px', marginBottom: '20px', maxWidth: '400px' }}>
+        <h3 className="font-serif text-white" style={{ fontSize: 'var(--fs-13)', marginBottom: '4px' }}>COMPLEMENT Consulting Group</h3>
+        <p className="text-white/60 mx-auto" style={{ fontSize: 'var(--fs-10)', marginBottom: '20px', maxWidth: '400px' }}>
           Reporte generado automaticamente. Contacte a nuestro equipo para profundizar.
         </p>
         <div className="flex justify-center flex-wrap" style={{ gap: '10px' }}>
           <button
             onClick={handleDownloadPdf}
             className="bg-white text-navy font-semibold hover:bg-white/90 transition-all cursor-pointer"
-            style={{ fontSize: '12px', padding: '9px 20px', borderRadius: '10px' }}
+            style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-pill-sm)', borderRadius: '10px' }}
           >
             PDF
           </button>
           <button
             onClick={handleBack}
             className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-            style={{ fontSize: '12px', padding: '9px 20px', borderRadius: '10px' }}
+            style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-pill-sm)', borderRadius: '10px' }}
           >
             {user?.role === 'master' ? 'Expedientes' : 'Mis Encuestas'}
           </button>
@@ -301,8 +301,8 @@ function Section({ title, number, children }: { title: string; number: string; c
   return (
     <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 animate-fade-up" style={{ padding: '36px 32px', marginBottom: '24px' }}>
       <div className="flex items-center border-b border-border/30" style={{ gap: '12px', marginBottom: '28px', paddingBottom: '16px' }}>
-        <span className="font-bold text-mid bg-mid/10 rounded-full flex items-center justify-center" style={{ fontSize: '11px', width: '32px', height: '32px' }}>{number}</span>
-        <h2 className="font-serif text-navy" style={{ fontSize: '16px' }}>{title}</h2>
+        <span className="font-bold text-mid bg-mid/10 rounded-full flex items-center justify-center" style={{ fontSize: 'var(--fs-11)', width: '32px', height: '32px' }}>{number}</span>
+        <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-16)' }}>{title}</h2>
       </div>
       {children}
     </div>
@@ -314,8 +314,8 @@ function Section({ title, number, children }: { title: string; number: string; c
 function MetricBox({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className={`rounded-xl text-center ${highlight ? 'bg-mid/10 border border-mid/20' : 'bg-pale border border-border/30'}`} style={{ padding: '18px 12px' }}>
-      <p className="text-muted font-medium uppercase tracking-wider" style={{ fontSize: '9px', marginBottom: '6px' }}>{label}</p>
-      <p className={`font-semibold ${highlight ? 'text-mid' : 'text-ink'}`} style={{ fontSize: '13px' }}>{value}</p>
+      <p className="text-muted font-medium uppercase tracking-wider" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{label}</p>
+      <p className={`font-semibold ${highlight ? 'text-mid' : 'text-ink'}`} style={{ fontSize: 'var(--fs-13)' }}>{value}</p>
     </div>
   );
 }
@@ -324,13 +324,13 @@ function MetricBox({ label, value, highlight }: { label: string; value: string; 
 
 function StructureRow({ label, value, positive, warning }: { label: string; value: string; positive: boolean; warning?: boolean }) {
   return (
-    <div className="flex items-center justify-between rounded-lg bg-pale" style={{ padding: '14px 18px' }}>
-      <span className="text-ink font-medium" style={{ fontSize: '12px' }}>{label}</span>
+    <div className="flex items-center justify-between rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-a)' }}>
+      <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)' }}>{label}</span>
       <span className={`font-semibold rounded-full ${
         positive ? 'bg-success/15 text-success' :
         warning ? 'bg-warn/15 text-warn' :
         'bg-error/15 text-error'
-      }`} style={{ fontSize: '11px', padding: '3px 12px' }}>
+      }`} style={{ fontSize: 'var(--fs-11)', padding: '3px 12px' }}>
         {value}
       </span>
     </div>
@@ -345,16 +345,16 @@ function Recommendation({ priority, text }: { priority: 'alta' | 'media' | 'baja
       ${priority === 'alta' ? 'border-l-error bg-error/5' :
         priority === 'media' ? 'border-l-warn bg-warn/5' :
         'border-l-mid bg-mid/5'}
-    `} style={{ padding: '14px 18px' }}>
+    `} style={{ padding: 'var(--sp-btn-a)' }}>
       <div className="flex items-start" style={{ gap: '8px' }}>
         <span className={`font-semibold rounded-full shrink-0
           ${priority === 'alta' ? 'bg-error/15 text-error' :
             priority === 'media' ? 'bg-warn/15 text-warn' :
             'bg-mid/15 text-mid'}
-        `} style={{ fontSize: '10px', padding: '2px 8px' }}>
+        `} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
           {priority === 'alta' ? 'Alta' : priority === 'media' ? 'Media' : 'Baja'}
         </span>
-        <p className="text-ink" style={{ fontSize: '11px' }}>{text}</p>
+        <p className="text-ink" style={{ fontSize: 'var(--fs-11)' }}>{text}</p>
       </div>
     </div>
   );

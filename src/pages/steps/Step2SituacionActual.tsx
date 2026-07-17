@@ -29,8 +29,8 @@ export default function Step2SituacionActual() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Situación Actual</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '40px' }}>Información financiera y operativa para clasificar su empresa.</p>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Situación Actual</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '40px' }}>Información financiera y operativa para clasificar su empresa.</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
         <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '20px' }}>
@@ -54,7 +54,7 @@ export default function Step2SituacionActual() {
                 className="input-field cursor-pointer"
                 style={{ maxWidth: '160px', minHeight: '38px', display: 'flex', alignItems: 'center' }}
               >
-                <span className={situacion.ventasAnualesMDP ? 'text-ink font-semibold' : 'text-muted'} style={{ fontSize: '13px' }}>
+                <span className={situacion.ventasAnualesMDP ? 'text-ink font-semibold' : 'text-muted'} style={{ fontSize: 'var(--fs-13)' }}>
                   {situacion.ventasAnualesMDP ? formatMDP(situacion.ventasAnualesMDP) : '$0 MDP'}
                 </span>
               </div>
@@ -103,7 +103,7 @@ export default function Step2SituacionActual() {
         <SociosSection />
 
         <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '20px' }}>Fiscalización</h3>
+          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '20px' }}>Fiscalización</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             <FiscalSlider
               label="Ingreso Fiscalizado"
@@ -120,22 +120,22 @@ export default function Step2SituacionActual() {
 
         {sizeResult && (
           <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-            <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '24px' }}>Resultado del análisis</h3>
+            <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '24px' }}>Resultado del análisis</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '20px' }}>
               <div className={`rounded-xl border-2 text-center ${(SIZE_COLORS as any)[sizeResult.size] || 'border-border bg-pale'}`} style={{ padding: '20px 16px' }}>
-                <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: '10px', marginBottom: '6px' }}>Tamaño de empresa</p>
-                <p className="font-bold" style={{ fontSize: '18px' }}>{sizeResult.size}</p>
-                <p className="opacity-70" style={{ fontSize: '11px', marginTop: '6px' }}>TMC: {sizeResult.tmcScore}</p>
+                <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px' }}>Tamaño de empresa</p>
+                <p className="font-bold" style={{ fontSize: 'var(--fs-18)' }}>{sizeResult.size}</p>
+                <p className="opacity-70" style={{ fontSize: 'var(--fs-11)', marginTop: '6px' }}>TMC: {sizeResult.tmcScore}</p>
               </div>
               <div className="rounded-xl border border-border text-center bg-pale" style={{ padding: '20px 16px' }}>
-                <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: '10px', marginBottom: '6px' }}>Productividad per capita</p>
-                <p className="font-bold text-ink" style={{ fontSize: '18px' }}>${sizeResult.productivityIndex.toFixed(2)}</p>
-                <p className="text-muted" style={{ fontSize: '10px', marginTop: '6px' }}>MDP por empleado</p>
+                <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px' }}>Productividad per capita</p>
+                <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>${sizeResult.productivityIndex.toFixed(2)}</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '6px' }}>MDP por empleado</p>
               </div>
               <div className="rounded-xl border border-border text-center bg-pale" style={{ padding: '20px 16px' }}>
-                <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: '10px', marginBottom: '6px' }}>Puntaje TMC</p>
-                <p className="font-bold text-ink" style={{ fontSize: '18px' }}>{sizeResult.tmcScore}</p>
-                <p className="text-muted" style={{ fontSize: '11px', marginTop: '6px' }}>(Trabajadores x 10%) + (Ventas x 90%)</p>
+                <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px' }}>Puntaje TMC</p>
+                <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{sizeResult.tmcScore}</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '6px' }}>(Trabajadores x 10%) + (Ventas x 90%)</p>
               </div>
             </div>
           </div>
@@ -143,8 +143,8 @@ export default function Step2SituacionActual() {
 
         {/* Datos Financieros — Margenes */}
         <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '10px' }}>Datos Financieros</h3>
-          <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
+          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>Datos Financieros</h3>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px' }}>
             Indique qué márgenes financieros conoce de su empresa.
           </p>
 
@@ -152,14 +152,14 @@ export default function Step2SituacionActual() {
             {/* Margen Bruto */}
             <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px' }}>
               <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
-                <span className="font-medium text-ink" style={{ fontSize: '12px' }}>Margen Bruto</span>
+                <span className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>Margen Bruto</span>
                 <div className="flex" style={{ gap: '4px' }}>
                   <button type="button" onClick={() => updateMarginData({ conoceMargenBruto: true })}
                     className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenBruto ? 'bg-accent text-white' : 'bg-white text-muted border border-border'}`}
-                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>Sí</button>
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}>Sí</button>
                   <button type="button" onClick={() => updateMarginData({ conoceMargenBruto: false, margenBruto: null })}
                     className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenBruto === false ? 'bg-navy/70 text-white' : 'bg-white text-muted border border-border'}`}
-                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>No</button>
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}>No</button>
                 </div>
               </div>
               {marginData.conoceMargenBruto && (
@@ -172,14 +172,14 @@ export default function Step2SituacionActual() {
             {/* Margen Operativo */}
             <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px' }}>
               <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
-                <span className="font-medium text-ink" style={{ fontSize: '12px' }}>M. Operativo</span>
+                <span className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>M. Operativo</span>
                 <div className="flex" style={{ gap: '4px' }}>
                   <button type="button" onClick={() => updateMarginData({ conoceMargenOperativo: true })}
                     className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenOperativo ? 'bg-accent text-white' : 'bg-white text-muted border border-border'}`}
-                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>Sí</button>
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}>Sí</button>
                   <button type="button" onClick={() => updateMarginData({ conoceMargenOperativo: false, margenOperativo: null })}
                     className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenOperativo === false ? 'bg-navy/70 text-white' : 'bg-white text-muted border border-border'}`}
-                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>No</button>
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}>No</button>
                 </div>
               </div>
               {marginData.conoceMargenOperativo && (
@@ -192,14 +192,14 @@ export default function Step2SituacionActual() {
             {/* Margen Neto */}
             <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px' }}>
               <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
-                <span className="font-medium text-ink" style={{ fontSize: '12px' }}>M. Neto</span>
+                <span className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>M. Neto</span>
                 <div className="flex" style={{ gap: '4px' }}>
                   <button type="button" onClick={() => updateMarginData({ conoceMargenNeto: true })}
                     className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenNeto ? 'bg-accent text-white' : 'bg-white text-muted border border-border'}`}
-                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>Sí</button>
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}>Sí</button>
                   <button type="button" onClick={() => updateMarginData({ conoceMargenNeto: false, margenNeto: null })}
                     className={`font-semibold transition-all cursor-pointer ${marginData.conoceMargenNeto === false ? 'bg-navy/70 text-white' : 'bg-white text-muted border border-border'}`}
-                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '10px' }}>No</button>
+                    style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}>No</button>
                 </div>
               </div>
               {marginData.conoceMargenNeto && (
@@ -274,7 +274,7 @@ function SociosSection() {
           className="rounded-2xl border border-accent/20 bg-accent/5"
           style={{ marginTop: '16px', padding: '18px 20px' }}
         >
-          <p className="text-muted font-medium" style={{ fontSize: '11px', marginBottom: '14px' }}>
+          <p className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)', marginBottom: '14px' }}>
             Detalle de cada socio:
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -284,14 +284,14 @@ function SociosSection() {
               <div
                 key={i}
                 className={`flex items-center flex-wrap rounded-xl border ${isRespondent ? 'bg-accent/5 border-accent/30' : 'bg-white border-border/40'}`}
-                style={{ padding: '10px 16px', gap: '12px' }}
+                style={{ padding: 'var(--sp-btn-b)', gap: '12px' }}
               >
                 <div className="shrink-0" style={{ minWidth: '50px' }}>
-                  <span className="font-bold text-navy block" style={{ fontSize: '12px' }}>
+                  <span className="font-bold text-navy block" style={{ fontSize: 'var(--fs-12)' }}>
                     Socio {i + 1}
                   </span>
                   {isRespondent && (
-                    <span className="text-accent font-semibold block" style={{ fontSize: '9px' }}>
+                    <span className="text-accent font-semibold block" style={{ fontSize: 'var(--fs-9)' }}>
                       (Respondiente)
                     </span>
                   )}
@@ -304,12 +304,12 @@ function SociosSection() {
                   onChange={e => setSocio(i, { nombre: e.target.value })}
                   placeholder="Nombre del socio"
                   className="input-field"
-                  style={{ maxWidth: '160px', fontSize: '12px', padding: '4px 8px' }}
+                  style={{ maxWidth: '160px', fontSize: 'var(--fs-12)', padding: '4px 8px' }}
                 />
 
                 {/* Es familiar? */}
                 <div className="flex items-center" style={{ gap: '6px' }}>
-                  <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px' }}>Familiar?</span>
+                  <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)' }}>Familiar?</span>
                   <button
                     type="button"
                     onClick={() => setSocio(i, { esFamiliar: true })}
@@ -318,7 +318,7 @@ function SociosSection() {
                         ? 'bg-accent text-white'
                         : 'bg-pale text-muted hover:bg-light border border-border'
                     }`}
-                    style={{ padding: '3px 12px', borderRadius: '7px', fontSize: '11px' }}
+                    style={{ padding: '3px 12px', borderRadius: '7px', fontSize: 'var(--fs-11)' }}
                   >
                     Si
                   </button>
@@ -330,7 +330,7 @@ function SociosSection() {
                         ? 'bg-navy/70 text-white'
                         : 'bg-pale text-muted hover:bg-light border border-border'
                     }`}
-                    style={{ padding: '3px 12px', borderRadius: '7px', fontSize: '11px' }}
+                    style={{ padding: '3px 12px', borderRadius: '7px', fontSize: 'var(--fs-11)' }}
                   >
                     No
                   </button>
@@ -338,7 +338,7 @@ function SociosSection() {
 
                 {/* Porcentaje */}
                 <div className="flex items-center" style={{ gap: '5px' }}>
-                  <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px' }}>%&nbsp;empresa:</span>
+                  <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)' }}>%&nbsp;empresa:</span>
                   <input
                     type="number"
                     value={s.porcentaje}
@@ -347,9 +347,9 @@ function SociosSection() {
                     min="0"
                     max="100"
                     className="input-field"
-                    style={{ maxWidth: '70px', fontSize: '12px', padding: '4px 8px' }}
+                    style={{ maxWidth: '70px', fontSize: 'var(--fs-12)', padding: '4px 8px' }}
                   />
-                  <span className="text-muted" style={{ fontSize: '11px' }}>%</span>
+                  <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>%</span>
                 </div>
               </div>
               );
@@ -362,15 +362,15 @@ function SociosSection() {
             const isValid = Math.abs(total - 100) < 0.5;
             return (
               <div className="flex items-center justify-end" style={{ marginTop: '10px', gap: '6px' }}>
-                <span className="text-muted font-medium" style={{ fontSize: '10px' }}>Total:</span>
+                <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-10)' }}>Total:</span>
                 <span
                   className={`font-bold ${isValid ? 'text-success' : 'text-warn'}`}
-                  style={{ fontSize: '12px' }}
+                  style={{ fontSize: 'var(--fs-12)' }}
                 >
                   {total.toFixed(1)}%
                 </span>
                 {!isValid && (
-                  <span className="text-warn" style={{ fontSize: '10px' }}>
+                  <span className="text-warn" style={{ fontSize: 'var(--fs-10)' }}>
                     (debe sumar 100%)
                   </span>
                 )}
@@ -390,8 +390,8 @@ function FiscalSlider({ label, value, onChange }: { label: string; value: number
   return (
     <div className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '14px 20px' }}>
       <div className="flex items-center justify-between" style={{ marginBottom: '10px' }}>
-        <span className="font-medium text-ink" style={{ fontSize: '13px' }}>{label}</span>
-        <span className="font-bold" style={{ fontSize: '20px', color, minWidth: '52px', textAlign: 'right' }}>
+        <span className="font-medium text-ink" style={{ fontSize: 'var(--fs-13)' }}>{label}</span>
+        <span className="font-bold" style={{ fontSize: 'var(--fs-20)', color, minWidth: '52px', textAlign: 'right' }}>
           {pct}%
         </span>
       </div>
@@ -411,11 +411,11 @@ function FiscalSlider({ label, value, onChange }: { label: string; value: number
         />
       </div>
       <div className="flex justify-between" style={{ marginTop: '6px' }}>
-        <span className="text-muted" style={{ fontSize: '9px' }}>0%</span>
-        <span className="text-muted" style={{ fontSize: '9px' }}>25%</span>
-        <span className="text-muted" style={{ fontSize: '9px' }}>50%</span>
-        <span className="text-muted" style={{ fontSize: '9px' }}>75%</span>
-        <span className="text-muted" style={{ fontSize: '9px' }}>100%</span>
+        <span className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>0%</span>
+        <span className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>25%</span>
+        <span className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>50%</span>
+        <span className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>75%</span>
+        <span className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>100%</span>
       </div>
     </div>
   );
@@ -424,12 +424,12 @@ function FiscalSlider({ label, value, onChange }: { label: string; value: number
 function InlineField({ label, required, prefix, suffix, children }: { label: string; required?: boolean; prefix?: string; suffix?: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center" style={{ gap: '8px' }}>
-      <label className="font-medium text-ink shrink-0" style={{ fontSize: '12px' }}>
+      <label className="font-medium text-ink shrink-0" style={{ fontSize: 'var(--fs-12)' }}>
         {label}{required && <span className="text-error" style={{ marginLeft: '3px' }}>*</span>}:
       </label>
-      {prefix && <span className="text-muted font-semibold shrink-0" style={{ fontSize: '13px' }}>{prefix}</span>}
+      {prefix && <span className="text-muted font-semibold shrink-0" style={{ fontSize: 'var(--fs-13)' }}>{prefix}</span>}
       {children}
-      {suffix && <span className="text-muted font-medium shrink-0" style={{ fontSize: '12px' }}>{suffix}</span>}
+      {suffix && <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-12)' }}>{suffix}</span>}
     </div>
   );
 }

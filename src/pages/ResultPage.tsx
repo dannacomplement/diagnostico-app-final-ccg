@@ -1,3 +1,4 @@
+import { Check, FlaskConical } from 'lucide-react';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useAuthStore } from '../store/authStore';
 import { getCurrentUser } from '../lib/auth';
@@ -27,12 +28,14 @@ export default function ResultPage() {
   const marginEval = getMarginEvaluation();
 
   return (
-    <div style={{ width: '100%', maxWidth: '720px', margin: '0 auto', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ width: '100%', maxWidth: '880px', margin: '0 auto', padding: 'var(--sp-pagepad)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
       {/* Test mode banner */}
       {testMode && (
         <div className="w-full bg-warn/10 border border-warn/30 rounded-xl text-center" style={{ padding: '14px 20px', marginBottom: '20px' }}>
-          <p className="text-warn font-semibold" style={{ fontSize: '13px' }}>🧪 Modo de prueba — estos datos no se guardaron</p>
+          <p className="text-warn font-semibold flex items-center justify-center" style={{ fontSize: 'var(--fs-13)', gap: '6px' }}>
+            <FlaskConical style={{ width: 'var(--fs-15)', height: 'var(--fs-15)' }} /> Modo de prueba — estos datos no se guardaron
+          </p>
         </div>
       )}
 
@@ -47,7 +50,7 @@ export default function ResultPage() {
             emailStatus === 'sending' ? 'text-accent' :
             emailStatus === 'sent' ? 'text-success' :
             'text-error'
-          }`} style={{ fontSize: '13px' }}>
+          }`} style={{ fontSize: 'var(--fs-13)' }}>
             {emailStatus === 'sending' && `Enviando reporte a ${email}...`}
             {emailStatus === 'sent' && `Reporte enviado exitosamente a ${email}`}
             {emailStatus === 'error' && `No se pudo enviar el reporte a ${email}`}
@@ -58,19 +61,19 @@ export default function ResultPage() {
       {/* Agradecimiento */}
       <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 text-center animate-fade-up" style={{ padding: '48px 36px', marginBottom: '28px' }}>
         <div className="inline-flex items-center justify-center rounded-full bg-success/10" style={{ width: '56px', height: '56px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '24px' }}>✓</span>
+          <Check className="text-success" style={{ width: '24px', height: '24px' }} />
         </div>
-        <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '10px' }}>
+        <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '10px' }}>
           Muchas gracias por responder la radiografía
         </h1>
-        <p className="text-muted leading-relaxed mx-auto" style={{ fontSize: '13px', maxWidth: '440px' }}>
+        <p className="text-muted leading-relaxed mx-auto" style={{ fontSize: 'var(--fs-13)', maxWidth: '440px' }}>
           Sus respuestas han sido registradas exitosamente. A continuación se muestra un resumen de los datos de su empresa.
         </p>
       </div>
 
       {/* Resumen Ejecutivo — datos de la empresa */}
       <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 animate-fade-up" style={{ padding: '40px 36px', marginBottom: '28px' }}>
-        <h2 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '28px' }}>Resumen Ejecutivo</h2>
+        <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '28px' }}>Resumen Ejecutivo</h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px', marginBottom: '14px' }}>
           <MetricBox label="Empresa" value={datosGenerales.nombreComercial || '—'} />
@@ -100,7 +103,7 @@ export default function ResultPage() {
       {/* Márgenes Financieros */}
       {marginData.tieneDatosFinancieros && marginEval && (
         <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 animate-fade-up" style={{ padding: '40px 36px', marginBottom: '28px' }}>
-          <h2 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '28px' }}>Márgenes Financieros</h2>
+          <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '28px' }}>Márgenes Financieros</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '14px' }}>
             {([
               { key: 'margenBruto' as const, label: 'Margen Bruto' },
@@ -112,9 +115,9 @@ export default function ResultPage() {
               const cfg = MARGIN_LEVEL_CONFIG[ev.level];
               return (
                 <div key={m.key} className={`rounded-xl border text-center ${cfg.className}`} style={{ padding: '20px 14px' }}>
-                  <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: '9px', marginBottom: '6px' }}>{m.label}</p>
-                  <p className="font-bold" style={{ fontSize: '20px' }}>{ev.value}%</p>
-                  <p className="font-semibold" style={{ fontSize: '11px', marginTop: '6px' }}>{cfg.label}</p>
+                  <p className="font-medium uppercase tracking-wide opacity-70" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{m.label}</p>
+                  <p className="font-bold" style={{ fontSize: 'var(--fs-20)' }}>{ev.value}%</p>
+                  <p className="font-semibold" style={{ fontSize: 'var(--fs-11)', marginTop: '6px' }}>{cfg.label}</p>
                 </div>
               );
             })}
@@ -127,7 +130,7 @@ export default function ResultPage() {
         <button
           onClick={() => setView('wizard')}
           className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-          style={{ fontSize: '13px', padding: '12px 32px', borderRadius: '12px' }}
+          style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
         >
           ← Editar respuestas
         </button>
@@ -148,7 +151,7 @@ function ResultNavButton() {
       <button
         onClick={() => { setTestMode(false); setView('home'); }}
         className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-        style={{ fontSize: '13px', padding: '12px 32px', borderRadius: '12px' }}
+        style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
       >
         {testMode ? '← Página Principal' : 'Página Principal'}
       </button>
@@ -159,7 +162,7 @@ function ResultNavButton() {
     <button
       onClick={() => setView('dashboard')}
       className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-      style={{ fontSize: '13px', padding: '12px 32px', borderRadius: '12px' }}
+      style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
     >
       Ver mis encuestas
     </button>
@@ -172,8 +175,8 @@ function MetricBox({ label, value, highlight }: { label: string; value: string; 
       className={`rounded-xl border text-center ${highlight ? 'border-accent/30 bg-accent/5' : 'border-border/60 bg-pale'}`}
       style={{ padding: '16px 12px' }}
     >
-      <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '6px' }}>{label}</p>
-      <p className={`font-bold ${highlight ? 'text-accent' : 'text-ink'}`} style={{ fontSize: '13px' }}>{value}</p>
+      <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{label}</p>
+      <p className={`font-bold ${highlight ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'var(--fs-13)' }}>{value}</p>
     </div>
   );
 }

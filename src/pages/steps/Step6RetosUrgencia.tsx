@@ -11,19 +11,19 @@ export default function Step6RetosUrgencia() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Principales Retos y Nivel de Urgencia</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '40px' }}>Mencione los 3 principales retos o problemas que enfrenta actualmente su empresa.</p>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Principales Retos y Nivel de Urgencia</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '40px' }}>Mencione los 3 principales retos o problemas que enfrenta actualmente su empresa.</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', marginBottom: '40px' }}>
         {retos.map((reto, i) => (
           <div key={i}>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>Reto o problema #{i + 1}</label>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>Reto o problema #{i + 1}</label>
             <textarea
               value={reto}
               onChange={e => setReto(i, e.target.value)}
               placeholder={`Describa su reto principal #${i + 1}...`}
               className="w-full border border-border bg-pale focus:bg-white focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none resize-none transition-all leading-relaxed"
-              style={{ padding: '14px 18px', fontSize: '13px', borderRadius: '12px' }}
+              style={{ padding: 'var(--sp-btn-a)', fontSize: 'var(--fs-13)', borderRadius: '12px' }}
               rows={3}
             />
           </div>
@@ -31,8 +31,8 @@ export default function Step6RetosUrgencia() {
       </div>
 
       <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-        <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '10px' }}>Líder Interno del Proyecto</h3>
-        <p className="text-ink" style={{ fontSize: '13px', marginBottom: '16px' }}>
+        <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>Líder Interno del Proyecto</h3>
+        <p className="text-ink" style={{ fontSize: 'var(--fs-13)', marginBottom: '16px' }}>
           ¿Existe un posible líder interno para el proyecto de consultoría que no sea el Director General?
         </p>
         <div className="flex" style={{ gap: '10px' }}>
@@ -44,7 +44,7 @@ export default function Step6RetosUrgencia() {
                 ? 'border-accent bg-accent/10 text-accent shadow-sm'
                 : 'border-border bg-white text-muted hover:border-mid/50'
             }`}
-            style={{ padding: '10px 28px', fontSize: '13px' }}
+            style={{ padding: '10px 28px', fontSize: 'var(--fs-13)' }}
           >
             Sí
           </button>
@@ -56,7 +56,7 @@ export default function Step6RetosUrgencia() {
                 ? 'border-navy/50 bg-navy/10 text-navy shadow-sm'
                 : 'border-border bg-white text-muted hover:border-mid/50'
             }`}
-            style={{ padding: '10px 28px', fontSize: '13px' }}
+            style={{ padding: '10px 28px', fontSize: 'var(--fs-13)' }}
           >
             No
           </button>
@@ -64,8 +64,8 @@ export default function Step6RetosUrgencia() {
       </div>
 
       <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-        <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '10px' }}>Nivel de Urgencia<span className="text-error" style={{ marginLeft: '3px' }}>*</span></h3>
-        <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
+        <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>Nivel de Urgencia<span className="text-error" style={{ marginLeft: '3px' }}>*</span></h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px' }}>
           Todos nuestros servicios se programan con anticipación. ¿Qué tan urgente considera empezar su proceso de profesionalización e institucionalización?
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -82,10 +82,10 @@ export default function Step6RetosUrgencia() {
               `}
               style={{ padding: '16px 22px' }}
             >
-              <span className={`font-semibold ${urgencia === opt.value ? 'text-accent' : 'text-ink'}`} style={{ fontSize: '13px' }}>
+              <span className={`font-semibold ${urgencia === opt.value ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'var(--fs-13)' }}>
                 {opt.label}
               </span>
-              <p className="text-muted" style={{ fontSize: '11px', marginTop: '4px' }}>{opt.description}</p>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '4px' }}>{opt.description}</p>
             </button>
           ))}
         </div>

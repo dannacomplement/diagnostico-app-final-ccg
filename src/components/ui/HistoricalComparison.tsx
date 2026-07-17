@@ -123,12 +123,12 @@ function DeltaBadge({ current, previous, label, suffix }: { current: number; pre
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '10px', background: bgColor, border: `1px solid ${borderColor}`, minWidth: '110px' }}>
-      <span style={{ fontSize: '16px', fontWeight: 700, color }}>{arrow}</span>
+      <span style={{ fontSize: 'var(--fs-16)', fontWeight: 700, color }}>{arrow}</span>
       <div>
-        <p style={{ fontSize: '8px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</p>
-        <p style={{ fontSize: '14px', fontWeight: 700, color: '#1b2a4a' }}>
+        <p style={{ fontSize: 'var(--fs-8)', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</p>
+        <p style={{ fontSize: 'var(--fs-14)', fontWeight: 700, color: '#1b2a4a' }}>
           {current}{suffix || ''}
-          <span style={{ fontSize: '11px', fontWeight: 600, color, marginLeft: '4px' }}>
+          <span style={{ fontSize: 'var(--fs-11)', fontWeight: 600, color, marginLeft: '4px' }}>
             {isUp ? '+' : ''}{delta}{suffix || ''}
           </span>
         </p>
@@ -173,8 +173,8 @@ export default function HistoricalComparison({ diagnostics }: Props) {
             </svg>
           </div>
           <div>
-            <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '1px' }}>Comparativa Historica</h3>
-            <p className="text-muted" style={{ fontSize: '10px' }}>{data.length} radiografías — evolución en el tiempo</p>
+            <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)', marginBottom: '1px' }}>Comparativa Historica</h3>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>{data.length} radiografías — evolución en el tiempo</p>
           </div>
         </div>
       </div>
@@ -200,24 +200,24 @@ export default function HistoricalComparison({ diagnostics }: Props) {
         ].map(l => (
           <div key={l.label} className="flex items-center" style={{ gap: '6px' }}>
             <div style={{ width: '12px', height: '3px', borderRadius: '2px', background: l.color }} />
-            <span style={{ fontSize: '10px', color: '#6b7280', fontWeight: 500 }}>{l.label}</span>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280', fontWeight: 500 }}>{l.label}</span>
           </div>
         ))}
       </div>
 
       {/* Comparison table */}
       <div style={{ overflowX: 'auto', marginBottom: '20px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--fs-11)' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-              <th style={{ textAlign: 'left', padding: '8px 10px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>Fecha</th>
-              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#d4922e', fontWeight: 600, fontSize: '10px' }}>Prof.</th>
-              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6366f1', fontWeight: 600, fontSize: '10px' }}>Inst.</th>
-              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#22c55e', fontWeight: 600, fontSize: '10px' }}>Ger.</th>
-              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>M.Bruto</th>
-              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>M.Oper.</th>
-              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>M.Neto</th>
-              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: '10px' }}>Tamaño</th>
+              <th style={{ textAlign: 'left', padding: '8px 10px', color: '#6b7280', fontWeight: 600, fontSize: 'var(--fs-10)' }}>Fecha</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#d4922e', fontWeight: 600, fontSize: 'var(--fs-10)' }}>Prof.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6366f1', fontWeight: 600, fontSize: 'var(--fs-10)' }}>Inst.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#22c55e', fontWeight: 600, fontSize: 'var(--fs-10)' }}>Ger.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: 'var(--fs-10)' }}>M.Bruto</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: 'var(--fs-10)' }}>M.Oper.</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: 'var(--fs-10)' }}>M.Neto</th>
+              <th style={{ textAlign: 'center', padding: '8px 6px', color: '#6b7280', fontWeight: 600, fontSize: 'var(--fs-10)' }}>Tamaño</th>
             </tr>
           </thead>
           <tbody>
@@ -226,7 +226,7 @@ export default function HistoricalComparison({ diagnostics }: Props) {
               return (
                 <tr key={i} style={{ borderBottom: '1px solid #f3f4f6', background: isLatest ? '#f0f7ff' : undefined }}>
                   <td style={{ padding: '7px 10px', fontWeight: isLatest ? 700 : 400, color: '#1b2a4a' }}>
-                    {d.date} {isLatest && <span style={{ fontSize: '8px', color: '#0047AB', fontWeight: 700, marginLeft: '4px' }}>ACTUAL</span>}
+                    {d.date} {isLatest && <span style={{ fontSize: 'var(--fs-8)', color: '#0047AB', fontWeight: 700, marginLeft: '4px' }}>ACTUAL</span>}
                   </td>
                   <td style={{ textAlign: 'center', padding: '7px 6px', fontWeight: 600, color: '#d4922e' }}>{d.prof}</td>
                   <td style={{ textAlign: 'center', padding: '7px 6px', fontWeight: 600, color: '#6366f1' }}>{d.inst}</td>
@@ -244,20 +244,20 @@ export default function HistoricalComparison({ diagnostics }: Props) {
 
       {/* Gerencias scoring legend */}
       <div className="rounded-lg bg-pale border border-border/30" style={{ padding: '10px 14px', marginBottom: '20px' }}>
-        <p style={{ fontSize: '9px', color: '#6b7280', fontWeight: 600, marginBottom: '4px' }}>PUNTAJE GERENCIAS (máx. 100)</p>
-        <p style={{ fontSize: '10px', color: '#4b5563' }}>
+        <p style={{ fontSize: 'var(--fs-9)', color: '#6b7280', fontWeight: 600, marginBottom: '4px' }}>PUNTAJE GERENCIAS (máx. 100)</p>
+        <p style={{ fontSize: 'var(--fs-10)', color: '#4b5563' }}>
           15 pts por gerencia cubierta + 5 pts si está calificada (5 gerencias × 20 pts = 100)
         </p>
       </div>
 
       {/* Analysis */}
       <div className="rounded-xl border border-accent/20 bg-accent/5" style={{ padding: '16px 20px' }}>
-        <p style={{ fontSize: '10px', fontWeight: 700, color: '#002060', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>
+        <p style={{ fontSize: 'var(--fs-10)', fontWeight: 700, color: '#002060', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>
           Análisis Comparativo
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {analysis.map((text, i) => (
-            <p key={i} style={{ fontSize: '11px', color: '#374151', lineHeight: 1.5 }}>
+            <p key={i} style={{ fontSize: 'var(--fs-11)', color: '#374151', lineHeight: 1.5 }}>
               • {text}
             </p>
           ))}

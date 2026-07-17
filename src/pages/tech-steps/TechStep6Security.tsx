@@ -1,9 +1,10 @@
+import { Lock, Circle } from 'lucide-react';
 import { useTechSurveyStore } from '../../store/techSurveyStore';
 
 const RESPALDOS_OPTIONS = [
-  { value: 'nunca' as const, label: 'No se hacen respaldos', icon: '🔴' },
-  { value: 'manual' as const, label: 'Manual / esporádico', icon: '🟡' },
-  { value: 'automatico' as const, label: 'Automático / programado', icon: '🟢' },
+  { value: 'nunca' as const, label: 'No se hacen respaldos', iconClassName: 'fill-error text-error' },
+  { value: 'manual' as const, label: 'Manual / esporádico', iconClassName: 'fill-warn text-warn' },
+  { value: 'automatico' as const, label: 'Automático / programado', iconClassName: 'fill-success text-success' },
 ];
 
 export default function TechStep6Security() {
@@ -13,16 +14,17 @@ export default function TechStep6Security() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div>
-        <h2 className="font-serif text-navy" style={{ fontSize: '20px', marginBottom: '6px' }}>
-          🔒 Ciberseguridad
+        <h2 className="font-serif text-navy flex items-center" style={{ fontSize: 'var(--fs-20)', marginBottom: '6px', gap: '8px' }}>
+          <Lock className="text-accent" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
+          Ciberseguridad
         </h2>
-        <p className="text-muted" style={{ fontSize: '12px' }}>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
           Medidas de seguridad informática, respaldos y uso de la nube.
         </p>
       </div>
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
-        <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
+        <label className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '12px', display: 'block' }}>
           ¿Tiene software antivirus / endpoint protection?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
@@ -31,7 +33,7 @@ export default function TechStep6Security() {
               key={String(val)}
               onClick={() => update({ tieneAntivirus: val })}
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.tieneAntivirus === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
-              style={{ padding: '12px', fontSize: '13px' }}
+              style={{ padding: '12px', fontSize: 'var(--fs-13)' }}
             >
               {val ? 'Sí' : 'No'}
             </button>
@@ -40,7 +42,7 @@ export default function TechStep6Security() {
       </div>
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
-        <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
+        <label className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '12px', display: 'block' }}>
           Respaldo de datos
         </label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -49,16 +51,16 @@ export default function TechStep6Security() {
               key={opt.value}
               onClick={() => update({ respaldosDatos: opt.value })}
               className={`rounded-xl border font-medium transition-all cursor-pointer text-left ${security.respaldosDatos === opt.value ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
-              style={{ padding: '14px', fontSize: '12px' }}
+              style={{ padding: '14px', fontSize: 'var(--fs-12)' }}
             >
-              <span style={{ marginRight: '6px' }}>{opt.icon}</span> {opt.label}
+              <Circle className={`inline ${opt.iconClassName}`} style={{ width: 'var(--fs-12)', height: 'var(--fs-12)', marginRight: '6px', verticalAlign: '1px' }} /> {opt.label}
             </button>
           ))}
         </div>
       </div>
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
-        <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
+        <label className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '12px', display: 'block' }}>
           ¿Tiene políticas de seguridad informática documentadas?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
@@ -67,7 +69,7 @@ export default function TechStep6Security() {
               key={String(val)}
               onClick={() => update({ politicasSeguridad: val })}
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.politicasSeguridad === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
-              style={{ padding: '12px', fontSize: '13px' }}
+              style={{ padding: '12px', fontSize: 'var(--fs-13)' }}
             >
               {val ? 'Sí' : 'No'}
             </button>
@@ -76,7 +78,7 @@ export default function TechStep6Security() {
       </div>
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
-        <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
+        <label className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '12px', display: 'block' }}>
           ¿Da capacitación en ciberseguridad a los empleados?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
@@ -85,7 +87,7 @@ export default function TechStep6Security() {
               key={String(val)}
               onClick={() => update({ capacitacionSeguridad: val })}
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.capacitacionSeguridad === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
-              style={{ padding: '12px', fontSize: '13px' }}
+              style={{ padding: '12px', fontSize: 'var(--fs-13)' }}
             >
               {val ? 'Sí' : 'No'}
             </button>
@@ -94,7 +96,7 @@ export default function TechStep6Security() {
       </div>
 
       <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
-        <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
+        <label className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '12px', display: 'block' }}>
           ¿Usa servicios en la nube?
         </label>
         <div className="flex" style={{ gap: '10px' }}>
@@ -103,7 +105,7 @@ export default function TechStep6Security() {
               key={String(val)}
               onClick={() => update({ usaNube: val })}
               className={`flex-1 rounded-xl border font-medium transition-all cursor-pointer ${security.usaNube === val ? 'border-accent bg-accent/5 text-accent' : 'border-border text-muted hover:border-mid'}`}
-              style={{ padding: '12px', fontSize: '13px' }}
+              style={{ padding: '12px', fontSize: 'var(--fs-13)' }}
             >
               {val ? 'Sí' : 'No'}
             </button>
@@ -113,7 +115,7 @@ export default function TechStep6Security() {
 
       {security.usaNube && (
         <div className="bg-white rounded-xl border border-border/60 shadow-sm" style={{ padding: '24px' }}>
-          <label className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px', display: 'block' }}>
+          <label className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '12px', display: 'block' }}>
             Proveedor de nube principal
           </label>
           <input
@@ -122,7 +124,7 @@ export default function TechStep6Security() {
             onChange={e => update({ proveedorNube: e.target.value })}
             placeholder="Ej: AWS, Azure, Google Cloud, Otro..."
             className="w-full rounded-xl border border-border bg-pale text-ink focus:outline-accent"
-            style={{ padding: '12px 16px', fontSize: '13px' }}
+            style={{ padding: 'var(--sp-btn-c)', fontSize: 'var(--fs-13)' }}
           />
         </div>
       )}

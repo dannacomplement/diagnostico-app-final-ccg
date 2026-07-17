@@ -57,8 +57,8 @@ export default function Step1DatosGenerales() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Datos Generales de la Empresa</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: prevDiag && !dismissed && !loaded ? '20px' : '40px' }}>Informaci&oacute;n general del cliente y su empresa.</p>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Datos Generales de la Empresa</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: prevDiag && !dismissed && !loaded ? '20px' : '40px' }}>Informaci&oacute;n general del cliente y su empresa.</p>
 
       {prevDiag && !dismissed && !loaded && (
         <div
@@ -68,15 +68,15 @@ export default function Step1DatosGenerales() {
           <div className="flex items-center justify-between">
             <div className="flex items-center" style={{ gap: '12px' }}>
               <div className="inline-flex items-center justify-center rounded-full bg-accent/15 shrink-0" style={{ width: '36px', height: '36px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: '18px', height: '18px', color: '#0047AB' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 'var(--fs-18)', height: 'var(--fs-18)', color: '#0047AB' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </div>
               <div>
-                <p className="font-bold text-navy" style={{ fontSize: '13px', marginBottom: '2px' }}>
+                <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '2px' }}>
                   Usar datos de la radiografía anterior
                 </p>
-                <p className="text-muted" style={{ fontSize: '11px' }}>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
                   {prevDiag.datosGenerales.nombreComercial} — {new Date(prevDiag.savedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
@@ -86,7 +86,7 @@ export default function Step1DatosGenerales() {
                 type="button"
                 onClick={() => setDismissed(true)}
                 className="text-muted hover:text-ink font-medium transition-colors cursor-pointer"
-                style={{ fontSize: '11px', padding: '6px 10px', background: 'none' }}
+                style={{ fontSize: 'var(--fs-11)', padding: '6px 10px', background: 'none' }}
               >
                 No, gracias
               </button>
@@ -94,7 +94,7 @@ export default function Step1DatosGenerales() {
                 type="button"
                 onClick={handleLoadPrevious}
                 className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm"
-                style={{ fontSize: '12px', padding: '8px 18px', borderRadius: '8px' }}
+                style={{ fontSize: 'var(--fs-12)', padding: '8px 18px', borderRadius: '8px' }}
               >
                 Cargar datos
               </button>
@@ -106,9 +106,9 @@ export default function Step1DatosGenerales() {
       {loaded && (
         <div
           className="rounded-xl bg-success/10 border border-success/30 animate-fade-up"
-          style={{ padding: '12px 16px', marginBottom: '32px' }}
+          style={{ padding: 'var(--sp-btn-c)', marginBottom: '32px' }}
         >
-          <p className="text-success font-medium" style={{ fontSize: '12px' }}>
+          <p className="text-success font-medium" style={{ fontSize: 'var(--fs-12)' }}>
             Datos cargados de la radiografía anterior. Revise y actualice lo que sea necesario.
           </p>
         </div>
@@ -177,7 +177,7 @@ export default function Step1DatosGenerales() {
                     : 'bg-pale text-muted hover:bg-light hover:text-ink border border-border'
                   }
                 `}
-                style={{ padding: '8px 18px', borderRadius: '8px', fontSize: '12px' }}
+                style={{ padding: '8px 18px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
               >
                 {opt.label}
               </button>
@@ -186,7 +186,7 @@ export default function Step1DatosGenerales() {
         </Field>
 
         <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '24px' }}>Persona que contesta</h3>
+          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '24px' }}>Persona que contesta</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
               <Field label="Nombre completo" required>
@@ -241,7 +241,7 @@ export default function Step1DatosGenerales() {
                         : 'bg-pale text-muted hover:bg-light hover:text-ink border border-border'
                       }
                     `}
-                    style={{ padding: '8px 18px', borderRadius: '8px', fontSize: '12px' }}
+                    style={{ padding: '8px 18px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
                   >
                     {opt === 'si' ? 'Sí' : 'No'}
                   </button>
@@ -249,7 +249,7 @@ export default function Step1DatosGenerales() {
               </div>
               {datos.esSocio === 'si' && (
                 <div className="flex items-center" style={{ marginTop: '12px', gap: '8px' }}>
-                  <span className="text-muted" style={{ fontSize: '12px' }}>% de acciones:</span>
+                  <span className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>% de acciones:</span>
                   <input
                     type="number"
                     value={datos.porcentajeAcciones}
@@ -261,7 +261,7 @@ export default function Step1DatosGenerales() {
                     className="input-field"
                     style={{ maxWidth: '90px' }}
                   />
-                  <span className="text-muted font-medium" style={{ fontSize: '12px' }}>%</span>
+                  <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-12)' }}>%</span>
                 </div>
               )}
             </Field>
@@ -269,7 +269,7 @@ export default function Step1DatosGenerales() {
         </div>
 
         <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
-          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '11px', marginBottom: '24px' }}>Giro y herramientas</h3>
+          <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '24px' }}>Giro y herramientas</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
             <Field label="Giro / Principales Servicios" required>
               <div className="flex flex-wrap" style={{ gap: '10px' }}>
@@ -284,7 +284,7 @@ export default function Step1DatosGenerales() {
                         : 'bg-pale text-muted hover:bg-light hover:text-ink border border-border'
                       }
                     `}
-                    style={{ padding: '8px 18px', borderRadius: '8px', fontSize: '12px' }}
+                    style={{ padding: '8px 18px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
                   >
                     {opt.label}
                   </button>
@@ -326,7 +326,7 @@ export default function Step1DatosGenerales() {
                           : 'bg-pale text-muted hover:bg-light hover:text-ink border border-border'
                         }
                       `}
-                      style={{ padding: '8px 18px', borderRadius: '8px', fontSize: '12px' }}
+                      style={{ padding: '8px 18px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
                     >
                       {opt.label}
                     </button>
@@ -372,7 +372,7 @@ export default function Step1DatosGenerales() {
                   )}
                   {sel.selected.includes('excel') && (
                     <div>
-                      <label className="block text-muted" style={{ fontSize: '11px', marginBottom: '6px' }}>
+                      <label className="block text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '6px' }}>
                         Nivel de Excel (opcional)
                       </label>
                       <div className="flex flex-wrap" style={{ gap: '8px' }}>
@@ -392,7 +392,7 @@ export default function Step1DatosGenerales() {
                                 : 'bg-pale text-muted hover:bg-light hover:text-ink border border-border'
                               }
                             `}
-                            style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '11px' }}
+                            style={{ padding: 'var(--sp-btn-d)', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
                           >
                             {opt.label}
                           </button>
@@ -413,11 +413,11 @@ export default function Step1DatosGenerales() {
 function InlineField({ label, required, suffix, children }: { label: string; required?: boolean; suffix?: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center" style={{ gap: '8px' }}>
-      <label className="font-medium text-ink shrink-0" style={{ fontSize: '12px' }}>
+      <label className="font-medium text-ink shrink-0" style={{ fontSize: 'var(--fs-12)' }}>
         {label}{required && <span className="text-error" style={{ marginLeft: '3px' }}>*</span>}:
       </label>
       {children}
-      {suffix && <span className="text-muted font-medium shrink-0" style={{ fontSize: '12px' }}>{suffix}</span>}
+      {suffix && <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-12)' }}>{suffix}</span>}
     </div>
   );
 }
@@ -425,7 +425,7 @@ function InlineField({ label, required, suffix, children }: { label: string; req
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '8px' }}>
+      <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '8px' }}>
         {label}
         {required && <span className="text-error" style={{ marginLeft: '3px' }}>*</span>}
       </label>

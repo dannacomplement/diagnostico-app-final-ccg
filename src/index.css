@@ -18,10 +18,74 @@
   --font-serif: 'DM Serif Display', serif;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Fluid scale: flat at current size below 640px, ramps to ~20-25% larger by 1024px+.
+   Icons reuse these same tiers since their target ratios match exactly. */
+:root {
+  --fs-7: clamp(7px, calc(7px + 3px * ((100vw - 640px) / 384px)), 10px);
+  --fs-8: clamp(8px, calc(8px + 4px * ((100vw - 640px) / 384px)), 12px);
+  --fs-9: clamp(9px, calc(9px + 4px * ((100vw - 640px) / 384px)), 13px);
+  --fs-10: clamp(10px, calc(10px + 5px * ((100vw - 640px) / 384px)), 15px);
+  --fs-11: clamp(11px, calc(11px + 5px * ((100vw - 640px) / 384px)), 16px);
+  --fs-12: clamp(12px, calc(12px + 6px * ((100vw - 640px) / 384px)), 18px);
+  --fs-13: clamp(13px, calc(13px + 7px * ((100vw - 640px) / 384px)), 20px);
+  --fs-14: clamp(14px, calc(14px + 7px * ((100vw - 640px) / 384px)), 21px);
+  --fs-15: clamp(15px, calc(15px + 7px * ((100vw - 640px) / 384px)), 22px);
+  --fs-16: clamp(16px, calc(16px + 8px * ((100vw - 640px) / 384px)), 24px);
+  --fs-17: clamp(17px, calc(17px + 9px * ((100vw - 640px) / 384px)), 26px);
+  --fs-18: clamp(18px, calc(18px + 9px * ((100vw - 640px) / 384px)), 27px);
+  --fs-20: clamp(20px, calc(20px + 11px * ((100vw - 640px) / 384px)), 31px);
+  --fs-22: clamp(22px, calc(22px + 11px * ((100vw - 640px) / 384px)), 33px);
+  --fs-24: clamp(24px, calc(24px + 12px * ((100vw - 640px) / 384px)), 36px);
+  --fs-28: clamp(28px, calc(28px + 14px * ((100vw - 640px) / 384px)), 42px);
+  --fs-32: clamp(32px, calc(32px + 16px * ((100vw - 640px) / 384px)), 48px);
+  --fs-42: clamp(42px, calc(42px + 22px * ((100vw - 640px) / 384px)), 64px);
+
+  /* Structural spacing (containers, buttons, inputs) */
+  --sp-pagepad: clamp(48px, calc(48px + 26px * ((100vw - 640px) / 384px)), 74px) 24px;
+  --sp-btn-a: clamp(14px, calc(14px + 7px * ((100vw - 640px) / 384px)), 21px) clamp(18px, calc(18px + 9px * ((100vw - 640px) / 384px)), 27px);
+  --sp-btn-b: clamp(10px, calc(10px + 5px * ((100vw - 640px) / 384px)), 15px) clamp(16px, calc(16px + 9px * ((100vw - 640px) / 384px)), 25px);
+  --sp-btn-c: clamp(12px, calc(12px + 6px * ((100vw - 640px) / 384px)), 18px) clamp(16px, calc(16px + 9px * ((100vw - 640px) / 384px)), 25px);
+  --sp-btn-d: clamp(6px, calc(6px + 3px * ((100vw - 640px) / 384px)), 9px) clamp(14px, calc(14px + 7px * ((100vw - 640px) / 384px)), 21px);
+  --sp-input: clamp(14px, calc(14px + 6px * ((100vw - 640px) / 384px)), 20px) clamp(20px, calc(20px + 7px * ((100vw - 640px) / 384px)), 27px);
+
+  /* Decorative sizing (logos, rings, bar tracks) — these were left as fixed px in report
+     pages, so they stayed tiny next to text that scaled, looking broken/disproportionate. */
+  --sz-ring: clamp(100px, calc(100px + 35px * ((100vw - 640px) / 384px)), 135px);
+  --sz-bar-track: clamp(100px, calc(100px + 44px * ((100vw - 640px) / 384px)), 144px);
+  --sz-logo-report: clamp(44px, calc(44px + 16px * ((100vw - 640px) / 384px)), 60px);
+  --sz-logo-footer-lg: clamp(40px, calc(40px + 14px * ((100vw - 640px) / 384px)), 54px);
+  --sz-logo-footer-sm: clamp(36px, calc(36px + 13px * ((100vw - 640px) / 384px)), 49px);
+  --sp-footer: clamp(40px, calc(40px + 16px * ((100vw - 640px) / 384px)), 56px) clamp(32px, calc(32px + 12px * ((100vw - 640px) / 384px)), 44px);
+  --sp-btn-pill-lg: clamp(9px, calc(9px + 4px * ((100vw - 640px) / 384px)), 13px) clamp(22px, calc(22px + 10px * ((100vw - 640px) / 384px)), 32px);
+  --sp-btn-pill-sm: clamp(9px, calc(9px + 4px * ((100vw - 640px) / 384px)), 13px) clamp(20px, calc(20px + 9px * ((100vw - 640px) / 384px)), 29px);
+}
+
+/* Client-facing wizard forms are pinned back to their original (pre-scale) size,
+   overriding the fluid tokens above for that subtree only. */
+.wizard-client-scale {
+  --fs-7: 7px; --fs-8: 8px; --fs-9: 9px; --fs-10: 10px; --fs-11: 11px; --fs-12: 12px;
+  --fs-13: 13px; --fs-14: 14px; --fs-15: 15px; --fs-16: 16px; --fs-17: 17px; --fs-18: 18px;
+  --fs-20: 20px; --fs-22: 22px; --fs-24: 24px; --fs-28: 28px; --fs-32: 32px; --fs-42: 42px;
+  --sp-pagepad: 48px 24px;
+  --sp-btn-a: 14px 18px;
+  --sp-btn-b: 10px 16px;
+  --sp-btn-c: 12px 16px;
+  --sp-btn-d: 6px 14px;
+  --sp-input: 14px 20px;
+}
+.wizard-client-scale .card { padding: 2.5rem; }
+@media (min-width: 640px) { .wizard-client-scale .card { padding: 3.5rem; } }
+@media (min-width: 1024px) { .wizard-client-scale .card { padding: 3.5rem 4rem; } }
+
+/* @layer base keeps this reset below Tailwind's utilities layer in the cascade —
+   unlayered, it would silently beat every margin/padding utility class (m-*, p-*, mt-2, etc.)
+   regardless of specificity, since unlayered rules always win over layered ones. */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 body {
@@ -59,8 +123,8 @@ input[type="number"] {
 
 .input-field {
   width: 100%;
-  padding: 0.875rem 1.25rem;
-  font-size: 0.875rem;
+  padding: var(--sp-input);
+  font-size: var(--fs-13);
   line-height: 1.5;
   border-radius: 0.75rem;
   border: 1px solid var(--color-border);
@@ -102,8 +166,8 @@ input[type="number"] {
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
   padding: 2.5rem;
 }
-@media (min-width: 640px) { .card { padding: 3.5rem; } }
-@media (min-width: 1024px) { .card { padding: 3.5rem 4rem; } }
+@media (min-width: 640px) { .card { padding: 5.25rem; } }
+@media (min-width: 1024px) { .card { padding: 5.5rem 6rem; } }
 
 /* ── Staggered entrance animations (A6) ── */
 @keyframes staggerFadeUp {

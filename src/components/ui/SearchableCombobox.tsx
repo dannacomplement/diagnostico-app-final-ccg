@@ -146,7 +146,7 @@ export default function SearchableCombobox({ value, onChange, options, placehold
                 } ${isSelected ? 'font-semibold text-accent' : ''}`}
                 style={{
                   padding: '8px 14px',
-                  fontSize: '12px',
+                  fontSize: 'var(--fs-12)',
                 }}
               >
                 {opt.label}

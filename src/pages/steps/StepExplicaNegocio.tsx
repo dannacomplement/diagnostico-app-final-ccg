@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import type { LineaNegocio } from '../../lib/types';
 
@@ -25,14 +26,14 @@ export default function StepExplicaNegocio() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Explícanos tu negocio</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '40px' }}>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Explícanos tu negocio</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '40px' }}>
         Describa brevemente a qué se dedica su empresa: qué productos o servicios ofrece, quiénes son sus clientes principales, y qué la hace diferente en su mercado.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
         <div>
-          <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>
+          <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>
             Descripción del negocio
           </label>
           <textarea
@@ -40,7 +41,7 @@ export default function StepExplicaNegocio() {
             onChange={e => setDescripcion(e.target.value)}
             placeholder="Ej: Somos una empresa familiar dedicada a la manufactura de productos alimenticios para el mercado regional. Nuestros principales clientes son tiendas de autoservicio y distribuidores mayoristas..."
             className="w-full border border-border bg-pale focus:bg-white focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none resize-none transition-all leading-relaxed"
-            style={{ padding: '14px 18px', fontSize: '13px', borderRadius: '12px' }}
+            style={{ padding: 'var(--sp-btn-a)', fontSize: 'var(--fs-13)', borderRadius: '12px' }}
             rows={6}
           />
         </div>
@@ -49,10 +50,10 @@ export default function StepExplicaNegocio() {
         <div>
           <div className="flex items-center justify-between" style={{ marginBottom: '12px' }}>
             <div>
-              <label className="block font-medium text-ink" style={{ fontSize: '12px' }}>
+              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>
                 Líneas de negocio
               </label>
-              <p className="text-muted" style={{ fontSize: '11px', marginTop: '4px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '4px' }}>
                 Indique las líneas de negocio y el porcentaje que representa cada una (deben sumar 100%).
               </p>
             </div>
@@ -60,7 +61,7 @@ export default function StepExplicaNegocio() {
               type="button"
               onClick={addLinea}
               className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm shrink-0"
-              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}
             >
               + Agregar
             </button>
@@ -76,9 +77,9 @@ export default function StepExplicaNegocio() {
                   <div
                     key={i}
                     className="flex items-center flex-wrap rounded-xl border bg-white border-border/40"
-                    style={{ padding: '10px 16px', gap: '12px' }}
+                    style={{ padding: 'var(--sp-btn-b)', gap: '12px' }}
                   >
-                    <span className="font-bold text-navy shrink-0" style={{ fontSize: '12px', minWidth: '24px' }}>
+                    <span className="font-bold text-navy shrink-0" style={{ fontSize: 'var(--fs-12)', minWidth: '24px' }}>
                       {i + 1}.
                     </span>
                     <input
@@ -87,7 +88,7 @@ export default function StepExplicaNegocio() {
                       onChange={e => updateLinea(i, { nombre: e.target.value })}
                       placeholder="Nombre de la línea de negocio"
                       className="input-field flex-1"
-                      style={{ fontSize: '12px', padding: '6px 10px', minWidth: '150px' }}
+                      style={{ fontSize: 'var(--fs-12)', padding: '6px 10px', minWidth: '150px' }}
                     />
                     <div className="flex items-center shrink-0" style={{ gap: '5px' }}>
                       <input
@@ -97,17 +98,17 @@ export default function StepExplicaNegocio() {
                         min="0"
                         max="100"
                         className="input-field"
-                        style={{ maxWidth: '70px', fontSize: '12px', padding: '6px 8px' }}
+                        style={{ maxWidth: '70px', fontSize: 'var(--fs-12)', padding: '6px 8px' }}
                       />
-                      <span className="text-muted" style={{ fontSize: '11px' }}>%</span>
+                      <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>%</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => removeLinea(i)}
                       className="text-muted hover:text-error transition-colors cursor-pointer shrink-0"
-                      style={{ fontSize: '16px', lineHeight: 1, padding: '2px 4px', background: 'none' }}
+                      style={{ lineHeight: 1, padding: '2px 4px', background: 'none' }}
                     >
-                      ✕
+                      <X style={{ width: 'var(--fs-15)', height: 'var(--fs-15)' }} />
                     </button>
                   </div>
                 ))}
@@ -115,15 +116,15 @@ export default function StepExplicaNegocio() {
 
               {lineas.some(l => l.porcentaje) && (
                 <div className="flex items-center justify-end" style={{ marginTop: '10px', gap: '6px' }}>
-                  <span className="text-muted font-medium" style={{ fontSize: '10px' }}>Total:</span>
+                  <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-10)' }}>Total:</span>
                   <span
                     className={`font-bold ${isValid ? 'text-success' : 'text-warn'}`}
-                    style={{ fontSize: '12px' }}
+                    style={{ fontSize: 'var(--fs-12)' }}
                   >
                     {total.toFixed(1)}%
                   </span>
                   {!isValid && (
-                    <span className="text-warn" style={{ fontSize: '10px' }}>
+                    <span className="text-warn" style={{ fontSize: 'var(--fs-10)' }}>
                       (debe sumar 100%)
                     </span>
                   )}

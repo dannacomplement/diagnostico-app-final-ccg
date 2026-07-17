@@ -129,7 +129,7 @@ export default function AnimatedGauge({
         </div>
       </div>
       <p style={{
-        fontSize: '11px',
+        fontSize: 'var(--fs-11)',
         fontWeight: 600,
         color: '#1b2a4a',
         textAlign: 'center',
@@ -141,7 +141,7 @@ export default function AnimatedGauge({
       </p>
       {sublabel && (
         <span style={{
-          fontSize: '10px',
+          fontSize: 'var(--fs-10)',
           fontWeight: 600,
           color: resolvedColor,
           padding: '2px 10px',

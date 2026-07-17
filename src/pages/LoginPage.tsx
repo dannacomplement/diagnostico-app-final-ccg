@@ -102,15 +102,15 @@ export default function LoginPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h2 className="font-serif text-center" style={{ fontSize: '20px', marginBottom: '8px', color: '#002060' }}>
+            <h2 className="font-serif text-center" style={{ fontSize: 'var(--fs-20)', marginBottom: '8px', color: '#002060' }}>
               Usuario Inactivo
             </h2>
-            <p className="text-center leading-relaxed" style={{ fontSize: '13px', marginBottom: '24px', color: '#6B7280' }}>
+            <p className="text-center leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '24px', color: '#6B7280' }}>
               Este usuario está inactivo. Para continuar, ingrese la clave maestra.
             </p>
             <form onSubmit={handleMasterKeySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label className="block font-medium" style={{ fontSize: '12px', marginBottom: '6px', textAlign: 'left', color: '#333' }}>
+                <label className="block font-medium" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px', textAlign: 'left', color: '#333' }}>
                   Clave maestra
                 </label>
                 <input
@@ -123,12 +123,12 @@ export default function LoginPage() {
                 />
               </div>
               {masterKeyError && (
-                <p className="text-error font-medium" style={{ fontSize: '12px' }}>Clave maestra incorrecta.</p>
+                <p className="text-error font-medium" style={{ fontSize: 'var(--fs-12)' }}>Clave maestra incorrecta.</p>
               )}
               <button
                 type="submit"
                 className="w-full text-white font-bold cursor-pointer"
-                style={{ fontSize: '14px', padding: '14px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #0047AB 0%, #2563EB 100%)' }}
+                style={{ fontSize: 'var(--fs-14)', padding: '14px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #0047AB 0%, #2563EB 100%)' }}
               >
                 Acceder
               </button>
@@ -136,7 +136,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleInactiveCancel}
                 className="w-full text-muted font-medium hover:text-ink cursor-pointer"
-                style={{ fontSize: '13px', padding: '10px', background: 'none', border: 'none' }}
+                style={{ fontSize: 'var(--fs-13)', padding: '10px', background: 'none', border: 'none' }}
               >
                 Cancelar
               </button>
@@ -212,16 +212,16 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          <h2 className="login-stagger-2 font-serif" style={{ fontSize: '20px', marginBottom: '8px', color: '#002060' }}>
+          <h2 className="login-stagger-2 font-serif" style={{ fontSize: 'var(--fs-20)', marginBottom: '8px', color: '#002060' }}>
             Iniciar Sesión
           </h2>
-          <p className="login-stagger-2 leading-relaxed" style={{ fontSize: '13px', marginBottom: '28px', color: '#6B7280' }}>
+          <p className="login-stagger-2 leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '28px', color: '#6B7280' }}>
             Ingrese sus credenciales para acceder al sistema de radiografía empresarial.
           </p>
 
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div className="login-stagger-3">
-              <label className="block font-medium" style={{ fontSize: '12px', marginBottom: '6px', textAlign: 'left', color: '#333' }}>
+              <label className="block font-medium" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px', textAlign: 'left', color: '#333' }}>
                 Usuario o correo electrónico
               </label>
               <input
@@ -235,7 +235,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="login-stagger-4">
-              <label className="block font-medium" style={{ fontSize: '12px', marginBottom: '6px', textAlign: 'left', color: '#333' }}>
+              <label className="block font-medium" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px', textAlign: 'left', color: '#333' }}>
                 Contraseña
               </label>
               <input
@@ -249,7 +249,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-error font-medium" style={{ fontSize: '12px' }}>
+              <p className="text-error font-medium" style={{ fontSize: 'var(--fs-12)' }}>
                 Usuario, correo o contraseña incorrectos.
               </p>
             )}
@@ -259,7 +259,7 @@ export default function LoginPage() {
               disabled={loading}
               className="login-btn login-stagger-5 w-full text-white font-bold disabled:opacity-50 cursor-pointer"
               style={{
-                fontSize: '14px',
+                fontSize: 'var(--fs-14)',
                 padding: '14px 24px',
                 borderRadius: '12px',
                 marginTop: '8px',
@@ -278,7 +278,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className={`login-stagger-5${transitioning ? ' login-exit-footer' : ''}`} style={{ fontSize: '11px', marginTop: '28px', color: 'rgba(255,255,255,0.3)' }}>
+        <p className={`login-stagger-5${transitioning ? ' login-exit-footer' : ''}`} style={{ fontSize: 'var(--fs-11)', marginTop: '28px', color: 'rgba(255,255,255,0.3)' }}>
           Complement Consulting Group — Radiografía Empresarial
         </p>
       </div>

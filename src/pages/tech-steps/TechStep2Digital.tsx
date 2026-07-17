@@ -1,12 +1,13 @@
+import { FaFacebook, FaInstagram, FaLinkedin, FaTiktok, FaYoutube, FaXTwitter } from 'react-icons/fa6';
 import { useTechSurveyStore } from '../../store/techSurveyStore';
 
 const REDES_SOCIALES = [
-  { id: 'Facebook', icon: '📘' },
-  { id: 'Instagram', icon: '📷' },
-  { id: 'LinkedIn', icon: '💼' },
-  { id: 'TikTok', icon: '🎵' },
-  { id: 'YouTube', icon: '▶️' },
-  { id: 'Twitter/X', icon: '🐦' },
+  { id: 'Facebook', icon: FaFacebook },
+  { id: 'Instagram', icon: FaInstagram },
+  { id: 'LinkedIn', icon: FaLinkedin },
+  { id: 'TikTok', icon: FaTiktok },
+  { id: 'YouTube', icon: FaYoutube },
+  { id: 'Twitter/X', icon: FaXTwitter },
 ];
 
 export default function TechStep2Digital() {
@@ -23,18 +24,18 @@ export default function TechStep2Digital() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>
         Presencia Digital
       </h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '36px' }}>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '36px' }}>
         Evaluemos la presencia digital y canales en línea de su empresa.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* Website */}
         <div>
-          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px', marginBottom: '12px' }}>
-            <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Tiene sitio web?</span>
+          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)', marginBottom: '12px' }}>
+            <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Tiene sitio web?</span>
             <button
               onClick={() => update({ tieneWebsite: !dp.tieneWebsite, websiteActualizado: !dp.tieneWebsite ? dp.websiteActualizado : false })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${dp.tieneWebsite ? 'bg-accent' : 'bg-border'}`}
@@ -45,7 +46,7 @@ export default function TechStep2Digital() {
 
           {dp.tieneWebsite && (
             <div className="flex items-center justify-between bg-white rounded-xl border border-border/30" style={{ padding: '12px 18px', marginLeft: '16px', marginBottom: '12px' }}>
-              <span className="text-ink font-medium" style={{ fontSize: '12px' }}>¿Está actualizado?</span>
+              <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)' }}>¿Está actualizado?</span>
               <button
                 onClick={() => update({ websiteActualizado: !dp.websiteActualizado })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${dp.websiteActualizado ? 'bg-accent' : 'bg-border'}`}
@@ -57,8 +58,8 @@ export default function TechStep2Digital() {
         </div>
 
         {/* E-commerce */}
-        <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px' }}>
-          <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Tiene e-commerce?</span>
+        <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)' }}>
+          <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Tiene e-commerce?</span>
           <button
             onClick={() => update({ tieneEcommerce: !dp.tieneEcommerce })}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${dp.tieneEcommerce ? 'bg-accent' : 'bg-border'}`}
@@ -69,8 +70,8 @@ export default function TechStep2Digital() {
 
         {/* Redes sociales */}
         <div>
-          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px', marginBottom: '12px' }}>
-            <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Usa redes sociales?</span>
+          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)', marginBottom: '12px' }}>
+            <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Usa redes sociales?</span>
             <button
               onClick={() => update({ usaRedesSociales: !dp.usaRedesSociales, redesActivas: !dp.usaRedesSociales ? dp.redesActivas : [] })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${dp.usaRedesSociales ? 'bg-accent' : 'bg-border'}`}
@@ -81,7 +82,7 @@ export default function TechStep2Digital() {
 
           {dp.usaRedesSociales && (
             <div style={{ marginLeft: '8px' }}>
-              <p className="text-muted font-medium" style={{ fontSize: '11px', marginBottom: '10px' }}>Seleccione las redes activas</p>
+              <p className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>Seleccione las redes activas</p>
               <div className="flex flex-wrap" style={{ gap: '8px' }}>
                 {REDES_SOCIALES.map(red => {
                   const active = dp.redesActivas.includes(red.id);
@@ -94,9 +95,9 @@ export default function TechStep2Digital() {
                           ? 'border-accent bg-accent/10 text-accent'
                           : 'border-border/40 bg-white text-muted hover:border-accent/30'
                       }`}
-                      style={{ padding: '8px 16px', fontSize: '12px' }}
+                      style={{ padding: '8px 16px', fontSize: 'var(--fs-12)' }}
                     >
-                      <span style={{ marginRight: '6px' }}>{red.icon}</span>
+                      <red.icon style={{ display: 'inline', marginRight: '6px', verticalAlign: '-2px' }} size={14} />
                       {red.id}
                     </button>
                   );
@@ -107,8 +108,8 @@ export default function TechStep2Digital() {
         </div>
 
         {/* Marketing digital */}
-        <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px' }}>
-          <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Realiza marketing digital?</span>
+        <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)' }}>
+          <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Realiza marketing digital?</span>
           <button
             onClick={() => update({ marketingDigital: !dp.marketingDigital })}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${dp.marketingDigital ? 'bg-accent' : 'bg-border'}`}

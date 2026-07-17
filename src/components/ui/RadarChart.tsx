@@ -141,7 +141,7 @@ export default function RadarChart({
             textAnchor={textAnchor}
             dominantBaseline="central"
             style={{
-              fontSize: '9px',
+              fontSize: 'var(--fs-9)',
               fontWeight: 600,
               fill: '#64748b',
               fontFamily: 'var(--font-sans)',
@@ -166,7 +166,7 @@ export default function RadarChart({
             textAnchor="middle"
             dominantBaseline="central"
             style={{
-              fontSize: '8px',
+              fontSize: 'var(--fs-8)',
               fontWeight: 700,
               fill: axes[i].color || strokeColor,
               fontFamily: 'var(--font-sans)',

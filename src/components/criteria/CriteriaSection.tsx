@@ -31,19 +31,19 @@ export default function CriteriaSection({ title, description, criteria, answers,
       <div style={{ marginBottom: '36px' }}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between" style={{ gap: '16px' }}>
           <div>
-            <h2 className="font-serif text-navy" style={{ fontSize: '17px' }}>{title}</h2>
-            <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginTop: '8px' }}>{description}</p>
+            <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)' }}>{title}</h2>
+            <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginTop: '8px' }}>{description}</p>
           </div>
           <div className="flex items-center bg-pale shrink-0" style={{ gap: '10px', padding: '10px 18px', borderRadius: '12px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span className="text-muted" style={{ fontSize: '11px' }}>Promedio:</span>
-                <span className="font-bold text-ink" style={{ fontSize: '18px' }}>{averageScore.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '12px' }}>/100</span></span>
-                <span className={`font-semibold rounded-full ${LEVEL_COLORS[level]}`} style={{ fontSize: '11px', padding: '3px 10px' }}>
+                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>Promedio:</span>
+                <span className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{averageScore.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: 'var(--fs-12)' }}>/100</span></span>
+                <span className={`font-semibold rounded-full ${LEVEL_COLORS[level]}`} style={{ fontSize: 'var(--fs-11)', padding: '3px 10px' }}>
                   {level === 'Avanzado' ? 'Alto' : level}
                 </span>
               </div>
-              <span className="text-muted" style={{ fontSize: '10px' }}>
+              <span className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>
                 {answeredCount}/{totalCount} respondidas
               </span>
             </div>

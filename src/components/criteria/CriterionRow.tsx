@@ -44,12 +44,12 @@ export default function CriterionRow({ config, answer, onChange }: Props) {
 
   return (
     <div className="border border-border/60 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow" style={{ padding: '24px' }}>
-      <p className="text-ink font-medium leading-relaxed" style={{ fontSize: '13px', marginBottom: '20px' }}>
+      <p className="text-ink font-medium leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '20px' }}>
         {config.text}
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <span className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '10px' }}>Selecciona una opción</span>
+        <span className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)' }}>Selecciona una opción</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
           {options.map((option) => {
             const selected = answer.rating === option.score;
@@ -98,9 +98,9 @@ export default function CriterionRow({ config, answer, onChange }: Props) {
                     pointerEvents: 'none',
                   }} />
                 )}
-                <span style={{ fontSize: '24px', lineHeight: '1', display: 'block' }}>{option.icon}</span>
+                <option.icon style={{ width: '24px', height: '24px', display: 'block', color: cs.border }} />
                 <p style={{
-                  fontSize: '13px',
+                  fontSize: 'var(--fs-13)',
                   fontWeight: 600,
                   color: selected ? (option.score === 0 ? '#c0392b' : option.score === 5 ? '#d68910' : '#1e8449') : '#1a1a2e',
                   marginTop: '8px',
@@ -111,7 +111,7 @@ export default function CriterionRow({ config, answer, onChange }: Props) {
                   {option.title}
                 </p>
                 <p style={{
-                  fontSize: '11px',
+                  fontSize: 'var(--fs-11)',
                   color: selected ? (option.score === 0 ? '#e74c3c' : option.score === 5 ? '#f39c12' : '#27ae60') : '#6b7280',
                   lineHeight: '1.4',
                   margin: 0,
@@ -131,7 +131,7 @@ export default function CriterionRow({ config, answer, onChange }: Props) {
             type="button"
             onClick={() => setShowComment(true)}
             className="text-accent hover:text-mid transition-colors cursor-pointer"
-            style={{ fontSize: '11px' }}
+            style={{ fontSize: 'var(--fs-11)' }}
           >
             + Agregar comentario
           </button>
@@ -141,7 +141,7 @@ export default function CriterionRow({ config, answer, onChange }: Props) {
             onChange={e => onChange({ comentario: e.target.value })}
             placeholder="Comentario opcional..."
             className="w-full border border-border bg-pale focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none resize-none transition-all"
-            style={{ padding: '10px 14px', fontSize: '12px', borderRadius: '10px' }}
+            style={{ padding: '10px 14px', fontSize: 'var(--fs-12)', borderRadius: '10px' }}
             rows={2}
           />
         )}

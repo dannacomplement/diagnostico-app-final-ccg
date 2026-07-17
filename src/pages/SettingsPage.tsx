@@ -100,15 +100,15 @@ export default function SettingsPage() {
 
   return (
     <div className="w-full flex items-center justify-center" style={{ minHeight: 'calc(100vh - 64px)' }}>
-      <div className="w-full mx-auto" style={{ maxWidth: '600px', padding: '40px 24px' }}>
+      <div className="w-full mx-auto" style={{ maxWidth: '720px', padding: 'var(--sp-pagepad)' }}>
 
         {/* Back button */}
         <button
           onClick={() => setView('home')}
           className="flex items-center text-muted hover:text-ink transition-colors cursor-pointer"
-          style={{ gap: '6px', marginBottom: '28px', fontSize: '13px' }}
+          style={{ gap: '6px', marginBottom: '28px', fontSize: 'var(--fs-13)' }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" style={{ width: '16px', height: '16px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 'var(--fs-16)', height: 'var(--fs-16)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           Volver al inicio
@@ -116,20 +116,20 @@ export default function SettingsPage() {
 
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
-          <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '6px' }}>
+          <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '6px' }}>
             Configuración
           </h1>
-          <p className="text-muted" style={{ fontSize: '13px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>
             Personalice la apariencia del sistema para todas las cuentas.
           </p>
         </div>
 
         {/* Logo principal */}
         <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '32px', marginBottom: '20px' }}>
-          <h2 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '4px' }}>
+          <h2 className="font-bold text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '4px' }}>
             Logo principal
           </h2>
-          <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px' }}>
             Este logo aparece en la página de inicio de sesión y en la portada principal. Se recomienda una imagen horizontal (PNG o SVG) con fondo transparente.
           </p>
 
@@ -146,10 +146,10 @@ export default function SettingsPage() {
               )}
             </div>
             <div>
-              <p className="text-ink font-medium" style={{ fontSize: '12px', marginBottom: '4px' }}>
+              <p className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)', marginBottom: '4px' }}>
                 {displayLogo ? 'Logo personalizado' : 'Logo por defecto'}
               </p>
-              <p className="text-muted" style={{ fontSize: '11px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
                 {displayLogo ? 'Se muestra en login, portada y reportes.' : 'Usando logo de Complement por defecto.'}
               </p>
             </div>
@@ -167,7 +167,7 @@ export default function SettingsPage() {
             <button
               onClick={() => fileRef.current?.click()}
               className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer"
-              style={{ fontSize: '12px', padding: '10px 20px', borderRadius: '10px' }}
+              style={{ fontSize: 'var(--fs-12)', padding: '10px 20px', borderRadius: '10px' }}
             >
               Seleccionar imagen
             </button>
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                 onClick={handleRemoveLogo}
                 disabled={saving}
                 className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer"
-                style={{ fontSize: '12px', padding: '10px 16px', borderRadius: '10px' }}
+                style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-b)', borderRadius: '10px' }}
               >
                 Quitar logo
               </button>
@@ -186,10 +186,10 @@ export default function SettingsPage() {
 
         {/* Logo icono (header) */}
         <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '32px', marginBottom: '20px' }}>
-          <h2 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '4px' }}>
+          <h2 className="font-bold text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '4px' }}>
             Icono del encabezado
           </h2>
-          <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px' }}>
             Icono pequeño que aparece en la barra de navegación superior. Se recomienda una imagen cuadrada (PNG o SVG) con fondo transparente.
           </p>
 
@@ -206,10 +206,10 @@ export default function SettingsPage() {
               )}
             </div>
             <div>
-              <p className="text-ink font-medium" style={{ fontSize: '12px', marginBottom: '4px' }}>
+              <p className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)', marginBottom: '4px' }}>
                 {displayIcon ? 'Icono personalizado' : 'Icono por defecto'}
               </p>
-              <p className="text-muted" style={{ fontSize: '11px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
                 Se muestra en la barra superior de navegación.
               </p>
             </div>
@@ -227,7 +227,7 @@ export default function SettingsPage() {
             <button
               onClick={() => iconFileRef.current?.click()}
               className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer"
-              style={{ fontSize: '12px', padding: '10px 20px', borderRadius: '10px' }}
+              style={{ fontSize: 'var(--fs-12)', padding: '10px 20px', borderRadius: '10px' }}
             >
               Seleccionar icono
             </button>
@@ -236,10 +236,10 @@ export default function SettingsPage() {
 
         {/* Logo flotante (login) */}
         <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '32px', marginBottom: '20px' }}>
-          <h2 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '4px' }}>
+          <h2 className="font-bold text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '4px' }}>
             Logo flotante (inicio de sesión)
           </h2>
-          <p className="text-muted" style={{ fontSize: '12px', marginBottom: '20px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px' }}>
             Imagen que flota en el fondo de la pantalla de inicio de sesión. Si no se configura, se usa el logo principal. Se recomienda una imagen con fondo transparente (PNG o SVG).
           </p>
 
@@ -257,10 +257,10 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <p className="text-ink font-medium" style={{ fontSize: '12px', marginBottom: '4px' }}>
+              <p className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)', marginBottom: '4px' }}>
                 {(previewFloating ?? floatingLogo) ? 'Logo flotante personalizado' : 'Usando logo principal'}
               </p>
-              <p className="text-muted" style={{ fontSize: '11px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
                 Se muestra como animación de fondo en la pantalla de login.
               </p>
             </div>
@@ -278,7 +278,7 @@ export default function SettingsPage() {
             <button
               onClick={() => floatingFileRef.current?.click()}
               className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer"
-              style={{ fontSize: '12px', padding: '10px 20px', borderRadius: '10px' }}
+              style={{ fontSize: 'var(--fs-12)', padding: '10px 20px', borderRadius: '10px' }}
             >
               Seleccionar imagen
             </button>
@@ -294,7 +294,7 @@ export default function SettingsPage() {
                 }}
                 disabled={saving}
                 className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer"
-                style={{ fontSize: '12px', padding: '10px 16px', borderRadius: '10px' }}
+                style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-b)', borderRadius: '10px' }}
               >
                 Usar logo principal
               </button>
@@ -304,13 +304,13 @@ export default function SettingsPage() {
 
         {/* Error / Success */}
         {error && (
-          <div className="bg-error/10 rounded-xl" style={{ padding: '12px 16px', marginBottom: '16px' }}>
-            <p className="text-error font-medium" style={{ fontSize: '12px' }}>{error}</p>
+          <div className="bg-error/10 rounded-xl" style={{ padding: 'var(--sp-btn-c)', marginBottom: '16px' }}>
+            <p className="text-error font-medium" style={{ fontSize: 'var(--fs-12)' }}>{error}</p>
           </div>
         )}
         {success && (
-          <div className="bg-success/10 rounded-xl" style={{ padding: '12px 16px', marginBottom: '16px' }}>
-            <p className="text-success font-medium" style={{ fontSize: '12px' }}>Logo actualizado correctamente para todas las cuentas.</p>
+          <div className="bg-success/10 rounded-xl" style={{ padding: 'var(--sp-btn-c)', marginBottom: '16px' }}>
+            <p className="text-success font-medium" style={{ fontSize: 'var(--fs-12)' }}>Logo actualizado correctamente para todas las cuentas.</p>
           </div>
         )}
 
@@ -320,7 +320,7 @@ export default function SettingsPage() {
             onClick={handleSave}
             disabled={saving}
             className="w-full bg-navy text-white font-bold hover:bg-navy/90 disabled:opacity-50 transition-colors cursor-pointer"
-            style={{ fontSize: '14px', padding: '14px 24px', borderRadius: '12px' }}
+            style={{ fontSize: 'var(--fs-14)', padding: '14px 24px', borderRadius: '12px' }}
           >
             {saving ? 'Guardando...' : 'Guardar cambios'}
           </button>
@@ -328,7 +328,7 @@ export default function SettingsPage() {
 
         {/* Info note */}
         <div className="bg-accent/5 rounded-xl" style={{ padding: '16px 20px', marginTop: '24px' }}>
-          <p className="text-muted" style={{ fontSize: '11px', lineHeight: '1.6' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)', lineHeight: '1.6' }}>
             <strong className="text-ink">Nota:</strong> Los cambios de logo se aplican globalmente a todas las cuentas del sistema, incluyendo la página de inicio de sesión, el panel principal y los reportes en pantalla. Para que los cambios tomen efecto en la tabla <code className="bg-pale text-ink rounded px-1">app_settings</code>, asegúrese de que exista en Supabase con columnas <code className="bg-pale text-ink rounded px-1">key (text PK)</code> y <code className="bg-pale text-ink rounded px-1">value (text)</code>.
           </p>
         </div>

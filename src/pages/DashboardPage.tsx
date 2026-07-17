@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { ClipboardList, Building2, Monitor, Check } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useOrgSurveyStore } from '../store/orgSurveyStore';
@@ -160,7 +162,7 @@ export default function DashboardPage() {
   ] : null;
 
   return (
-    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '0 clamp(16px, 3vw, 24px) 48px' }}>
+    <div style={{ width: '100%', maxWidth: '930px', margin: '0 auto', padding: '0 clamp(16px, 3vw, 24px) 60px' }}>
 
       {/* ═══ A1 — BRANDED HEADER ═══ */}
       <div className="stagger-1" style={{ marginBottom: '32px' }}>
@@ -175,10 +177,10 @@ export default function DashboardPage() {
               <img src={companyLogoIcon || '/icon-complement.svg'} alt="Complement" className="shrink-0" style={{ height: '40px' }} />
             )}
             <div>
-              <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '2px' }}>
+              <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '2px' }}>
                 Página Principal
               </h1>
-              <p className="text-muted" style={{ fontSize: '13px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>
                 Bienvenido, <span className="font-semibold text-ink">{user.displayName}</span>
               </p>
             </div>
@@ -189,7 +191,7 @@ export default function DashboardPage() {
 
       {loading ? (
         <div className="text-center" style={{ padding: '40px 0' }}>
-          <p className="text-muted" style={{ fontSize: '14px' }}>Cargando...</p>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-14)' }}>Cargando...</p>
         </div>
       ) : (
         <>
@@ -197,13 +199,13 @@ export default function DashboardPage() {
           {(diagDraftActive || orgDraftActive || techDraftActive) && (
             <div className="stagger-1" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {diagDraftActive && hasDiagPerm && (
-                <DraftBanner icon="📋" label="Radiografía Empresarial" step={diagDraftStep + 1} totalSteps={DIAG_TOTAL_STEPS} onResume={handleResumeDiagDraft} onDiscard={handleDiscardDiagDraft} />
+                <DraftBanner icon={ClipboardList} label="Radiografía Empresarial" step={diagDraftStep + 1} totalSteps={DIAG_TOTAL_STEPS} onResume={handleResumeDiagDraft} onDiscard={handleDiscardDiagDraft} />
               )}
               {orgDraftActive && hasOrgPerm && (
-                <DraftBanner icon="🏗️" label="Estructura Organizacional" step={orgDraftStep + 1} totalSteps={ORG_TOTAL_STEPS} onResume={handleResumeOrgDraft} onDiscard={handleDiscardOrgDraft} />
+                <DraftBanner icon={Building2} label="Estructura Organizacional" step={orgDraftStep + 1} totalSteps={ORG_TOTAL_STEPS} onResume={handleResumeOrgDraft} onDiscard={handleDiscardOrgDraft} />
               )}
               {techDraftActive && hasTechPerm && (
-                <DraftBanner icon="💻" label="Prueba de Tecnologia" step={techDraftStep + 1} totalSteps={TECH_TOTAL_STEPS} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
+                <DraftBanner icon={Monitor} label="Prueba de Tecnologia" step={techDraftStep + 1} totalSteps={TECH_TOTAL_STEPS} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
               )}
             </div>
           )}
@@ -219,27 +221,27 @@ export default function DashboardPage() {
                 <div style={{ background: 'linear-gradient(90deg, #1b2a4a, #0a2a52)', padding: 'clamp(10px, 2vw, 14px) clamp(16px, 3vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', flexWrap: 'wrap', gap: '8px' }}>
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: '#d4922e' }} />
                   <div className="flex items-center" style={{ gap: '10px' }}>
-                    <span style={{ fontSize: '9px', padding: '3px 10px', borderRadius: '6px', letterSpacing: '0.1em', background: '#d4922e', color: 'white', fontWeight: 700, textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: 'var(--fs-9)', padding: '3px 10px', borderRadius: '6px', letterSpacing: '0.1em', background: '#d4922e', color: 'white', fontWeight: 700, textTransform: 'uppercase' }}>
                       Core
                     </span>
-                    <h2 className="font-serif text-white" style={{ fontSize: '16px' }}>Radiografía Empresarial</h2>
+                    <h2 className="font-serif text-white" style={{ fontSize: 'var(--fs-16)' }}>Radiografía Empresarial</h2>
                   </div>
                   {latestDiag ? (
-                    <span style={{ fontSize: '10px', padding: '3px 12px', borderRadius: '6px', background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontWeight: 700, border: '1px solid rgba(34,197,94,0.3)' }}>Completado</span>
+                    <span style={{ fontSize: 'var(--fs-10)', padding: '3px 12px', borderRadius: '6px', background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontWeight: 700, border: '1px solid rgba(34,197,94,0.3)' }}>Completado</span>
                   ) : diagPrefill ? (
-                    <span style={{ fontSize: '10px', padding: '3px 12px', borderRadius: '6px', background: 'rgba(212,146,46,0.15)', color: '#d4922e', fontWeight: 700, border: '1px solid rgba(212,146,46,0.3)' }}>Pre-llenado listo</span>
+                    <span style={{ fontSize: 'var(--fs-10)', padding: '3px 12px', borderRadius: '6px', background: 'rgba(212,146,46,0.15)', color: '#d4922e', fontWeight: 700, border: '1px solid rgba(212,146,46,0.3)' }}>Pre-llenado listo</span>
                   ) : (
-                    <span style={{ fontSize: '10px', padding: '3px 12px', borderRadius: '6px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 700, border: '1px solid rgba(245,158,11,0.3)' }}>Pendiente</span>
+                    <span style={{ fontSize: 'var(--fs-10)', padding: '3px 12px', borderRadius: '6px', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontWeight: 700, border: '1px solid rgba(245,158,11,0.3)' }}>Pendiente</span>
                   )}
                 </div>
 
                 <div style={{ padding: 'clamp(18px, 3vw, 28px) clamp(16px, 3vw, 32px)' }}>
-                  <p className="text-muted leading-relaxed" style={{ fontSize: '12px', marginBottom: '20px', maxWidth: '520px' }}>
+                  <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px', maxWidth: '520px' }}>
                     Evaluación integral de profesionalización, institucionalización, gerencias, situación financiera y áreas de oportunidad de la empresa.
                   </p>
 
                   {latestDiag && (
-                    <p className="text-muted" style={{ fontSize: '11px', marginBottom: '16px' }}>
+                    <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '16px' }}>
                       <span className="font-semibold text-ink">{latestDiag.datosGenerales.nombreComercial || 'Sin nombre'}</span> — {new Date(latestDiag.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
                   )}
@@ -270,15 +272,15 @@ export default function DashboardPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect width="16" height="16" rx="3" fill="#1b2a4a" opacity="0.1"/><text x="8" y="12" textAnchor="middle" fontSize="10" fill="#1b2a4a" fontWeight="700">{latestDiag.companySize.size.charAt(0)}</text></svg>
                           <div>
-                            <p style={{ fontSize: '8px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tamaño</p>
-                            <p style={{ fontSize: '13px', fontWeight: 700, color: '#1b2a4a' }}>{latestDiag.companySize.size}</p>
+                            <p style={{ fontSize: 'var(--fs-8)', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tamaño</p>
+                            <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, color: '#1b2a4a' }}>{latestDiag.companySize.size}</p>
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', background: 'white', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill={latestDiag.urgenciaLevel === 'Crítica' ? '#fee2e2' : latestDiag.urgenciaLevel === 'Alta' ? '#fef3c7' : '#d1fae5'} /><circle cx="8" cy="8" r="3" fill={latestDiag.urgenciaLevel === 'Crítica' ? '#ef4444' : latestDiag.urgenciaLevel === 'Alta' ? '#f59e0b' : '#22c55e'} /></svg>
                           <div>
-                            <p style={{ fontSize: '8px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Urgencia</p>
-                            <p style={{ fontSize: '13px', fontWeight: 700, color: '#1b2a4a' }}>{latestDiag.urgenciaLevel}</p>
+                            <p style={{ fontSize: 'var(--fs-8)', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Urgencia</p>
+                            <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, color: '#1b2a4a' }}>{latestDiag.urgenciaLevel}</p>
                           </div>
                         </div>
                       </div>
@@ -296,31 +298,31 @@ export default function DashboardPage() {
                   <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
                     {latestDiag ? (
                       <>
-                        <button onClick={() => handleViewReport(latestDiag)} style={{ fontSize: '13px', padding: '10px 24px', borderRadius: '10px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(212,146,46,0.25)' }}
+                        <button onClick={() => handleViewReport(latestDiag)} style={{ fontSize: 'var(--fs-13)', padding: '10px 24px', borderRadius: '10px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(212,146,46,0.25)' }}
                           onMouseEnter={e => { e.currentTarget.style.background = '#c07f20'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = '#d4922e'; }}>
                           Ver Reporte
                         </button>
-                        <button onClick={() => exportToPdf(latestDiag)} className="border border-navy text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer" style={{ fontSize: '12px', padding: '9px 20px', borderRadius: '8px' }}>
+                        <button onClick={() => exportToPdf(latestDiag)} className="border border-navy text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '9px 20px', borderRadius: '8px' }}>
                           PDF
                         </button>
-                        <button onClick={() => exportToExcel(latestDiag)} className="border border-border text-muted font-medium hover:border-mid/50 hover:text-ink transition-all cursor-pointer" style={{ fontSize: '12px', padding: '9px 20px', borderRadius: '8px' }}>
+                        <button onClick={() => exportToExcel(latestDiag)} className="border border-border text-muted font-medium hover:border-mid/50 hover:text-ink transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '9px 20px', borderRadius: '8px' }}>
                           Excel
                         </button>
                         <span className="border-l border-border/40" style={{ height: '20px' }} />
-                        <button onClick={handleNewDiagnostic} className="text-navy font-medium hover:underline cursor-pointer" style={{ fontSize: '12px', background: 'none', padding: '0' }}>
+                        <button onClick={handleNewDiagnostic} className="text-navy font-medium hover:underline cursor-pointer" style={{ fontSize: 'var(--fs-12)', background: 'none', padding: '0' }}>
                           Contestar de nuevo
                         </button>
                       </>
                     ) : (
                       <div>
-                        <button onClick={handleNewDiagnostic} style={{ fontSize: '14px', padding: '12px 36px', borderRadius: '12px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', boxShadow: '0 4px 16px rgba(212,146,46,0.25)', transition: 'all 0.2s' }}
+                        <button onClick={handleNewDiagnostic} style={{ fontSize: 'var(--fs-14)', padding: '12px 36px', borderRadius: '12px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', boxShadow: '0 4px 16px rgba(212,146,46,0.25)', transition: 'all 0.2s' }}
                           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(212,146,46,0.35)'; }}
                           onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(212,146,46,0.25)'; }}>
                           {diagPrefill ? 'Contestar Radiografía (Pre-llenado)' : 'Comenzar Radiografía'}
                         </button>
                         {diagPrefill && (
-                          <p style={{ fontSize: '11px', marginTop: '8px', color: '#d4922e', fontWeight: 500 }}>
+                          <p style={{ fontSize: 'var(--fs-11)', marginTop: '8px', color: '#d4922e', fontWeight: 500 }}>
                             Tu consultor ha pre-llenado algunos datos para ti
                           </p>
                         )}
@@ -335,7 +337,7 @@ export default function DashboardPage() {
           {/* ═══ ENCUESTAS COMPLEMENTARIAS (A6 stagger) ═══ */}
           {(hasOrgPerm || hasTechPerm) && (
             <div className="stagger-3" style={{ marginBottom: '24px' }}>
-              <h2 className="text-muted uppercase tracking-wide font-semibold" style={{ fontSize: '11px', marginBottom: '12px', letterSpacing: '0.05em' }}>
+              <h2 className="text-muted uppercase tracking-wide font-semibold" style={{ fontSize: 'var(--fs-11)', marginBottom: '12px', letterSpacing: '0.05em' }}>
                 Encuestas Complementarias
               </h2>
 
@@ -348,17 +350,17 @@ export default function DashboardPage() {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round"><path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/></svg>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-navy truncate" style={{ fontSize: '13px', marginBottom: '1px' }}>Estructura Organizacional</h3>
+                        <h3 className="font-bold text-navy truncate" style={{ fontSize: 'var(--fs-13)', marginBottom: '1px' }}>Estructura Organizacional</h3>
                         {latestOrg ? (
-                          <p className="text-muted truncate" style={{ fontSize: '10px' }}>{new Date(latestOrg.savedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                          <p className="text-muted truncate" style={{ fontSize: 'var(--fs-10)' }}>{new Date(latestOrg.savedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                         ) : (
-                          <p className="text-muted" style={{ fontSize: '10px' }}>Pendiente</p>
+                          <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>Pendiente</p>
                         )}
                       </div>
                       {latestOrg ? (
-                        <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.05)', color: '#22c55e', fontWeight: 700 }}>✓</span>
+                        <span style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.05)', color: '#22c55e' }}><Check style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /></span>
                       ) : (
-                        <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.05)', color: '#f59e0b', fontWeight: 700 }}>...</span>
+                        <span style={{ fontSize: 'var(--fs-9)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.05)', color: '#f59e0b', fontWeight: 700 }}>...</span>
                       )}
                     </div>
 
@@ -366,9 +368,9 @@ export default function DashboardPage() {
                       const totalColab = latestOrg.areaDetails.reduce((sum, a) => sum + (a.colaboradores ?? 0), 0);
                       return (
                         <div className="flex flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
-                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Colaboradores</p><p className="text-ink font-bold" style={{ fontSize: '12px' }}>{totalColab}</p></div>
-                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Areas</p><p className="text-ink font-bold" style={{ fontSize: '12px' }}>{latestOrg.areaDetails.length}</p></div>
-                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Organigrama</p><p className="text-ink font-semibold" style={{ fontSize: '12px' }}>{latestOrg.orgStructure.tieneOrganigrama ? 'Sí' : 'No'}</p></div>
+                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Colaboradores</p><p className="text-ink font-bold" style={{ fontSize: 'var(--fs-12)' }}>{totalColab}</p></div>
+                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Areas</p><p className="text-ink font-bold" style={{ fontSize: 'var(--fs-12)' }}>{latestOrg.areaDetails.length}</p></div>
+                          <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Organigrama</p><p className="text-ink font-semibold" style={{ fontSize: 'var(--fs-12)' }}>{latestOrg.orgStructure.tieneOrganigrama ? 'Sí' : 'No'}</p></div>
                         </div>
                       );
                     })()}
@@ -377,11 +379,11 @@ export default function DashboardPage() {
                       {latestOrg ? (
                         <>
                           <OrgReportButton survey={latestOrg} />
-                          <button onClick={() => exportOrgSurveyToPdf(latestOrg)} className="border border-mid text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer" style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}>PDF</button>
-                          <button onClick={handleNewOrgSurvey} className="text-mid font-medium hover:underline cursor-pointer" style={{ fontSize: '11px', background: 'none', padding: '0' }}>Repetir</button>
+                          <button onClick={() => exportOrgSurveyToPdf(latestOrg)} className="border border-mid text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}>PDF</button>
+                          <button onClick={handleNewOrgSurvey} className="text-mid font-medium hover:underline cursor-pointer" style={{ fontSize: 'var(--fs-11)', background: 'none', padding: '0' }}>Repetir</button>
                         </>
                       ) : (
-                        <button onClick={handleNewOrgSurvey} className="bg-mid text-white font-semibold hover:bg-accent transition-all cursor-pointer" style={{ fontSize: '12px', padding: '8px 22px', borderRadius: '8px' }}>Contestar</button>
+                        <button onClick={handleNewOrgSurvey} className="bg-mid text-white font-semibold hover:bg-accent transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '8px 22px', borderRadius: '8px' }}>Contestar</button>
                       )}
                     </div>
                   </div>
@@ -394,25 +396,25 @@ export default function DashboardPage() {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0047AB" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-navy truncate" style={{ fontSize: '13px', marginBottom: '1px' }}>Prueba de Tecnologia</h3>
+                        <h3 className="font-bold text-navy truncate" style={{ fontSize: 'var(--fs-13)', marginBottom: '1px' }}>Prueba de Tecnologia</h3>
                         {latestTech ? (
-                          <p className="text-muted truncate" style={{ fontSize: '10px' }}>{new Date(latestTech.savedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                          <p className="text-muted truncate" style={{ fontSize: 'var(--fs-10)' }}>{new Date(latestTech.savedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                         ) : (
-                          <p className="text-muted" style={{ fontSize: '10px' }}>Pendiente</p>
+                          <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>Pendiente</p>
                         )}
                       </div>
                       {latestTech ? (
-                        <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.05)', color: '#22c55e', fontWeight: 700 }}>✓</span>
+                        <span style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.05)', color: '#22c55e' }}><Check style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /></span>
                       ) : (
-                        <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.05)', color: '#f59e0b', fontWeight: 700 }}>...</span>
+                        <span style={{ fontSize: 'var(--fs-9)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.05)', color: '#f59e0b', fontWeight: 700 }}>...</span>
                       )}
                     </div>
 
                     {latestTech && (
                       <div className="flex flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
-                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Score</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: '12px' }}>{latestTech.maturityScore}/100</p></div>
-                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>Nivel</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: '12px' }}>{MATURITY_LABELS[latestTech.maturityLevel] || latestTech.maturityLevel}</p></div>
-                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '8px', marginBottom: '1px' }}>ERP</p><p className="text-ink font-semibold" style={{ fontSize: '12px' }}>{latestTech.tools.tieneERP ? 'Sí' : 'No'}</p></div>
+                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Score</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: 'var(--fs-12)' }}>{latestTech.maturityScore}/100</p></div>
+                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Nivel</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: 'var(--fs-12)' }}>{MATURITY_LABELS[latestTech.maturityLevel] || latestTech.maturityLevel}</p></div>
+                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>ERP</p><p className="text-ink font-semibold" style={{ fontSize: 'var(--fs-12)' }}>{latestTech.tools.tieneERP ? 'Sí' : 'No'}</p></div>
                       </div>
                     )}
 
@@ -420,11 +422,11 @@ export default function DashboardPage() {
                       {latestTech ? (
                         <>
                           <TechReportButton survey={latestTech} />
-                          <button onClick={() => exportTechSurveyToPdf(latestTech)} className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer" style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}>PDF</button>
-                          <button onClick={handleNewTechSurvey} className="text-accent font-medium hover:underline cursor-pointer" style={{ fontSize: '11px', background: 'none', padding: '0' }}>Repetir</button>
+                          <button onClick={() => exportTechSurveyToPdf(latestTech)} className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}>PDF</button>
+                          <button onClick={handleNewTechSurvey} className="text-accent font-medium hover:underline cursor-pointer" style={{ fontSize: 'var(--fs-11)', background: 'none', padding: '0' }}>Repetir</button>
                         </>
                       ) : (
-                        <button onClick={handleNewTechSurvey} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ fontSize: '12px', padding: '8px 22px', borderRadius: '8px' }}>Contestar</button>
+                        <button onClick={handleNewTechSurvey} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '8px 22px', borderRadius: '8px' }}>Contestar</button>
                       )}
                     </div>
                   </div>
@@ -442,19 +444,19 @@ export default function DashboardPage() {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d4922e" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                   </div>
                   <div>
-                    <h3 className="font-bold text-navy" style={{ fontSize: '13px', marginBottom: '1px' }}>Expediente del Cliente</h3>
-                    <p className="text-muted" style={{ fontSize: '10px' }}>PDF combinado con todas sus encuestas</p>
+                    <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '1px' }}>Expediente del Cliente</h3>
+                    <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>PDF combinado con todas sus encuestas</p>
                   </div>
                 </div>
-                <span style={{ fontSize: '9px', padding: '3px 10px', borderRadius: '6px', border: '1px solid #d4922e30', background: '#d4922e08', color: '#d4922e', fontWeight: 700 }}>Disponible</span>
+                <span style={{ fontSize: 'var(--fs-9)', padding: '3px 10px', borderRadius: '6px', border: '1px solid #d4922e30', background: '#d4922e08', color: '#d4922e', fontWeight: 700 }}>Disponible</span>
               </div>
               <div className="flex flex-wrap" style={{ gap: '8px' }}>
-                <button onClick={() => handleExpediente('view')} style={{ fontSize: '11px', padding: '7px 16px', borderRadius: '8px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+                <button onClick={() => handleExpediente('view')} style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#c07f20'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = '#d4922e'; }}>
                   Ver Expediente
                 </button>
-                <button onClick={() => handleExpediente('download')} style={{ fontSize: '11px', padding: '7px 16px', borderRadius: '8px', background: 'transparent', color: '#d4922e', fontWeight: 600, cursor: 'pointer', border: '1px solid #d4922e40', transition: 'all 0.2s' }}>
+                <button onClick={() => handleExpediente('download')} style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px', background: 'transparent', color: '#d4922e', fontWeight: 600, cursor: 'pointer', border: '1px solid #d4922e40', transition: 'all 0.2s' }}>
                   Descargar PDF
                 </button>
               </div>
@@ -487,7 +489,7 @@ export default function DashboardPage() {
           <div className="stagger-5" style={{ marginTop: '40px', textAlign: 'center' }}>
             <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #d4922e40, transparent)', marginBottom: '16px' }} />
             <img src={companyLogoIcon || '/icon-complement.svg'} alt="Complement" style={{ height: '20px', opacity: 0.3, marginBottom: '6px' }} />
-            <p style={{ fontSize: '10px', color: '#9ca3af', letterSpacing: '0.05em' }}>
+            <p style={{ fontSize: 'var(--fs-10)', color: '#9ca3af', letterSpacing: '0.05em' }}>
               Complement Consulting Group
             </p>
           </div>
@@ -500,7 +502,7 @@ export default function DashboardPage() {
 function OrgReportButton({ survey }: { survey: SavedOrgSurvey }) {
   const nav = useOrgReportNav();
   return (
-    <button onClick={() => nav(survey)} className="bg-mid text-white font-semibold hover:bg-accent transition-all cursor-pointer" style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '8px' }}>
+    <button onClick={() => nav(survey)} className="bg-mid text-white font-semibold hover:bg-accent transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '8px 20px', borderRadius: '8px' }}>
       Ver Reporte
     </button>
   );
@@ -509,7 +511,7 @@ function OrgReportButton({ survey }: { survey: SavedOrgSurvey }) {
 function TechReportButton({ survey }: { survey: SavedTechSurvey }) {
   const nav = useTechReportNav();
   return (
-    <button onClick={() => nav(survey)} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '8px' }}>
+    <button onClick={() => nav(survey)} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '8px 20px', borderRadius: '8px' }}>
       Ver Reporte
     </button>
   );
@@ -543,10 +545,10 @@ function SurveyHistorySection({
   const [activeTab, setActiveTab] = useState<TabKey>('diag');
 
   // Build available tabs
-  const tabs: { key: TabKey; label: string; count: number; icon: string; color: string }[] = [];
-  if (hasDiagPerm && diagnostics.length > 0) tabs.push({ key: 'diag', label: 'Radiografía', count: diagnostics.length, icon: '📋', color: '#d4922e' });
-  if (hasOrgPerm && orgSurveys.length > 0) tabs.push({ key: 'org', label: 'Estructura', count: orgSurveys.length, icon: '🏗️', color: '#6366f1' });
-  if (hasTechPerm && techSurveys.length > 0) tabs.push({ key: 'tech', label: 'Tecnologia', count: techSurveys.length, icon: '💻', color: '#0047AB' });
+  const tabs: { key: TabKey; label: string; count: number; icon: LucideIcon; color: string }[] = [];
+  if (hasDiagPerm && diagnostics.length > 0) tabs.push({ key: 'diag', label: 'Radiografía', count: diagnostics.length, icon: ClipboardList, color: '#d4922e' });
+  if (hasOrgPerm && orgSurveys.length > 0) tabs.push({ key: 'org', label: 'Estructura', count: orgSurveys.length, icon: Building2, color: '#6366f1' });
+  if (hasTechPerm && techSurveys.length > 0) tabs.push({ key: 'tech', label: 'Tecnologia', count: techSurveys.length, icon: Monitor, color: '#0047AB' });
 
   if (tabs.length === 0) return null;
 
@@ -564,11 +566,11 @@ function SurveyHistorySection({
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1b2a4a" strokeWidth="2" strokeLinecap="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
               </div>
               <div>
-                <h2 className="font-bold text-navy" style={{ fontSize: '14px' }}>Mis Encuestas Anteriores</h2>
-                <p className="text-muted" style={{ fontSize: '11px' }}>Consulta y descarga tus encuestas completadas</p>
+                <h2 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)' }}>Mis Encuestas Anteriores</h2>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>Consulta y descarga tus encuestas completadas</p>
               </div>
             </div>
-            <span className="text-muted font-semibold" style={{ fontSize: '11px', background: '#f3f4f6', padding: '4px 10px', borderRadius: '6px' }}>
+            <span className="text-muted font-semibold" style={{ fontSize: 'var(--fs-11)', background: '#f3f4f6', padding: '4px 10px', borderRadius: '6px' }}>
               {diagnostics.length + orgSurveys.length + techSurveys.length} total
             </span>
           </div>
@@ -581,7 +583,7 @@ function SurveyHistorySection({
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   style={{
-                    fontSize: '12px',
+                    fontSize: 'var(--fs-12)',
                     padding: '8px 16px',
                     fontWeight: validTab === tab.key ? 700 : 500,
                     color: validTab === tab.key ? tab.color : '#9ca3af',
@@ -591,9 +593,9 @@ function SurveyHistorySection({
                     transition: 'all 0.2s',
                   }}
                 >
-                  <span style={{ marginRight: '4px' }}>{tab.icon}</span>
+                  <tab.icon style={{ display: 'inline', width: 'var(--fs-13)', height: 'var(--fs-13)', marginRight: '4px', verticalAlign: '-2px' }} />
                   {tab.label}
-                  <span style={{ marginLeft: '6px', fontSize: '10px', background: validTab === tab.key ? `${tab.color}15` : '#f3f4f6', color: validTab === tab.key ? tab.color : '#9ca3af', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                  <span style={{ marginLeft: '6px', fontSize: 'var(--fs-10)', background: validTab === tab.key ? `${tab.color}15` : '#f3f4f6', color: validTab === tab.key ? tab.color : '#9ca3af', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
                     {tab.count}
                   </span>
                 </button>
@@ -641,7 +643,7 @@ function DiagRow({ diag, isLatest, onViewReport, onExportPdf, onExportExcel }: {
         {/* Timeline dot */}
         <div className="shrink-0 flex flex-col items-center" style={{ width: '36px', paddingTop: '4px' }}>
           <div style={{
-            width: '10px', height: '10px', borderRadius: '50%',
+            width: 'var(--fs-10)', height: 'var(--fs-10)', borderRadius: '50%',
             background: isLatest ? '#d4922e' : '#d1d5db',
             border: isLatest ? '2px solid #d4922e40' : '2px solid #e5e7eb',
           }} />
@@ -650,29 +652,29 @@ function DiagRow({ diag, isLatest, onViewReport, onExportPdf, onExportExcel }: {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
-            <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>
+            <p className="font-bold text-navy truncate" style={{ fontSize: 'var(--fs-13)' }}>
               {diag.datosGenerales.nombreComercial || 'Sin nombre'}
             </p>
             {isLatest && (
-              <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span style={{ fontSize: 'var(--fs-8)', padding: '2px 7px', borderRadius: '4px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Más reciente
               </span>
             )}
           </div>
-          <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '4px' }}>
             {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
-            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Prof. <span className="font-bold text-navy">{profAvg}%</span>
             </span>
-            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Inst. <span className="font-bold text-navy">{instAvg}%</span>
             </span>
-            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Urgencia <span className={`font-bold ${diag.urgenciaLevel === 'Crítica' ? 'text-error' : diag.urgenciaLevel === 'Alta' ? 'text-warn' : 'text-success'}`}>{diag.urgenciaLevel}</span>
             </span>
-            <span className="hidden sm:inline" style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span className="hidden sm:inline" style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Tamaño <span className="font-bold text-navy">{diag.companySize.size}</span>
             </span>
           </div>
@@ -681,7 +683,7 @@ function DiagRow({ diag, isLatest, onViewReport, onExportPdf, onExportExcel }: {
           <div className="flex items-center flex-wrap" style={{ gap: '6px', marginTop: '8px' }}>
             <button
               onClick={() => onViewReport(diag)}
-              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+              style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px', background: '#d4922e', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#c07f20'; }}
               onMouseLeave={e => { e.currentTarget.style.background = '#d4922e'; }}
             >
@@ -690,14 +692,14 @@ function DiagRow({ diag, isLatest, onViewReport, onExportPdf, onExportExcel }: {
             <button
               onClick={() => onExportPdf(diag)}
               className="border border-navy/20 text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer"
-              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+              style={{ fontSize: 'var(--fs-10)', padding: '5px 10px', borderRadius: '6px' }}
             >
               PDF
             </button>
             <button
               onClick={() => onExportExcel(diag)}
               className="border border-border text-muted font-medium hover:border-mid/50 hover:text-ink transition-all cursor-pointer"
-              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+              style={{ fontSize: 'var(--fs-10)', padding: '5px 10px', borderRadius: '6px' }}
             >
               Excel
             </button>
@@ -718,38 +720,38 @@ function OrgRow({ survey, isLatest }: { survey: SavedOrgSurvey; isLatest: boolea
       <div className="flex items-start" style={{ gap: '14px' }}>
         <div className="shrink-0 flex flex-col items-center" style={{ width: '36px', paddingTop: '4px' }}>
           <div style={{
-            width: '10px', height: '10px', borderRadius: '50%',
+            width: 'var(--fs-10)', height: 'var(--fs-10)', borderRadius: '50%',
             background: isLatest ? '#6366f1' : '#d1d5db',
             border: isLatest ? '2px solid #6366f140' : '2px solid #e5e7eb',
           }} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
-            <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{survey.companyName || 'Sin nombre'}</p>
+            <p className="font-bold text-navy truncate" style={{ fontSize: 'var(--fs-13)' }}>{survey.companyName || 'Sin nombre'}</p>
             {isLatest && (
-              <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#6366f115', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span style={{ fontSize: 'var(--fs-8)', padding: '2px 7px', borderRadius: '4px', background: '#6366f115', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Más reciente
               </span>
             )}
           </div>
-          <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '4px' }}>
             {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
-            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Colaboradores <span className="font-bold text-navy">{totalColab}</span>
             </span>
-            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Areas <span className="font-bold text-navy">{survey.areaDetails.length}</span>
             </span>
-            <span className="hidden sm:inline" style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span className="hidden sm:inline" style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Organigrama <span className="font-bold text-navy">{survey.orgStructure.tieneOrganigrama ? 'Sí' : 'No'}</span>
             </span>
           </div>
           <div className="flex items-center flex-wrap" style={{ gap: '6px', marginTop: '8px' }}>
             <button
               onClick={() => nav(survey)}
-              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#6366f1', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+              style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px', background: '#6366f1', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#4f46e5'; }}
               onMouseLeave={e => { e.currentTarget.style.background = '#6366f1'; }}
             >
@@ -758,7 +760,7 @@ function OrgRow({ survey, isLatest }: { survey: SavedOrgSurvey; isLatest: boolea
             <button
               onClick={() => exportOrgSurveyToPdf(survey)}
               className="border border-mid/30 text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer"
-              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+              style={{ fontSize: 'var(--fs-10)', padding: '5px 10px', borderRadius: '6px' }}
             >
               PDF
             </button>
@@ -778,38 +780,38 @@ function TechRow({ survey, isLatest }: { survey: SavedTechSurvey; isLatest: bool
       <div className="flex items-start" style={{ gap: '14px' }}>
         <div className="shrink-0 flex flex-col items-center" style={{ width: '36px', paddingTop: '4px' }}>
           <div style={{
-            width: '10px', height: '10px', borderRadius: '50%',
+            width: 'var(--fs-10)', height: 'var(--fs-10)', borderRadius: '50%',
             background: isLatest ? '#0047AB' : '#d1d5db',
             border: isLatest ? '2px solid #0047AB40' : '2px solid #e5e7eb',
           }} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center" style={{ gap: '8px', marginBottom: '3px' }}>
-            <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{survey.companyName || 'Sin nombre'}</p>
+            <p className="font-bold text-navy truncate" style={{ fontSize: 'var(--fs-13)' }}>{survey.companyName || 'Sin nombre'}</p>
             {isLatest && (
-              <span style={{ fontSize: '8px', padding: '2px 7px', borderRadius: '4px', background: '#0047AB15', color: '#0047AB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span style={{ fontSize: 'var(--fs-8)', padding: '2px 7px', borderRadius: '4px', background: '#0047AB15', color: '#0047AB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Más reciente
               </span>
             )}
           </div>
-          <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '4px' }}>
             {date.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
-            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Score <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{survey.maturityScore}/100</span>
             </span>
-            <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               Nivel <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{MATURITY_LABELS[survey.maturityLevel] || survey.maturityLevel}</span>
             </span>
-            <span className="hidden sm:inline" style={{ fontSize: '10px', color: '#6b7280' }}>
+            <span className="hidden sm:inline" style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
               ERP <span className="font-bold text-navy">{survey.tools.tieneERP ? 'Sí' : 'No'}</span>
             </span>
           </div>
           <div className="flex items-center flex-wrap" style={{ gap: '6px', marginTop: '8px' }}>
             <button
               onClick={() => nav(survey)}
-              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px', background: '#0047AB', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+              style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px', background: '#0047AB', color: 'white', fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#003680'; }}
               onMouseLeave={e => { e.currentTarget.style.background = '#0047AB'; }}
             >
@@ -818,7 +820,7 @@ function TechRow({ survey, isLatest }: { survey: SavedTechSurvey; isLatest: bool
             <button
               onClick={() => exportTechSurveyToPdf(survey)}
               className="border border-accent/30 text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-              style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '6px' }}
+              style={{ fontSize: 'var(--fs-10)', padding: '5px 10px', borderRadius: '6px' }}
             >
               PDF
             </button>
@@ -829,31 +831,31 @@ function TechRow({ survey, isLatest }: { survey: SavedTechSurvey; isLatest: bool
   );
 }
 
-function DraftBanner({ icon, label, step, totalSteps, onResume, onDiscard }: { icon: string; label: string; step: number; totalSteps: number; onResume: () => void; onDiscard: () => void; }) {
+function DraftBanner({ icon: Icon, label, step, totalSteps, onResume, onDiscard }: { icon: LucideIcon; label: string; step: number; totalSteps: number; onResume: () => void; onDiscard: () => void; }) {
   const pct = Math.round((step / totalSteps) * 100);
   return (
     <div className="rounded-2xl border-2 border-accent/30 bg-accent/5 shadow-sm animate-fade-up" style={{ padding: 'clamp(14px, 2vw, 18px) clamp(16px, 3vw, 24px)' }}>
       <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '10px' }}>
         <div className="flex items-center flex-1 min-w-0" style={{ gap: '14px' }}>
           <div className="inline-flex items-center justify-center rounded-full bg-accent/15 shrink-0" style={{ width: '40px', height: '40px' }}>
-            <span style={{ fontSize: '18px' }}>{icon}</span>
+            <Icon className="text-accent" style={{ width: 'var(--fs-18)', height: 'var(--fs-18)' }} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center" style={{ gap: '8px', marginBottom: '4px' }}>
-              <p className="font-bold text-navy truncate" style={{ fontSize: '13px' }}>{label}</p>
-              <span className="bg-warn/15 text-warn font-bold border border-warn/30 shrink-0" style={{ fontSize: '9px', padding: '2px 8px', borderRadius: '6px' }}>En progreso</span>
+              <p className="font-bold text-navy truncate" style={{ fontSize: 'var(--fs-13)' }}>{label}</p>
+              <span className="bg-warn/15 text-warn font-bold border border-warn/30 shrink-0" style={{ fontSize: 'var(--fs-9)', padding: '2px 8px', borderRadius: '6px' }}>En progreso</span>
             </div>
             <div className="flex items-center" style={{ gap: '8px' }}>
               <div className="flex-1 rounded-full bg-border/40" style={{ height: '4px', maxWidth: '120px' }}>
                 <div className="rounded-full progress-shimmer" style={{ height: '4px', width: `${pct}%`, transition: 'width 0.3s' }} />
               </div>
-              <span className="text-muted font-medium shrink-0" style={{ fontSize: '10px' }}>Paso {step} de {totalSteps}</span>
+              <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-10)' }}>Paso {step} de {totalSteps}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center shrink-0 self-end sm:self-auto" style={{ gap: '8px' }}>
-          <button onClick={onDiscard} className="text-muted hover:text-error font-medium transition-all cursor-pointer" style={{ fontSize: '11px', padding: '6px 10px', background: 'none' }}>Descartar</button>
-          <button onClick={onResume} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm" style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '10px' }}>Continuar →</button>
+          <button onClick={onDiscard} className="text-muted hover:text-error font-medium transition-all cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '6px 10px', background: 'none' }}>Descartar</button>
+          <button onClick={onResume} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm" style={{ fontSize: 'var(--fs-12)', padding: '8px 20px', borderRadius: '10px' }}>Continuar →</button>
         </div>
       </div>
     </div>

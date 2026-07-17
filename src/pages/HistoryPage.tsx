@@ -1,4 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Folder, Users, FlaskConical, Settings, Sparkles, CircleCheck, Pencil, Trash2,
+  BarChart3, ClipboardList, Building2, Monitor, TriangleAlert, Check, Circle,
+  Building, Eye, EyeOff, Palette, X, Info,
+} from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds } from '../lib/storage';
 import { ALL_CRITERIA } from '../config/questions';
@@ -15,6 +21,12 @@ import { exportToPptx } from '../lib/exportPptx';
 import { SECTOR_OPTIONS } from '../config/constants';
 import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, TechMaturityLevel } from '../lib/types';
 import HistoricalComparison from '../components/ui/HistoricalComparison';
+
+function BoolMark({ value }: { value: boolean }) {
+  return value
+    ? <Check style={{ display: 'inline', width: 'var(--fs-10)', height: 'var(--fs-10)', marginRight: '3px', verticalAlign: '-1px' }} />
+    : <Circle style={{ display: 'inline', width: 'var(--fs-10)', height: 'var(--fs-10)', marginRight: '3px', verticalAlign: '-1px' }} />;
+}
 
 type AdminTab = 'clientes' | 'expedientes' | 'inactivos_prueba' | 'configuracion';
 
@@ -74,27 +86,27 @@ export default function HistoryPage() {
     await refreshExpedientes();
   }
 
-  const TABS: { key: AdminTab; label: string; icon: string }[] = [
-    { key: 'expedientes', label: 'Expedientes', icon: '📁' },
-    { key: 'clientes', label: 'Clientes', icon: '👥' },
-    { key: 'inactivos_prueba', label: 'Inactivos / Prueba', icon: '🧪' },
-    { key: 'configuracion', label: 'Configuración', icon: '⚙️' },
+  const TABS: { key: AdminTab; label: string; icon: LucideIcon }[] = [
+    { key: 'expedientes', label: 'Expedientes', icon: Folder },
+    { key: 'clientes', label: 'Clientes', icon: Users },
+    { key: 'inactivos_prueba', label: 'Inactivos / Prueba', icon: FlaskConical },
+    { key: 'configuracion', label: 'Configuración', icon: Settings },
   ];
 
   return (
-    <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto', padding: '36px clamp(16px, 3vw, 24px)' }}>
+    <div style={{ width: '100%', maxWidth: '980px', margin: '0 auto', padding: '36px clamp(16px, 3vw, 24px)' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between" style={{ marginBottom: '28px', gap: '10px' }}>
         <div>
           <h1 className="font-serif text-navy" style={{ fontSize: 'clamp(18px, 4vw, 22px)' }}>Administración y Expedientes</h1>
-          <p className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginTop: '4px' }}>
             {user?.displayName || 'Complement Consulting Group'}
           </p>
         </div>
         <button
           onClick={() => setView('home')}
           className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-          style={{ padding: '8px 20px', borderRadius: '10px', fontSize: '12px' }}
+          style={{ padding: '8px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
         >
           ← Página Principal
         </button>
@@ -113,7 +125,7 @@ export default function HistoryPage() {
             }`}
             style={{ padding: '10px clamp(10px, 2vw, 18px)', fontSize: 'clamp(11px, 2vw, 13px)', background: 'none' }}
           >
-            {tab.icon} {tab.label}
+            <tab.icon style={{ display: 'inline', width: 'var(--fs-13)', height: 'var(--fs-13)', verticalAlign: '-2px', marginRight: '4px' }} /> {tab.label}
           </button>
         ))}
       </div>
@@ -201,7 +213,7 @@ function ExpedientesPanel({
   if (loading) {
     return (
       <div className="text-center" style={{ padding: '48px 0' }}>
-        <p className="text-muted" style={{ fontSize: '14px' }}>Cargando expedientes...</p>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-14)' }}>Cargando expedientes...</p>
       </div>
     );
   }
@@ -209,8 +221,8 @@ function ExpedientesPanel({
   if (accounts.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-border text-center" style={{ padding: '48px 24px' }}>
-        <p className="text-muted" style={{ fontSize: '13px' }}>No hay clientes registrados aun.</p>
-        <p className="text-muted" style={{ fontSize: '11px', marginTop: '8px' }}>Cree cuentas de clientes en la pestana "Clientes".</p>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>No hay clientes registrados aun.</p>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '8px' }}>Cree cuentas de clientes en la pestana "Clientes".</p>
       </div>
     );
   }
@@ -266,7 +278,7 @@ function ExpedientesPanel({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <div className="flex items-center justify-between" style={{ marginBottom: '4px' }}>
-        <p className="text-muted" style={{ fontSize: '12px' }}>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
           {filtered.length} de {accounts.length} expediente{accounts.length !== 1 ? 's' : ''}
         </p>
       </div>
@@ -278,7 +290,7 @@ function ExpedientesPanel({
             key={s}
             onClick={() => setStatusFilter(s)}
             className={`font-medium transition-all cursor-pointer border ${statusFilter === s ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
-            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '11px', textTransform: 'capitalize' }}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)', textTransform: 'capitalize' }}
           >
             {s === 'todos' ? `Todos (${accounts.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${accounts.filter(a => (a.status ?? 'activo') === s).length})`}
           </button>
@@ -288,7 +300,7 @@ function ExpedientesPanel({
           value={sortBy}
           onChange={e => setSortBy(e.target.value as typeof sortBy)}
           className="bg-white border border-border text-muted cursor-pointer"
-          style={{ padding: '5px 10px', borderRadius: '8px', fontSize: '11px', marginLeft: 'auto' }}
+          style={{ padding: '5px 10px', borderRadius: '8px', fontSize: 'var(--fs-11)', marginLeft: 'auto' }}
         >
           <option value="fecha">Ordenar: Fecha</option>
           <option value="nombre">Ordenar: Nombre</option>
@@ -299,7 +311,7 @@ function ExpedientesPanel({
 
       {filtered.length === 0 ? (
         <div className="bg-white rounded-xl border border-border text-center" style={{ padding: '48px 24px' }}>
-          <p className="text-muted" style={{ fontSize: '13px' }}>{accounts.length === 0 ? 'No hay clientes registrados aún.' : 'No hay expedientes con este filtro.'}</p>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>{accounts.length === 0 ? 'No hay clientes registrados aún.' : 'No hay expedientes con este filtro.'}</p>
         </div>
       ) : filtered.map(acc => {
         const data = expedienteData.get(acc.id) ?? { diagnostics: [], orgSurveys: [], techSurveys: [] };
@@ -324,14 +336,14 @@ function ExpedientesPanel({
               <ClientLogo logoUrl={acc.logoUrl} size={44} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center" style={{ gap: '8px' }}>
-                  <h3 className="font-bold text-navy group-hover:text-accent transition-colors truncate" style={{ fontSize: '15px', marginBottom: '0' }}>
+                  <h3 className="font-bold text-navy group-hover:text-accent transition-colors truncate" style={{ fontSize: 'var(--fs-15)', marginBottom: '0' }}>
                     {acc.displayName}
                   </h3>
-                  <span className={`border font-semibold flex-shrink-0 ${statusColors[accStatus]}`} style={{ padding: '1px 8px', borderRadius: '6px', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                  <span className={`border font-semibold flex-shrink-0 ${statusColors[accStatus]}`} style={{ padding: '1px 8px', borderRadius: '6px', fontSize: 'var(--fs-9)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                     {accStatus}
                   </span>
                 </div>
-                <p className="text-muted truncate" style={{ fontSize: '11px', marginTop: '2px' }}>
+                <p className="text-muted truncate" style={{ fontSize: 'var(--fs-11)', marginTop: '2px' }}>
                   {acc.email || acc.username}
                 </p>
               </div>
@@ -339,45 +351,45 @@ function ExpedientesPanel({
               {/* Quick indicators */}
               <div className="flex items-center flex-shrink-0" style={{ gap: '8px' }}>
                 {latestDiag && (
-                  <span className={`font-semibold ${LEVEL_COLORS_EXP[latestDiag.profesionalizacion.level] || 'text-muted'}`} style={{ fontSize: '11px' }}>
+                  <span className={`font-semibold ${LEVEL_COLORS_EXP[latestDiag.profesionalizacion.level] || 'text-muted'}`} style={{ fontSize: 'var(--fs-11)' }}>
                     {latestDiag.profesionalizacion.level}
                   </span>
                 )}
                 <div className="hidden sm:flex" style={{ gap: '4px' }}>
-                  <span className={`font-semibold border ${diagCount > 0 ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '6px' }}>
+                  <span className={`font-semibold border ${diagCount > 0 ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px', borderRadius: '6px' }}>
                     {diagCount} diag.
                   </span>
-                  <span className={`font-semibold border ${orgCount > 0 ? 'border-mid/30 bg-mid/5 text-mid' : 'border-border bg-pale text-muted'}`} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '6px' }}>
+                  <span className={`font-semibold border ${orgCount > 0 ? 'border-mid/30 bg-mid/5 text-mid' : 'border-border bg-pale text-muted'}`} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px', borderRadius: '6px' }}>
                     {orgCount} org.
                   </span>
-                  <span className={`font-semibold border ${techCount > 0 ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '6px' }}>
+                  <span className={`font-semibold border ${techCount > 0 ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px', borderRadius: '6px' }}>
                     {techCount} tech.
                   </span>
                 </div>
-                <span className="text-muted/40 group-hover:text-accent transition-colors" style={{ fontSize: '16px', marginLeft: '4px' }}>→</span>
+                <span className="text-muted/40 group-hover:text-accent transition-colors" style={{ fontSize: 'var(--fs-16)', marginLeft: '4px' }}>→</span>
               </div>
             </div>
 
             {/* Status lines */}
             <div style={{ paddingLeft: '58px', marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
               {hasPrefill && (
-                <span className="text-accent font-medium" style={{ fontSize: '10px' }}>
-                  ✨ Pre-llenado pendiente
+                <span className="text-accent font-medium inline-flex items-center" style={{ fontSize: 'var(--fs-10)', gap: '3px' }}>
+                  <Sparkles style={{ width: 'var(--fs-10)', height: 'var(--fs-10)' }} /> Pre-llenado pendiente
                 </span>
               )}
               {prefilledCount > 0 && (
-                <span style={{ fontSize: '10px', color: '#d4922e', fontWeight: 600 }}>
+                <span style={{ fontSize: 'var(--fs-10)', color: '#d4922e', fontWeight: 600 }}>
                   {prefilledCount} pre-llenado{prefilledCount > 1 ? 's' : ''}
                 </span>
               )}
               {soloCount > 0 && (
-                <span style={{ fontSize: '10px', color: '#6366f1', fontWeight: 600 }}>
+                <span style={{ fontSize: 'var(--fs-10)', color: '#6366f1', fontWeight: 600 }}>
                   {soloCount} contestado{soloCount > 1 ? 's' : ''} solo
                 </span>
               )}
             </div>
             {!hasAnySurvey && !hasPrefill && (
-              <p className="text-muted" style={{ fontSize: '11px', marginTop: '8px', paddingLeft: '58px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '8px', paddingLeft: '58px' }}>
                 Sin encuestas completadas
               </p>
             )}
@@ -457,7 +469,7 @@ function ClientExpedienteDetail({
       <button
         onClick={onBack}
         className="flex items-center text-accent hover:text-mid transition-colors cursor-pointer"
-        style={{ gap: '6px', marginBottom: '20px', fontSize: '13px', fontWeight: 500, background: 'none', border: 'none', padding: 0 }}
+        style={{ gap: '6px', marginBottom: '20px', fontSize: 'var(--fs-13)', fontWeight: 500, background: 'none', border: 'none', padding: 0 }}
       >
         ← Volver a expedientes
       </button>
@@ -467,7 +479,7 @@ function ClientExpedienteDetail({
           <ClientLogo logoUrl={account.logoUrl} size={52} />
           <div className="flex-1 min-w-0">
             <h2 className="font-serif text-navy truncate" style={{ fontSize: 'clamp(17px, 3vw, 20px)', marginBottom: '2px' }}>{account.displayName}</h2>
-            <p className="text-muted" style={{ fontSize: '12px' }}>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
               {account.email || account.username}
             </p>
           </div>
@@ -479,7 +491,7 @@ function ClientExpedienteDetail({
             <button
               onClick={handleViewExpedientePdf}
               className="bg-navy text-white font-semibold hover:bg-navy/80 transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}
             >
               Ver Expediente PDF
             </button>
@@ -494,24 +506,24 @@ function ClientExpedienteDetail({
               <div className="rounded-xl border-2 border-success/30 bg-success/5" style={{ padding: '16px 20px', marginTop: '10px' }}>
                 <div className="flex items-center" style={{ gap: '10px', marginBottom: '10px' }}>
                   <div className="inline-flex items-center justify-center rounded-full bg-success/15 shrink-0" style={{ width: '32px', height: '32px' }}>
-                    <span style={{ fontSize: '15px' }}>✅</span>
+                    <CircleCheck className="text-success" style={{ width: 'var(--fs-15)', height: 'var(--fs-15)' }} />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-navy" style={{ fontSize: '13px' }}>Pre-llenado completo</p>
-                    <p className="text-muted" style={{ fontSize: '11px' }}>El cliente vera los datos pre-llenados al contestar la radiografía</p>
+                    <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-13)' }}>Pre-llenado completo</p>
+                    <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>El cliente vera los datos pre-llenados al contestar la radiografía</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center" style={{ gap: '8px' }}>
                   <button
                     onClick={handleStartPrefill}
-                    className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-                    style={{ fontSize: '11px', padding: '7px 18px', borderRadius: '8px' }}
+                    className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center"
+                    style={{ fontSize: 'var(--fs-11)', padding: '7px 18px', borderRadius: '8px', gap: '5px' }}
                   >
-                    ✏️ Editar pre-llenado
+                    <Pencil style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Editar pre-llenado
                   </button>
                   {deletePrefillConfirm ? (
                     <span className="flex items-center" style={{ gap: '6px' }}>
-                      <span className="text-error font-medium" style={{ fontSize: '11px' }}>¿Borrar pre-llenado?</span>
+                      <span className="text-error font-medium" style={{ fontSize: 'var(--fs-11)' }}>¿Borrar pre-llenado?</span>
                       <button
                         onClick={async () => {
                           setDeletingPrefill(true);
@@ -521,14 +533,14 @@ function ClientExpedienteDetail({
                         }}
                         disabled={deletingPrefill}
                         className="bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer disabled:opacity-50"
-                        style={{ fontSize: '10px', padding: '5px 12px', borderRadius: '6px' }}
+                        style={{ fontSize: 'var(--fs-10)', padding: '5px 12px', borderRadius: '6px' }}
                       >
                         {deletingPrefill ? 'Borrando...' : 'Si, borrar'}
                       </button>
                       <button
                         onClick={() => setDeletePrefillConfirm(false)}
                         className="text-muted font-medium hover:text-ink transition-all cursor-pointer"
-                        style={{ fontSize: '10px', padding: '5px 8px' }}
+                        style={{ fontSize: 'var(--fs-10)', padding: '5px 8px' }}
                       >
                         Cancelar
                       </button>
@@ -536,10 +548,10 @@ function ClientExpedienteDetail({
                   ) : (
                     <button
                       onClick={() => setDeletePrefillConfirm(true)}
-                      className="border border-error/30 text-error font-medium hover:bg-error/5 transition-all cursor-pointer"
-                      style={{ fontSize: '11px', padding: '7px 16px', borderRadius: '8px' }}
+                      className="border border-error/30 text-error font-medium hover:bg-error/5 transition-all cursor-pointer inline-flex items-center"
+                      style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px', gap: '5px' }}
                     >
-                      🗑️ Borrar pre-llenado
+                      <Trash2 style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Borrar pre-llenado
                     </button>
                   )}
                 </div>
@@ -549,10 +561,10 @@ function ClientExpedienteDetail({
               <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
                 <button
                   onClick={handleStartPrefill}
-                  className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-                  style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
+                  className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center"
+                  style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px', gap: '5px' }}
                 >
-                  ✨ Pre-llenar radiografía
+                  <Sparkles style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Pre-llenar radiografía
                 </button>
               </div>
             )}
@@ -563,10 +575,10 @@ function ClientExpedienteDetail({
       {/* Section tabs */}
       <div className="flex overflow-x-auto" style={{ gap: '4px', marginBottom: '20px', paddingBottom: '2px' }}>
         {([
-          { key: 'resumen' as const, label: 'Resumen Ejecutivo', icon: '📊' },
-          ...(diagCount > 0 ? [{ key: 'diagnosticos' as const, label: `Radiografías (${diagCount})`, icon: '📋' }] : []),
-          ...(orgCount > 0 ? [{ key: 'organizacional' as const, label: `Estructura Org. (${orgCount})`, icon: '🏗️' }] : []),
-          ...(techCount > 0 ? [{ key: 'tecnologia' as const, label: `Tecnología (${techCount})`, icon: '💻' }] : []),
+          { key: 'resumen' as const, label: 'Resumen Ejecutivo', icon: BarChart3 },
+          ...(diagCount > 0 ? [{ key: 'diagnosticos' as const, label: `Radiografías (${diagCount})`, icon: ClipboardList }] : []),
+          ...(orgCount > 0 ? [{ key: 'organizacional' as const, label: `Estructura Org. (${orgCount})`, icon: Building2 }] : []),
+          ...(techCount > 0 ? [{ key: 'tecnologia' as const, label: `Tecnología (${techCount})`, icon: Monitor }] : []),
         ]).map(tab => (
           <button
             key={tab.key}
@@ -578,7 +590,7 @@ function ClientExpedienteDetail({
             }`}
             style={{ padding: '9px clamp(10px, 2vw, 18px)', fontSize: 'clamp(10px, 2vw, 12px)' }}
           >
-            {tab.icon} {tab.label}
+            <tab.icon style={{ display: 'inline', width: 'var(--fs-13)', height: 'var(--fs-13)', verticalAlign: '-2px', marginRight: '4px' }} /> {tab.label}
           </button>
         ))}
       </div>
@@ -645,7 +657,7 @@ function ResumenEjecutivoSection({
   if (!latestDiag && !latestOrg && !latestTech) {
     return (
       <div className="bg-white rounded-xl border border-border text-center" style={{ padding: '48px 24px' }}>
-        <p className="text-muted" style={{ fontSize: '13px' }}>Este cliente aun no ha completado ninguna encuesta.</p>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>Este cliente aun no ha completado ninguna encuesta.</p>
       </div>
     );
   }
@@ -705,19 +717,19 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
       <div className="flex flex-col sm:flex-row sm:items-center justify-between" style={{ marginBottom: '20px', gap: '10px' }}>
         <div>
           <div className="flex items-center flex-wrap" style={{ gap: '8px', marginBottom: '4px' }}>
-            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px' }}>Radiografía Empresarial</p>
+            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)' }}>Radiografía Empresarial</p>
             {d.wasPrefilled && (
-              <span style={{ fontSize: '8px', padding: '2px 8px', borderRadius: '4px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, border: '1px solid #d4922e30' }}>
-                ✨ Pre-llenado
+              <span className="inline-flex items-center" style={{ fontSize: 'var(--fs-8)', padding: '2px 8px', borderRadius: '4px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, border: '1px solid #d4922e30', gap: '3px' }}>
+                <Sparkles style={{ width: 'var(--fs-9)', height: 'var(--fs-9)' }} /> Pre-llenado
               </span>
             )}
             {d.wasPrefilled === false && (
-              <span style={{ fontSize: '8px', padding: '2px 8px', borderRadius: '4px', background: '#6366f115', color: '#6366f1', fontWeight: 700, border: '1px solid #6366f130' }}>
+              <span style={{ fontSize: 'var(--fs-8)', padding: '2px 8px', borderRadius: '4px', background: '#6366f115', color: '#6366f1', fontWeight: 700, border: '1px solid #6366f130' }}>
                 Contestado solo
               </span>
             )}
           </div>
-          <p className="text-muted" style={{ fontSize: '11px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
             {new Date(d.savedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
@@ -725,7 +737,7 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
           <button
             onClick={() => exportToPptx(d)}
             className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-            style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
+            style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}
             title="Descargar presentacion PowerPoint"
           >
             PPTX
@@ -733,14 +745,14 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
           <button
             onClick={() => exportToPdf(d)}
             className="border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer"
-            style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
+            style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}
           >
             PDF
           </button>
           <button
             onClick={() => onExtenso(d)}
             className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-            style={{ fontSize: '11px', padding: '6px 16px', borderRadius: '8px' }}
+            style={{ fontSize: 'var(--fs-11)', padding: '6px 16px', borderRadius: '8px' }}
           >
             Ver extenso →
           </button>
@@ -757,57 +769,57 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
 
       {/* Scores */}
       <div className="flex flex-wrap" style={{ gap: '14px', marginBottom: '16px' }}>
-        <div className="rounded-xl border border-border/30 bg-pale/50" style={{ padding: '14px 18px', flex: 1, minWidth: '180px' }}>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Profesionalización</p>
+        <div className="rounded-xl border border-border/30 bg-pale/50" style={{ padding: 'var(--sp-btn-a)', flex: 1, minWidth: '180px' }}>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Profesionalización</p>
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="font-bold text-ink" style={{ fontSize: '18px' }}>{d.profesionalizacion.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '11px' }}>/100</span></span>
+            <span className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{d.profesionalizacion.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: 'var(--fs-11)' }}>/100</span></span>
             <span className={`font-semibold rounded-full ${
               d.profesionalizacion.level === 'Bajo' ? 'bg-error/15 text-error' :
               d.profesionalizacion.level === 'Medio' ? 'bg-warn/15 text-warn' :
               'bg-success/15 text-success'
-            }`} style={{ fontSize: '10px', padding: '3px 10px' }}>
+            }`} style={{ fontSize: 'var(--fs-10)', padding: '3px 10px' }}>
               {d.profesionalizacion.level}
             </span>
           </div>
           {lowProfCriteria.length > 0 && (
             <div style={{ marginTop: '10px' }}>
-              <p className="text-muted" style={{ fontSize: '9px', marginBottom: '4px' }}>Criterios bajos:</p>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-9)', marginBottom: '4px' }}>Criterios bajos:</p>
               {lowProfCriteria.slice(0, 3).map((c, i) => (
-                <div key={i} className="flex items-center justify-between" style={{ fontSize: '10px', marginBottom: '2px' }}>
+                <div key={i} className="flex items-center justify-between" style={{ fontSize: 'var(--fs-10)', marginBottom: '2px' }}>
                   <span className="text-muted">{c.label}</span>
                   <span className="font-bold text-error">{ratingLabelInline(c.rating)}</span>
                 </div>
               ))}
               {lowProfCriteria.length > 3 && (
-                <p className="text-muted" style={{ fontSize: '9px' }}>+{lowProfCriteria.length - 3} mas...</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>+{lowProfCriteria.length - 3} mas...</p>
               )}
             </div>
           )}
         </div>
 
-        <div className="rounded-xl border border-border/30 bg-pale/50" style={{ padding: '14px 18px', flex: 1, minWidth: '180px' }}>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Institucionalización</p>
+        <div className="rounded-xl border border-border/30 bg-pale/50" style={{ padding: 'var(--sp-btn-a)', flex: 1, minWidth: '180px' }}>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Institucionalización</p>
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="font-bold text-ink" style={{ fontSize: '18px' }}>{d.institucionalizacion.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '11px' }}>/100</span></span>
+            <span className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{d.institucionalizacion.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: 'var(--fs-11)' }}>/100</span></span>
             <span className={`font-semibold rounded-full ${
               d.institucionalizacion.level === 'Bajo' ? 'bg-error/15 text-error' :
               d.institucionalizacion.level === 'Medio' ? 'bg-warn/15 text-warn' :
               'bg-success/15 text-success'
-            }`} style={{ fontSize: '10px', padding: '3px 10px' }}>
+            }`} style={{ fontSize: 'var(--fs-10)', padding: '3px 10px' }}>
               {d.institucionalizacion.level}
             </span>
           </div>
           {lowInstCriteria.length > 0 && (
             <div style={{ marginTop: '10px' }}>
-              <p className="text-muted" style={{ fontSize: '9px', marginBottom: '4px' }}>Criterios bajos:</p>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-9)', marginBottom: '4px' }}>Criterios bajos:</p>
               {lowInstCriteria.slice(0, 3).map((c, i) => (
-                <div key={i} className="flex items-center justify-between" style={{ fontSize: '10px', marginBottom: '2px' }}>
+                <div key={i} className="flex items-center justify-between" style={{ fontSize: 'var(--fs-10)', marginBottom: '2px' }}>
                   <span className="text-muted">{c.label}</span>
                   <span className="font-bold text-error">{ratingLabelInline(c.rating)}</span>
                 </div>
               ))}
               {lowInstCriteria.length > 3 && (
-                <p className="text-muted" style={{ fontSize: '9px' }}>+{lowInstCriteria.length - 3} mas...</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>+{lowInstCriteria.length - 3} mas...</p>
               )}
             </div>
           )}
@@ -817,7 +829,7 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
       {/* Margins */}
       {d.marginEvaluation && d.marginData?.tieneDatosFinancieros && (
         <div style={{ marginBottom: '16px' }}>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '8px' }}>Margenes Financieros</p>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '8px' }}>Margenes Financieros</p>
           <div className="flex flex-wrap" style={{ gap: '10px' }}>
             {([
               { key: 'margenBruto' as const, label: 'Bruto' },
@@ -828,10 +840,10 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
               if (ev.value === null) return null;
               const ml = MARGIN_LABELS[ev.level];
               return (
-                <div key={m.key} className="rounded-lg border border-border/30 bg-white text-center" style={{ padding: '10px 16px', minWidth: '100px' }}>
-                  <p className="text-muted" style={{ fontSize: '9px' }}>{m.label}</p>
-                  <p className="font-bold text-ink" style={{ fontSize: '15px' }}>{ev.value}%</p>
-                  <p className={`font-semibold ${ml.color}`} style={{ fontSize: '9px' }}>{ml.label}</p>
+                <div key={m.key} className="rounded-lg border border-border/30 bg-white text-center" style={{ padding: 'var(--sp-btn-b)', minWidth: '100px' }}>
+                  <p className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>{m.label}</p>
+                  <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-15)' }}>{ev.value}%</p>
+                  <p className={`font-semibold ${ml.color}`} style={{ fontSize: 'var(--fs-9)' }}>{ml.label}</p>
                 </div>
               );
             })}
@@ -850,15 +862,15 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
       {/* Top opportunity areas */}
       {d.opportunityAreas.length > 0 && (
         <div style={{ marginTop: '4px' }}>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Areas de oportunidad principales</p>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Areas de oportunidad principales</p>
           <div className="flex flex-wrap" style={{ gap: '6px' }}>
             {d.opportunityAreas.slice(0, 4).map(a => (
               <span key={a.serviceArea.id} className={`border font-medium ${
                 a.priority === 'alta' ? 'border-error/30 bg-error/5 text-error' :
                 a.priority === 'media' ? 'border-warn/30 bg-warn/5 text-warn' :
                 'border-mid/30 bg-mid/5 text-mid'
-              }`} style={{ fontSize: '10px', padding: '3px 10px', borderRadius: '6px' }}>
-                {a.serviceArea.icon} {a.serviceArea.name}
+              }`} style={{ fontSize: 'var(--fs-10)', padding: '3px 10px', borderRadius: '6px' }}>
+                <a.serviceArea.icon style={{ display: 'inline', width: 'var(--fs-13)', height: 'var(--fs-13)', verticalAlign: '-2px', marginRight: '4px' }} /> {a.serviceArea.name}
               </span>
             ))}
           </div>
@@ -868,9 +880,9 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
       {/* Retos */}
       {d.retos.some(r => r) && (
         <div style={{ marginTop: '12px' }}>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Retos principales</p>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Retos principales</p>
           {d.retos.filter(r => r).slice(0, 3).map((r, i) => (
-            <p key={i} className="text-ink" style={{ fontSize: '11px', marginBottom: '3px' }}>
+            <p key={i} className="text-ink" style={{ fontSize: 'var(--fs-11)', marginBottom: '3px' }}>
               <span className="font-semibold text-navy">#{i + 1}</span> {r}
             </p>
           ))}
@@ -900,8 +912,8 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between" style={{ marginBottom: '20px', gap: '10px' }}>
         <div>
-          <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px', marginBottom: '4px' }}>Estructura Organizacional</p>
-          <p className="text-muted" style={{ fontSize: '11px' }}>
+          <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '4px' }}>Estructura Organizacional</p>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
             {new Date(s.savedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
@@ -909,14 +921,14 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
           <button
             onClick={() => exportOrgSurveyToPdf(s)}
             className="border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer"
-            style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '8px' }}
+            style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}
           >
             PDF
           </button>
           <button
             onClick={() => onExtenso(s)}
             className="bg-mid text-white font-semibold hover:bg-mid/80 transition-all cursor-pointer"
-            style={{ fontSize: '11px', padding: '6px 16px', borderRadius: '8px' }}
+            style={{ fontSize: 'var(--fs-11)', padding: '6px 16px', borderRadius: '8px' }}
           >
             Ver extenso →
           </button>
@@ -951,14 +963,14 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
       </div>
 
       {/* Areas detail compact */}
-      <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '6px' }}>Detalle por area</p>
+      <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Detalle por area</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
         {s.areaDetails.map((a, i) => (
           <div key={i} className="flex items-center rounded-md bg-pale/50" style={{ gap: '8px', padding: '6px 12px' }}>
             <span className={`rounded-full ${a.tieneLider ? 'bg-success' : 'bg-error'}`} style={{ width: '6px', height: '6px' }} />
-            <span className="flex-1 text-ink font-medium" style={{ fontSize: '11px' }}>{a.nombre || 'Sin nombre'}</span>
-            <span className="text-muted" style={{ fontSize: '10px' }}>{a.colaboradores ?? 0} colab.</span>
-            <span className="text-muted" style={{ fontSize: '10px' }}>
+            <span className="flex-1 text-ink font-medium" style={{ fontSize: 'var(--fs-11)' }}>{a.nombre || 'Sin nombre'}</span>
+            <span className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>{a.colaboradores ?? 0} colab.</span>
+            <span className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>
               {a.sueldoPromedio ? `$${a.sueldoPromedio.toLocaleString('es-MX')}` : '—'}
             </span>
           </div>
@@ -971,8 +983,8 @@ function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExt
         <MiniMetric label="Competitividad Sueldos" value={competLabels[s.talentProcesses.competitividadSueldos] || '—'} />
         {s.talentProcesses.retoCapitalHumano && (
           <div className="rounded-lg bg-pale/50 border border-border/30" style={{ padding: '8px 12px', gridColumn: '1 / -1' }}>
-            <p className="text-muted" style={{ fontSize: '9px', marginBottom: '2px' }}>Reto principal</p>
-            <p className="text-ink" style={{ fontSize: '11px' }}>{s.talentProcesses.retoCapitalHumano}</p>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Reto principal</p>
+            <p className="text-ink" style={{ fontSize: 'var(--fs-11)' }}>{s.talentProcesses.retoCapitalHumano}</p>
           </div>
         )}
       </div>
@@ -1009,26 +1021,26 @@ function DiagnosticosSection({
       {diagnostics.map(d => (
         <div key={d.id} className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '20px 24px' }}>
           <div className="flex items-center flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
-            <span className="flex-1 font-semibold text-navy" style={{ fontSize: '14px' }}>
+            <span className="flex-1 font-semibold text-navy" style={{ fontSize: 'var(--fs-14)' }}>
               {d.datosGenerales.nombreComercial || 'Sin nombre'}
             </span>
             {d.wasPrefilled && (
-              <span style={{ fontSize: '9px', padding: '3px 9px', borderRadius: '6px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, border: '1px solid #d4922e30' }}>
-                ✨ Pre-llenado
+              <span className="inline-flex items-center" style={{ fontSize: 'var(--fs-9)', padding: '3px 9px', borderRadius: '6px', background: '#d4922e15', color: '#d4922e', fontWeight: 700, border: '1px solid #d4922e30', gap: '3px' }}>
+                <Sparkles style={{ width: 'var(--fs-10)', height: 'var(--fs-10)' }} /> Pre-llenado
               </span>
             )}
             {d.wasPrefilled === false && (
-              <span style={{ fontSize: '9px', padding: '3px 9px', borderRadius: '6px', background: '#6366f115', color: '#6366f1', fontWeight: 700, border: '1px solid #6366f130' }}>
+              <span style={{ fontSize: 'var(--fs-9)', padding: '3px 9px', borderRadius: '6px', background: '#6366f115', color: '#6366f1', fontWeight: 700, border: '1px solid #6366f130' }}>
                 Contestado solo
               </span>
             )}
-            <span className="text-muted" style={{ fontSize: '11px' }}>
+            <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
               {new Date(d.savedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
-            <span className="border border-accent/30 bg-accent/5 text-accent font-bold" style={{ fontSize: '10px', padding: '3px 10px', borderRadius: '8px' }}>
+            <span className="border border-accent/30 bg-accent/5 text-accent font-bold" style={{ fontSize: 'var(--fs-10)', padding: '3px 10px', borderRadius: '8px' }}>
               {d.companySize.size}
             </span>
-            <span className={`font-semibold ${LEVEL_COLORS_EXP[d.profesionalizacion.level] || ''}`} style={{ fontSize: '11px' }}>
+            <span className={`font-semibold ${LEVEL_COLORS_EXP[d.profesionalizacion.level] || ''}`} style={{ fontSize: 'var(--fs-11)' }}>
               Prof: {d.profesionalizacion.level}
             </span>
           </div>
@@ -1036,14 +1048,14 @@ function DiagnosticosSection({
             <button
               onClick={() => onExtenso(d)}
               className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '7px 18px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 18px', borderRadius: '8px' }}
             >
               Ver extenso →
             </button>
             <button
               onClick={() => exportToPptx(d)}
               className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}
               title="Presentacion PowerPoint"
             >
               PPTX
@@ -1051,32 +1063,32 @@ function DiagnosticosSection({
             <button
               onClick={() => exportToPdf(d)}
               className="border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}
             >
               PDF
             </button>
             <button
               onClick={() => onEdit(d)}
-              className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}
+              className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer inline-flex items-center"
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px', gap: '5px' }}
             >
-              ✏️ Editar
+              <Pencil style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Editar
             </button>
             {deleteConfirm === d.id ? (
               <span className="flex items-center" style={{ gap: '6px' }}>
-                <span className="text-error font-medium" style={{ fontSize: '11px' }}>Eliminar?</span>
+                <span className="text-error font-medium" style={{ fontSize: 'var(--fs-11)' }}>Eliminar?</span>
                 <button
                   onClick={() => handleDelete(d.id)}
                   disabled={deleting}
                   className="bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer disabled:opacity-50"
-                  style={{ fontSize: '10px', padding: '5px 12px', borderRadius: '6px' }}
+                  style={{ fontSize: 'var(--fs-10)', padding: '5px 12px', borderRadius: '6px' }}
                 >
                   {deleting ? 'Eliminando...' : 'Si, eliminar'}
                 </button>
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   className="text-muted font-medium hover:text-ink transition-all cursor-pointer"
-                  style={{ fontSize: '10px', padding: '5px 8px' }}
+                  style={{ fontSize: 'var(--fs-10)', padding: '5px 8px' }}
                 >
                   Cancelar
                 </button>
@@ -1085,9 +1097,9 @@ function DiagnosticosSection({
               <button
                 onClick={() => setDeleteConfirm(d.id)}
                 className="text-muted hover:text-error font-medium transition-all cursor-pointer"
-                style={{ fontSize: '11px', padding: '7px 10px', borderRadius: '8px' }}
+                style={{ fontSize: 'var(--fs-11)', padding: '7px 10px', borderRadius: '8px' }}
               >
-                🗑️
+                <Trash2 style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} />
               </button>
             )}
           </div>
@@ -1127,54 +1139,54 @@ function OrganizacionalSection({
         return (
           <div key={s.id} className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '20px 24px' }}>
             <div className="flex items-center flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
-              <span className="flex-1 font-semibold text-navy" style={{ fontSize: '14px' }}>
+              <span className="flex-1 font-semibold text-navy" style={{ fontSize: 'var(--fs-14)' }}>
                 {s.companyName || 'Sin nombre'}
               </span>
-              <span className="text-muted" style={{ fontSize: '11px' }}>
+              <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
                 {new Date(s.savedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
-              <span className="border border-mid/30 bg-mid/5 text-mid font-bold" style={{ fontSize: '10px', padding: '3px 10px', borderRadius: '8px' }}>
+              <span className="border border-mid/30 bg-mid/5 text-mid font-bold" style={{ fontSize: 'var(--fs-10)', padding: '3px 10px', borderRadius: '8px' }}>
                 {totalColab} colab.
               </span>
-              <span className="text-muted font-semibold" style={{ fontSize: '11px' }}>{s.areaDetails.length} areas</span>
+              <span className="text-muted font-semibold" style={{ fontSize: 'var(--fs-11)' }}>{s.areaDetails.length} areas</span>
             </div>
             <div className="flex flex-wrap items-center" style={{ gap: '8px' }}>
               <button
                 onClick={() => onExtenso(s)}
                 className="bg-mid text-white font-semibold hover:bg-mid/80 transition-all cursor-pointer"
-                style={{ fontSize: '11px', padding: '7px 18px', borderRadius: '8px' }}
+                style={{ fontSize: 'var(--fs-11)', padding: '7px 18px', borderRadius: '8px' }}
               >
                 Ver extenso →
               </button>
               <button
                 onClick={() => exportOrgSurveyToPdf(s)}
                 className="border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer"
-                style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}
+                style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}
               >
                 Descargar PDF
               </button>
               <button
                 onClick={() => onEdit(s)}
-                className="border border-mid text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer"
-                style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}
+                className="border border-mid text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer inline-flex items-center"
+                style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px', gap: '5px' }}
               >
-                ✏️ Editar
+                <Pencil style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Editar
               </button>
               {deleteConfirm === s.id ? (
                 <span className="flex items-center" style={{ gap: '6px' }}>
-                  <span className="text-error font-medium" style={{ fontSize: '11px' }}>Eliminar?</span>
+                  <span className="text-error font-medium" style={{ fontSize: 'var(--fs-11)' }}>Eliminar?</span>
                   <button
                     onClick={() => handleDelete(s.id)}
                     disabled={deleting}
                     className="bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer disabled:opacity-50"
-                    style={{ fontSize: '10px', padding: '5px 12px', borderRadius: '6px' }}
+                    style={{ fontSize: 'var(--fs-10)', padding: '5px 12px', borderRadius: '6px' }}
                   >
                     {deleting ? 'Eliminando...' : 'Si, eliminar'}
                   </button>
                   <button
                     onClick={() => setDeleteConfirm(null)}
                     className="text-muted font-medium hover:text-ink transition-all cursor-pointer"
-                    style={{ fontSize: '10px', padding: '5px 8px' }}
+                    style={{ fontSize: 'var(--fs-10)', padding: '5px 8px' }}
                   >
                     Cancelar
                   </button>
@@ -1183,9 +1195,9 @@ function OrganizacionalSection({
                 <button
                   onClick={() => setDeleteConfirm(s.id)}
                   className="text-muted hover:text-error font-medium transition-all cursor-pointer"
-                  style={{ fontSize: '11px', padding: '7px 10px', borderRadius: '8px' }}
+                  style={{ fontSize: 'var(--fs-11)', padding: '7px 10px', borderRadius: '8px' }}
                 >
-                  🗑️
+                  <Trash2 style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} />
                 </button>
               )}
             </div>
@@ -1205,8 +1217,8 @@ function ratingLabelInline(r: number): string { return r <= 0 ? 'Bajo' : r <= 5 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-white border border-border/30 text-center" style={{ padding: '10px 8px' }}>
-      <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '8px', marginBottom: '3px' }}>{label}</p>
-      <p className="font-bold text-ink" style={{ fontSize: '12px' }}>{value}</p>
+      <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-8)', marginBottom: '3px' }}>{label}</p>
+      <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-12)' }}>{value}</p>
     </div>
   );
 }
@@ -1217,7 +1229,7 @@ function StatusPill({ label, value, positive, warning }: { label: string; value:
       positive ? 'border-success/30 bg-success/5 text-success' :
       warning ? 'border-warn/30 bg-warn/5 text-warn' :
       'border-error/30 bg-error/5 text-error'
-    }`} style={{ fontSize: '10px', padding: '4px 10px', borderRadius: '6px' }}>
+    }`} style={{ fontSize: 'var(--fs-10)', padding: '4px 10px', borderRadius: '6px' }}>
       {label}: {value}
     </span>
   );
@@ -1243,24 +1255,24 @@ function TechEjecutivoCard({ survey, onExtenso }: { survey: SavedTechSurvey; onE
     <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: 'clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px)' }}>
       <div className="flex items-center" style={{ gap: '12px', marginBottom: '16px' }}>
         <div className="inline-flex items-center justify-center rounded-full bg-accent/10 shrink-0" style={{ width: '36px', height: '36px' }}>
-          <span style={{ fontSize: '16px' }}>💻</span>
+          <Monitor className="text-accent" style={{ width: 'var(--fs-16)', height: 'var(--fs-16)' }} />
         </div>
-        <h3 className="font-bold text-navy" style={{ fontSize: '14px' }}>Prueba de Tecnología</h3>
-        <span className="text-muted" style={{ fontSize: '11px' }}>
+        <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)' }}>Prueba de Tecnología</h3>
+        <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
           {new Date(survey.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })}
         </span>
       </div>
 
       <div className="flex flex-wrap" style={{ gap: '14px', marginBottom: '16px' }}>
         <div>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '2px' }}>Score</p>
-          <p className={`font-bold ${MATURITY_COLORS_EXP[survey.maturityLevel]}`} style={{ fontSize: '18px' }}>
-            {survey.maturityScore}<span className="text-muted font-normal" style={{ fontSize: '11px' }}>/100</span>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Score</p>
+          <p className={`font-bold ${MATURITY_COLORS_EXP[survey.maturityLevel]}`} style={{ fontSize: 'var(--fs-18)' }}>
+            {survey.maturityScore}<span className="text-muted font-normal" style={{ fontSize: 'var(--fs-11)' }}>/100</span>
           </p>
         </div>
         <div>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: '9px', marginBottom: '2px' }}>Nivel</p>
-          <p className={`font-bold ${MATURITY_COLORS_EXP[survey.maturityLevel]}`} style={{ fontSize: '13px' }}>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Nivel</p>
+          <p className={`font-bold ${MATURITY_COLORS_EXP[survey.maturityLevel]}`} style={{ fontSize: 'var(--fs-13)' }}>
             {MATURITY_LABELS_EXP[survey.maturityLevel]}
           </p>
         </div>
@@ -1276,14 +1288,14 @@ function TechEjecutivoCard({ survey, onExtenso }: { survey: SavedTechSurvey; onE
         <button
           onClick={() => onExtenso(survey)}
           className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-          style={{ fontSize: '11px', padding: '7px 16px', borderRadius: '8px' }}
+          style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px' }}
         >
           Reporte Extenso
         </button>
         <button
           onClick={() => exportTechSurveyToPdf(survey)}
           className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-          style={{ fontSize: '11px', padding: '7px 16px', borderRadius: '8px' }}
+          style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px' }}
         >
           PDF
         </button>
@@ -1321,9 +1333,9 @@ function TecnologiaSection({
         <div key={survey.id} className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px 28px' }}>
           <div className="flex items-start justify-between" style={{ marginBottom: '14px' }}>
             <div>
-              <h4 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '4px' }}>
+              <h4 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)', marginBottom: '4px' }}>
                 Prueba #{surveys.length - i}
-                <span className="text-muted font-normal" style={{ fontSize: '11px', marginLeft: '8px' }}>
+                <span className="text-muted font-normal" style={{ fontSize: 'var(--fs-11)', marginLeft: '8px' }}>
                   {new Date(survey.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
               </h4>
@@ -1333,9 +1345,9 @@ function TecnologiaSection({
               survey.maturityLevel === 'intermedio' ? 'border-warn/20 bg-warn/5 text-warn' :
               survey.maturityLevel === 'avanzado' ? 'border-success/20 bg-success/5 text-success' :
               'border-accent/20 bg-accent/5 text-accent'
-            }`} style={{ padding: '6px 14px' }}>
-              <p className="font-bold" style={{ fontSize: '16px' }}>{survey.maturityScore}</p>
-              <p className="font-medium" style={{ fontSize: '9px' }}>{MATURITY_LABELS_EXP[survey.maturityLevel]}</p>
+            }`} style={{ padding: 'var(--sp-btn-d)' }}>
+              <p className="font-bold" style={{ fontSize: 'var(--fs-16)' }}>{survey.maturityScore}</p>
+              <p className="font-medium" style={{ fontSize: 'var(--fs-9)' }}>{MATURITY_LABELS_EXP[survey.maturityLevel]}</p>
             </div>
           </div>
 
@@ -1352,39 +1364,39 @@ function TecnologiaSection({
             <button
               onClick={() => onExtenso(survey)}
               className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '7px 16px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px' }}
             >
               Reporte Extenso
             </button>
             <button
               onClick={() => exportTechSurveyToPdf(survey)}
               className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '7px 16px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px' }}
             >
               PDF
             </button>
             <button
               onClick={() => onEdit(survey)}
-              className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-              style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}
+              className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer inline-flex items-center"
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px', gap: '5px' }}
             >
-              ✏️ Editar
+              <Pencil style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Editar
             </button>
             {deleteConfirm === survey.id ? (
               <span className="flex items-center" style={{ gap: '6px' }}>
-                <span className="text-error font-medium" style={{ fontSize: '11px' }}>Eliminar?</span>
+                <span className="text-error font-medium" style={{ fontSize: 'var(--fs-11)' }}>Eliminar?</span>
                 <button
                   onClick={() => handleDelete(survey.id)}
                   disabled={deleting}
                   className="bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer disabled:opacity-50"
-                  style={{ fontSize: '10px', padding: '5px 12px', borderRadius: '6px' }}
+                  style={{ fontSize: 'var(--fs-10)', padding: '5px 12px', borderRadius: '6px' }}
                 >
                   {deleting ? 'Eliminando...' : 'Si, eliminar'}
                 </button>
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   className="text-muted font-medium hover:text-ink transition-all cursor-pointer"
-                  style={{ fontSize: '10px', padding: '5px 8px' }}
+                  style={{ fontSize: 'var(--fs-10)', padding: '5px 8px' }}
                 >
                   Cancelar
                 </button>
@@ -1393,9 +1405,9 @@ function TecnologiaSection({
               <button
                 onClick={() => setDeleteConfirm(survey.id)}
                 className="text-muted hover:text-error font-medium transition-all cursor-pointer"
-                style={{ fontSize: '11px', padding: '7px 10px', borderRadius: '8px' }}
+                style={{ fontSize: 'var(--fs-11)', padding: '7px 10px', borderRadius: '8px' }}
               >
-                🗑️
+                <Trash2 style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} />
               </button>
             )}
           </div>
@@ -1446,13 +1458,13 @@ function ClientesPanel({
   return (
     <div>
       <div className="flex items-center justify-between" style={{ marginBottom: '16px' }}>
-        <p className="text-muted" style={{ fontSize: '12px' }}>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
           {filtered.length} de {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''}
         </p>
         <button
           onClick={() => setShowCreate(true)}
           className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-          style={{ padding: '8px 20px', borderRadius: '10px', fontSize: '12px' }}
+          style={{ padding: '8px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
         >
           + Crear cuenta
         </button>
@@ -1466,7 +1478,7 @@ function ClientesPanel({
             key={s}
             onClick={() => setStatusFilter(s)}
             className={`font-medium transition-all cursor-pointer border ${statusFilter === s ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
-            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '11px', textTransform: 'capitalize' }}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)', textTransform: 'capitalize' }}
           >
             {s === 'todos' ? `Todos (${accounts.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${accounts.filter(a => (a.status ?? 'activo') === s).length})`}
           </button>
@@ -1477,7 +1489,7 @@ function ClientesPanel({
           value={sortBy}
           onChange={e => setSortBy(e.target.value as typeof sortBy)}
           className="bg-white border border-border text-muted cursor-pointer"
-          style={{ padding: '5px 10px', borderRadius: '8px', fontSize: '11px', marginLeft: 'auto' }}
+          style={{ padding: '5px 10px', borderRadius: '8px', fontSize: 'var(--fs-11)', marginLeft: 'auto' }}
         >
           <option value="fecha">Ordenar: Fecha</option>
           <option value="nombre">Ordenar: Nombre</option>
@@ -1487,8 +1499,8 @@ function ClientesPanel({
 
       {filtered.length === 0 ? (
         <div className="bg-white rounded-xl border border-border text-center" style={{ padding: '48px 24px' }}>
-          <p className="text-muted" style={{ fontSize: '13px' }}>{accounts.length === 0 ? 'No hay cuentas de clientes creadas aún.' : 'No hay clientes con este filtro.'}</p>
-          {accounts.length === 0 && <p className="text-muted" style={{ fontSize: '11px', marginTop: '8px' }}>Crea una cuenta para que tus clientes puedan acceder a sus encuestas.</p>}
+          <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>{accounts.length === 0 ? 'No hay cuentas de clientes creadas aún.' : 'No hay clientes con este filtro.'}</p>
+          {accounts.length === 0 && <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '8px' }}>Crea una cuenta para que tus clientes puedan acceder a sus encuestas.</p>}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1515,26 +1527,26 @@ function ClientesPanel({
       {/* Delete account confirmation modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md w-full text-center animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px' }}>
+          <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md sm:max-w-lg lg:max-w-xl w-full text-center animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px' }}>
             <div className="inline-flex items-center justify-center rounded-full bg-error/10" style={{ width: '48px', height: '48px', marginBottom: '20px' }}>
-              <span style={{ fontSize: '20px' }}>⚠️</span>
+              <TriangleAlert className="text-error" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
             </div>
-            <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '10px' }}>¿Eliminar cuenta de cliente?</h3>
-            <p className="text-muted" style={{ fontSize: '13px', marginBottom: '28px' }}>
+            <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '10px' }}>¿Eliminar cuenta de cliente?</h3>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-13)', marginBottom: '28px' }}>
               Se eliminarán la cuenta y <strong>todas sus radiografías</strong>. Esta acción no se puede deshacer.
             </p>
             <div className="flex" style={{ gap: '14px' }}>
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer"
-                style={{ padding: '10px 16px', fontSize: '13px' }}
+                style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}
               >
                 Cancelar
               </button>
               <button
                 onClick={() => onDelete(deleteConfirm)}
                 className="flex-1 rounded-xl bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer"
-                style={{ padding: '10px 16px', fontSize: '13px' }}
+                style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}
               >
                 Eliminar cuenta
               </button>
@@ -1584,13 +1596,13 @@ function AccountCard({
           <ClientLogo logoUrl={account.logoUrl} size={44} />
           <div className="flex-1">
             <div className="flex items-center" style={{ gap: '8px' }}>
-              <p className="font-semibold text-ink" style={{ fontSize: '14px' }}>{account.displayName}</p>
+              <p className="font-semibold text-ink" style={{ fontSize: 'var(--fs-14)' }}>{account.displayName}</p>
               {/* Status badge - clickable */}
               <div className="relative">
                 <button
                   onClick={(e) => { e.stopPropagation(); setChangingStatus(!changingStatus); }}
                   className={`border font-semibold transition-all cursor-pointer ${statusColors[status] || statusColors.activo}`}
-                  style={{ padding: '2px 10px', borderRadius: '6px', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.03em' }}
+                  style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-9)', textTransform: 'uppercase', letterSpacing: '0.03em' }}
                 >
                   {status}
                 </button>
@@ -1605,47 +1617,47 @@ function AccountCard({
                         key={s}
                         onClick={() => handleStatusChange(s)}
                         className={`w-full text-left font-medium transition-colors cursor-pointer hover:bg-pale rounded-md ${s === status ? 'text-navy' : 'text-muted'}`}
-                        style={{ padding: '6px 10px', fontSize: '11px', textTransform: 'capitalize' }}
+                        style={{ padding: '6px 10px', fontSize: 'var(--fs-11)', textTransform: 'capitalize' }}
                       >
-                        {s === status && '✓ '}{s}
+                        {s === status && <Check style={{ display: 'inline', width: 'var(--fs-11)', height: 'var(--fs-11)', marginRight: '4px', verticalAlign: '-1px' }} />}{s}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
             </div>
-            <p className="text-muted" style={{ fontSize: '11px', marginTop: '2px' }}>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '2px' }}>
               {account.email || account.username}
             </p>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); setEditing(true); }}
             className="text-accent hover:text-mid transition-colors cursor-pointer"
-            style={{ padding: '6px', fontSize: '13px' }}
+            style={{ padding: '6px', fontSize: 'var(--fs-13)' }}
             title="Editar perfil"
           >
-            ✏️
+            <Pencil style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDeleteRequest(); }}
             className="text-muted hover:text-error transition-colors cursor-pointer"
-            style={{ padding: '6px', fontSize: '13px' }}
+            style={{ padding: '6px', fontSize: 'var(--fs-13)' }}
             title="Eliminar cuenta"
           >
-            🗑️
+            <Trash2 style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} />
           </button>
         </div>
 
         {/* Permission badges (read-only summary) */}
         <div className="flex items-center flex-wrap" style={{ gap: '8px', paddingLeft: '60px' }}>
-          <span className={`border font-medium ${hasDiag ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: '10px' }}>
-            {hasDiag ? '✓' : '○'} Radiografía
+          <span className={`border font-medium ${hasDiag ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: 'var(--fs-10)' }}>
+            <BoolMark value={hasDiag} /> Radiografía
           </span>
-          <span className={`border font-medium ${hasOrg ? 'border-mid/30 bg-mid/5 text-mid' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: '10px' }}>
-            {hasOrg ? '✓' : '○'} Estructura Org.
+          <span className={`border font-medium ${hasOrg ? 'border-mid/30 bg-mid/5 text-mid' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: 'var(--fs-10)' }}>
+            <BoolMark value={hasOrg} /> Estructura Org.
           </span>
-          <span className={`border font-medium ${hasTech ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: '10px' }}>
-            {hasTech ? '✓' : '○'} Tecnología
+          <span className={`border font-medium ${hasTech ? 'border-accent/30 bg-accent/5 text-accent' : 'border-border bg-pale text-muted'}`} style={{ padding: '3px 10px', borderRadius: '8px', fontSize: 'var(--fs-10)' }}>
+            <BoolMark value={hasTech} /> Tecnología
           </span>
         </div>
       </div>
@@ -1734,62 +1746,62 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '6px' }}>Editar Perfil de Cliente</h3>
-        <p className="text-muted" style={{ fontSize: '12px', marginBottom: '28px' }}>
+      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md sm:max-w-lg lg:max-w-xl w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '6px' }}>Editar Perfil de Cliente</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '28px' }}>
           Modifique los datos de la cuenta. Deje la contraseña vacía para no cambiarla.
         </p>
 
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Logo */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>Logo de la empresa</label>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>Logo de la empresa</label>
             <div className="flex items-center" style={{ gap: '16px' }}>
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="rounded-xl object-cover" style={{ width: '64px', height: '64px', border: '2px solid var(--color-border)' }} />
               ) : (
                 <div className="flex items-center justify-center rounded-xl bg-pale border-2 border-dashed border-border" style={{ width: '64px', height: '64px' }}>
-                  <span className="text-muted" style={{ fontSize: '20px' }}>🏢</span>
+                  <Building className="text-muted" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
                 </div>
               )}
               <div className="flex-1">
-                <label className="inline-block border border-accent text-accent font-medium hover:bg-accent/5 transition-all cursor-pointer" style={{ padding: '7px 16px', borderRadius: '8px', fontSize: '12px' }}>
+                <label className="inline-block border border-accent text-accent font-medium hover:bg-accent/5 transition-all cursor-pointer" style={{ padding: '7px 16px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}>
                   {logoPreview ? 'Cambiar' : 'Subir logo'}
                   <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                 </label>
                 {logoPreview && (
-                  <button type="button" onClick={handleRemoveLogo} className="text-muted hover:text-error transition-colors cursor-pointer" style={{ fontSize: '11px', marginLeft: '10px' }}>
+                  <button type="button" onClick={handleRemoveLogo} className="text-muted hover:text-error transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', marginLeft: '10px' }}>
                     Quitar
                   </button>
                 )}
-                <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>PNG, JPG. Max 5MB.</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>PNG, JPG. Max 5MB.</p>
               </div>
             </div>
           </div>
 
           {/* Display name */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Nombre del Cliente</label>
-            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="input-field" placeholder="Ej: Empresa ABC" style={{ fontSize: '13px' }} />
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Nombre del Cliente</label>
+            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="input-field" placeholder="Ej: Empresa ABC" style={{ fontSize: 'var(--fs-13)' }} />
           </div>
 
           {/* Username */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Usuario *</label>
-            <input type="text" value={username} onChange={e => { setUsername(e.target.value.replace(/\s/g, '')); setError(''); }} className="input-field" placeholder="Ej: empresa_abc" style={{ fontSize: '13px' }} />
-            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>Se usa para inicio de sesión. Solo letras, números, puntos y guiones.</p>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Usuario *</label>
+            <input type="text" value={username} onChange={e => { setUsername(e.target.value.replace(/\s/g, '')); setError(''); }} className="input-field" placeholder="Ej: empresa_abc" style={{ fontSize: 'var(--fs-13)' }} />
+            <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>Se usa para inicio de sesión. Solo letras, números, puntos y guiones.</p>
           </div>
 
           {/* Email */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Correo electronico *</label>
-            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} className="input-field" placeholder="Ej: contacto@empresa.com" style={{ fontSize: '13px' }} />
-            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>Se usa para inicio de sesión y envío de reportes.</p>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Correo electronico *</label>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} className="input-field" placeholder="Ej: contacto@empresa.com" style={{ fontSize: 'var(--fs-13)' }} />
+            <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>Se usa para inicio de sesión y envío de reportes.</p>
           </div>
 
           {/* Password */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>
               Contraseña <span className="text-muted font-normal">(dejar vacío para no cambiar)</span>
             </label>
             <div className="flex items-center" style={{ gap: '8px' }}>
@@ -1799,54 +1811,54 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
                 onChange={e => { setPassword(e.target.value); setError(''); }}
                 className="input-field flex-1"
                 placeholder="Nueva contraseña"
-                style={{ fontSize: '13px' }}
+                style={{ fontSize: 'var(--fs-13)' }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-muted hover:text-ink transition-colors cursor-pointer"
-                style={{ padding: '8px', fontSize: '14px' }}
+                style={{ padding: '8px', fontSize: 'var(--fs-14)' }}
                 title={showPassword ? 'Ocultar' : 'Mostrar'}
               >
-                {showPassword ? '🙈' : '👁'}
+                {showPassword ? <EyeOff style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> : <Eye style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} />}
               </button>
             </div>
           </div>
 
           {/* Permissions */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>Encuestas habilitadas *</label>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>Encuestas habilitadas *</label>
             <div className="flex flex-wrap" style={{ gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => setPermDiag(!permDiag)}
                 className={`border font-medium transition-all cursor-pointer ${permDiag ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-pale text-muted'}`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
               >
-                {permDiag ? '✓' : '○'} Radiografía Empresarial
+                <BoolMark value={permDiag} /> Radiografía Empresarial
               </button>
               <button
                 type="button"
                 onClick={() => setPermOrg(!permOrg)}
                 className={`border font-medium transition-all cursor-pointer ${permOrg ? 'border-mid bg-mid/10 text-mid' : 'border-border bg-pale text-muted'}`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
               >
-                {permOrg ? '✓' : '○'} Estructura Organizacional
+                <BoolMark value={permOrg} /> Estructura Organizacional
               </button>
               <button
                 type="button"
                 onClick={() => setPermTech(!permTech)}
                 className={`border font-medium transition-all cursor-pointer ${permTech ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-pale text-muted'}`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
               >
-                {permTech ? '✓' : '○'} Prueba de Tecnologia
+                <BoolMark value={permTech} /> Prueba de Tecnologia
               </button>
             </div>
           </div>
 
           {/* Status */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>Estatus del cliente</label>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>Estatus del cliente</label>
             <div className="flex flex-wrap" style={{ gap: '10px' }}>
               {([
                 { value: 'activo', label: 'Activo', colors: 'border-success bg-success/10 text-success' },
@@ -1858,21 +1870,21 @@ function EditAccountModal({ account, onClose, onSaved }: { account: AppUser; onC
                   type="button"
                   onClick={() => setStatusVal(opt.value)}
                   className={`border font-medium transition-all cursor-pointer ${statusVal === opt.value ? opt.colors : 'border-border bg-pale text-muted'}`}
-                  style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                  style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
                 >
-                  {statusVal === opt.value ? '✓' : '○'} {opt.label}
+                  <BoolMark value={statusVal === opt.value} /> {opt.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {error && <p className="text-error text-center" style={{ fontSize: '12px' }}>{error}</p>}
+          {error && <p className="text-error text-center" style={{ fontSize: 'var(--fs-12)' }}>{error}</p>}
 
           <div className="flex" style={{ gap: '12px', marginTop: '8px' }}>
-            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer" style={{ padding: '10px 16px', fontSize: '13px' }}>
+            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
               Cancelar
             </button>
-            <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50" style={{ padding: '10px 16px', fontSize: '13px' }}>
+            <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>
@@ -2008,16 +2020,16 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '6px' }}>Crear Cuenta de Cliente</h3>
-        <p className="text-muted" style={{ fontSize: '12px', marginBottom: '28px' }}>
+      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md sm:max-w-lg lg:max-w-xl w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '6px' }}>Crear Cuenta de Cliente</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '28px' }}>
           El cliente usará estas credenciales para acceder a sus encuestas.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Logo upload */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>Logo de la empresa</label>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>Logo de la empresa</label>
             <div className="flex items-center" style={{ gap: '16px' }}>
               {logoPreview ? (
                 <img
@@ -2028,13 +2040,13 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
                 />
               ) : (
                 <div className="flex items-center justify-center rounded-xl bg-pale border-2 border-dashed border-border" style={{ width: '64px', height: '64px' }}>
-                  <span className="text-muted" style={{ fontSize: '20px' }}>🏢</span>
+                  <Building className="text-muted" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
                 </div>
               )}
               <div className="flex-1">
                 <label
                   className="inline-block border border-accent text-accent font-medium hover:bg-accent/5 transition-all cursor-pointer"
-                  style={{ padding: '7px 16px', borderRadius: '8px', fontSize: '12px' }}
+                  style={{ padding: '7px 16px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
                 >
                   {logoPreview ? 'Cambiar logo' : 'Subir logo'}
                   <input
@@ -2049,33 +2061,33 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
                     type="button"
                     onClick={() => setLogoPreview(null)}
                     className="text-muted hover:text-error transition-colors cursor-pointer"
-                    style={{ fontSize: '11px', marginLeft: '10px' }}
+                    style={{ fontSize: 'var(--fs-11)', marginLeft: '10px' }}
                   >
                     Quitar
                   </button>
                 )}
-                <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>PNG, JPG. Max 5MB. Se redimensiona a 200px.</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>PNG, JPG. Max 5MB. Se redimensiona a 200px.</p>
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Nombre del Cliente</label>
-            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="input-field" placeholder="Ej: Empresa ABC" style={{ fontSize: '13px' }} />
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Nombre del Cliente</label>
+            <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} className="input-field" placeholder="Ej: Empresa ABC" style={{ fontSize: 'var(--fs-13)' }} />
           </div>
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Correo electronico *</label>
-            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} className="input-field" placeholder="Ej: contacto@empresa.com" style={{ fontSize: '13px' }} autoFocus />
-            <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>El cliente usará este correo para iniciar sesión y recibir reportes.</p>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Correo electronico *</label>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} className="input-field" placeholder="Ej: contacto@empresa.com" style={{ fontSize: 'var(--fs-13)' }} autoFocus />
+            <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>El cliente usará este correo para iniciar sesión y recibir reportes.</p>
           </div>
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '6px' }}>Contraseña *</label>
-            <input type="text" value={password} onChange={e => { setPassword(e.target.value); setError(''); }} className="input-field" placeholder="Contraseña para el cliente" style={{ fontSize: '13px' }} />
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Contraseña *</label>
+            <input type="text" value={password} onChange={e => { setPassword(e.target.value); setError(''); }} className="input-field" placeholder="Contraseña para el cliente" style={{ fontSize: 'var(--fs-13)' }} />
           </div>
 
           {/* Survey permissions */}
           <div>
-            <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>Encuestas habilitadas *</label>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>Encuestas habilitadas *</label>
             <div className="flex flex-wrap" style={{ gap: '10px' }}>
               <button
                 type="button"
@@ -2083,9 +2095,9 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
                 className={`border font-medium transition-all cursor-pointer ${
                   permDiag ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-pale text-muted'
                 }`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
               >
-                {permDiag ? '✓' : '○'} Radiografía Empresarial
+                <BoolMark value={permDiag} /> Radiografía Empresarial
               </button>
               <button
                 type="button"
@@ -2093,9 +2105,9 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
                 className={`border font-medium transition-all cursor-pointer ${
                   permOrg ? 'border-mid bg-mid/10 text-mid' : 'border-border bg-pale text-muted'
                 }`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
               >
-                {permOrg ? '✓' : '○'} Estructura Organizacional
+                <BoolMark value={permOrg} /> Estructura Organizacional
               </button>
               <button
                 type="button"
@@ -2103,20 +2115,20 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
                 className={`border font-medium transition-all cursor-pointer ${
                   permTech ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-pale text-muted'
                 }`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '12px' }}
+                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
               >
-                {permTech ? '✓' : '○'} Prueba de Tecnologia
+                <BoolMark value={permTech} /> Prueba de Tecnologia
               </button>
             </div>
           </div>
 
-          {error && <p className="text-error text-center" style={{ fontSize: '12px' }}>{error}</p>}
+          {error && <p className="text-error text-center" style={{ fontSize: 'var(--fs-12)' }}>{error}</p>}
 
           <div className="flex" style={{ gap: '12px', marginTop: '8px' }}>
-            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer" style={{ padding: '10px 16px', fontSize: '13px' }}>
+            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
               Cancelar
             </button>
-            <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50" style={{ padding: '10px 16px', fontSize: '13px' }}>
+            <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
               {saving ? 'Creando...' : 'Crear cuenta'}
             </button>
           </div>
@@ -2188,7 +2200,9 @@ function DatosPruebaPanel({
       <div>
         {/* Test banner */}
         <div className="w-full bg-warn/10 border border-warn/30 rounded-xl text-center" style={{ padding: '8px 16px', marginBottom: '16px' }}>
-          <p className="text-warn font-semibold" style={{ fontSize: '11px' }}>🧪 Cliente de prueba — los datos de este cliente son de prueba</p>
+          <p className="text-warn font-semibold flex items-center justify-center" style={{ fontSize: 'var(--fs-11)', gap: '5px' }}>
+            <FlaskConical style={{ width: 'var(--fs-12)', height: 'var(--fs-12)' }} /> Cliente de prueba — los datos de este cliente son de prueba
+          </p>
         </div>
         <ClientExpedienteDetail
           account={acc}
@@ -2213,21 +2227,21 @@ function DatosPruebaPanel({
   return (
     <div>
       <div style={{ marginBottom: '20px' }}>
-        <h3 className="font-serif text-navy" style={{ fontSize: '17px' }}>Clientes Inactivos / Prueba</h3>
-        <p className="text-muted" style={{ fontSize: '11px', marginTop: '4px' }}>
+        <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)' }}>Clientes Inactivos / Prueba</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '4px' }}>
           Clientes marcados como datos de prueba. No aparecen en Expedientes y su acceso requiere clave maestra.
         </p>
       </div>
 
       {/* Add client selector */}
       <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '20px 24px', marginBottom: '20px' }}>
-        <p className="font-semibold text-navy" style={{ fontSize: '13px', marginBottom: '12px' }}>Agregar cliente de prueba</p>
+        <p className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '12px' }}>Agregar cliente de prueba</p>
         <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
           <select
             value={addClientId}
             onChange={e => { setAddClientId(e.target.value); setConfirmAdd(false); }}
             className="border border-border/60 rounded-lg bg-white text-ink"
-            style={{ fontSize: '12px', padding: '8px 12px', minWidth: '200px' }}
+            style={{ fontSize: 'var(--fs-12)', padding: '8px 12px', minWidth: '200px' }}
           >
             <option value="">Seleccionar cliente...</option>
             {availableClients.map(a => (
@@ -2239,24 +2253,24 @@ function DatosPruebaPanel({
               onClick={() => setConfirmAdd(true)}
               disabled={!addClientId}
               className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ fontSize: '12px', padding: '8px 18px', borderRadius: '8px' }}
+              style={{ fontSize: 'var(--fs-12)', padding: '8px 18px', borderRadius: '8px' }}
             >
               Agregar
             </button>
           ) : (
             <span className="flex items-center" style={{ gap: '8px' }}>
-              <span className="text-warn font-medium" style={{ fontSize: '11px' }}>¿Marcar como dato de prueba?</span>
+              <span className="text-warn font-medium" style={{ fontSize: 'var(--fs-11)' }}>¿Marcar como dato de prueba?</span>
               <button
                 onClick={handleAddTestClient}
                 className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-                style={{ fontSize: '11px', padding: '6px 14px', borderRadius: '6px' }}
+                style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '6px' }}
               >
                 Confirmar
               </button>
               <button
                 onClick={() => setConfirmAdd(false)}
                 className="text-muted font-medium hover:text-ink transition-all cursor-pointer"
-                style={{ fontSize: '11px', padding: '6px 8px' }}
+                style={{ fontSize: 'var(--fs-11)', padding: '6px 8px' }}
               >
                 Cancelar
               </button>
@@ -2268,9 +2282,9 @@ function DatosPruebaPanel({
       {/* Empty state */}
       {testClients.length === 0 && (
         <div className="bg-pale rounded-2xl border border-border/30 text-center" style={{ padding: '48px 24px' }}>
-          <span style={{ fontSize: '36px', display: 'block', marginBottom: '12px' }}>🧪</span>
-          <p className="text-muted font-medium" style={{ fontSize: '13px' }}>No hay clientes de prueba</p>
-          <p className="text-muted" style={{ fontSize: '11px', marginTop: '4px' }}>Selecciona un cliente arriba para marcarlo como dato de prueba.</p>
+          <FlaskConical className="text-muted mx-auto" style={{ width: '32px', height: '32px', display: 'block', marginBottom: '12px' }} />
+          <p className="text-muted font-medium" style={{ fontSize: 'var(--fs-13)' }}>No hay clientes de prueba</p>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '4px' }}>Selecciona un cliente arriba para marcarlo como dato de prueba.</p>
         </div>
       )}
 
@@ -2293,29 +2307,29 @@ function DatosPruebaPanel({
                 <ClientLogo logoUrl={client.logoUrl} size={44} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center" style={{ gap: '8px' }}>
-                    <h3 className="font-bold text-navy truncate" style={{ fontSize: '15px' }}>{client.displayName}</h3>
-                    <span className="shrink-0 bg-warn/15 text-warn font-bold border border-warn/30" style={{ fontSize: '9px', padding: '2px 8px', borderRadius: '6px', letterSpacing: '0.5px' }}>
+                    <h3 className="font-bold text-navy truncate" style={{ fontSize: 'var(--fs-15)' }}>{client.displayName}</h3>
+                    <span className="shrink-0 bg-warn/15 text-warn font-bold border border-warn/30" style={{ fontSize: 'var(--fs-9)', padding: '2px 8px', borderRadius: '6px', letterSpacing: '0.5px' }}>
                       PRUEBA
                     </span>
                   </div>
-                  <p className="text-muted" style={{ fontSize: '11px' }}>{client.email || client.username}</p>
+                  <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{client.email || client.username}</p>
                 </div>
                 <div className="flex items-center shrink-0" style={{ gap: '12px' }}>
-                  <span className="text-muted" style={{ fontSize: '11px' }}>{diagCount + orgCount + techCount} encuesta{diagCount + orgCount + techCount !== 1 ? 's' : ''}</span>
+                  <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{diagCount + orgCount + techCount} encuesta{diagCount + orgCount + techCount !== 1 ? 's' : ''}</span>
                   {/* Remove button */}
                   {confirmRemoveId === client.id ? (
                     <span className="flex items-center" style={{ gap: '4px' }} onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => handleRemoveTestClient(client.id)}
                         className="bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer"
-                        style={{ fontSize: '10px', padding: '4px 10px', borderRadius: '6px' }}
+                        style={{ fontSize: 'var(--fs-10)', padding: '4px 10px', borderRadius: '6px' }}
                       >
                         Quitar
                       </button>
                       <button
                         onClick={() => setConfirmRemoveId(null)}
                         className="text-muted hover:text-ink transition-all cursor-pointer"
-                        style={{ fontSize: '10px', padding: '4px 6px' }}
+                        style={{ fontSize: 'var(--fs-10)', padding: '4px 6px' }}
                       >
                         No
                       </button>
@@ -2324,7 +2338,7 @@ function DatosPruebaPanel({
                     <button
                       onClick={e => { e.stopPropagation(); setConfirmRemoveId(client.id); }}
                       className="text-error/50 hover:text-error transition-all cursor-pointer"
-                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                      style={{ fontSize: 'var(--fs-11)', padding: '4px 8px' }}
                     >
                       Quitar
                     </button>
@@ -2346,10 +2360,10 @@ function DatosPruebaPanel({
 function ConfiguracionPanel({ showBenchmarks, setShowBenchmarks }: { showBenchmarks: boolean; setShowBenchmarks: (v: boolean) => void }) {
   const [configTab, setConfigTab] = useState<'apariencia' | 'benchmarks' | 'sistema'>('apariencia');
 
-  const CONFIG_TABS: { key: typeof configTab; label: string; icon: string }[] = [
-    { key: 'apariencia', label: 'Apariencia', icon: '🎨' },
-    { key: 'benchmarks', label: 'Benchmarks', icon: '📊' },
-    { key: 'sistema', label: 'Sistema', icon: 'ℹ️' },
+  const CONFIG_TABS: { key: typeof configTab; label: string; icon: LucideIcon }[] = [
+    { key: 'apariencia', label: 'Apariencia', icon: Palette },
+    { key: 'benchmarks', label: 'Benchmarks', icon: BarChart3 },
+    { key: 'sistema', label: 'Sistema', icon: Info },
   ];
 
   return (
@@ -2365,9 +2379,9 @@ function ConfiguracionPanel({ showBenchmarks, setShowBenchmarks }: { showBenchma
                 ? 'bg-navy text-white shadow-sm'
                 : 'bg-white text-muted hover:text-ink border border-border/40'
             }`}
-            style={{ padding: '7px 14px', fontSize: '11px' }}
+            style={{ padding: '7px 14px', fontSize: 'var(--fs-11)' }}
           >
-            {tab.icon} {tab.label}
+            <tab.icon style={{ display: 'inline', width: 'var(--fs-13)', height: 'var(--fs-13)', verticalAlign: '-2px', marginRight: '4px' }} /> {tab.label}
           </button>
         ))}
       </div>
@@ -2380,17 +2394,17 @@ function ConfiguracionPanel({ showBenchmarks, setShowBenchmarks }: { showBenchma
             <div className="flex items-center justify-between">
               <div className="flex items-center" style={{ gap: '14px' }}>
                 <div className="inline-flex items-center justify-center rounded-full bg-accent/10 shrink-0" style={{ width: '44px', height: '44px' }}>
-                  <span style={{ fontSize: '20px' }}>📊</span>
+                  <BarChart3 className="text-accent" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Benchmarks por Industria</h3>
-                  <p className="text-muted" style={{ fontSize: '12px' }}>Márgenes financieros de referencia por sector</p>
+                  <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '2px' }}>Benchmarks por Industria</h3>
+                  <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>Márgenes financieros de referencia por sector</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowBenchmarks(true)}
                 className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-                style={{ fontSize: '12px', padding: '8px 20px', borderRadius: '8px' }}
+                style={{ fontSize: 'var(--fs-12)', padding: '8px 20px', borderRadius: '8px' }}
               >
                 Editar
               </button>
@@ -2405,21 +2419,21 @@ function ConfiguracionPanel({ showBenchmarks, setShowBenchmarks }: { showBenchma
           <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
             <div className="flex items-center" style={{ gap: '14px' }}>
               <div className="inline-flex items-center justify-center rounded-full bg-mid/10 shrink-0" style={{ width: '44px', height: '44px' }}>
-                <span style={{ fontSize: '20px' }}>📋</span>
+                <ClipboardList className="text-mid" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Encuestas Disponibles</h3>
-                <p className="text-muted" style={{ fontSize: '12px' }}>Las encuestas se configuran por cliente en la pestaña "Clientes"</p>
+                <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '2px' }}>Encuestas Disponibles</h3>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>Las encuestas se configuran por cliente en la pestaña "Clientes"</p>
               </div>
             </div>
             <div className="flex flex-wrap" style={{ gap: '10px', marginTop: '16px', paddingLeft: '58px' }}>
-              <span className="border border-accent/30 bg-accent/5 text-accent font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
-                ✓ Radiografía Empresarial
+              <span className="border border-accent/30 bg-accent/5 text-accent font-medium inline-flex items-center" style={{ fontSize: 'var(--fs-11)', padding: '4px 12px', borderRadius: '8px', gap: '4px' }}>
+                <Check style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Radiografía Empresarial
               </span>
-              <span className="border border-border/40 bg-pale text-muted font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
+              <span className="border border-border/40 bg-pale text-muted font-medium" style={{ fontSize: 'var(--fs-11)', padding: '4px 12px', borderRadius: '8px' }}>
                 Estructura Organizacional — Proximamente
               </span>
-              <span className="border border-border/40 bg-pale text-muted font-medium" style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '8px' }}>
+              <span className="border border-border/40 bg-pale text-muted font-medium" style={{ fontSize: 'var(--fs-11)', padding: '4px 12px', borderRadius: '8px' }}>
                 Prueba de Tecnología — Proximamente
               </span>
             </div>
@@ -2427,21 +2441,21 @@ function ConfiguracionPanel({ showBenchmarks, setShowBenchmarks }: { showBenchma
           <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
             <div className="flex items-center" style={{ gap: '14px' }}>
               <div className="inline-flex items-center justify-center rounded-full bg-navy/10 shrink-0" style={{ width: '44px', height: '44px' }}>
-                <span style={{ fontSize: '20px' }}>ℹ️</span>
+                <Info className="text-navy" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-navy" style={{ fontSize: '15px', marginBottom: '2px' }}>Información del Sistema</h3>
-                <p className="text-muted" style={{ fontSize: '12px' }}>Complement Consulting Group — Radiografía Empresarial v2.0</p>
+                <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '2px' }}>Información del Sistema</h3>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>Complement Consulting Group — Radiografía Empresarial v2.0</p>
               </div>
             </div>
             <div className="grid grid-cols-2" style={{ gap: '10px', marginTop: '16px', paddingLeft: '58px' }}>
               <div className="rounded-lg bg-pale" style={{ padding: '10px 14px' }}>
-                <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '2px' }}>Base de datos</p>
-                <p className="text-ink font-semibold" style={{ fontSize: '11px' }}>Supabase PostgreSQL</p>
+                <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Base de datos</p>
+                <p className="text-ink font-semibold" style={{ fontSize: 'var(--fs-11)' }}>Supabase PostgreSQL</p>
               </div>
               <div className="rounded-lg bg-pale" style={{ padding: '10px 14px' }}>
-                <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '2px' }}>Hosting</p>
-                <p className="text-ink font-semibold" style={{ fontSize: '11px' }}>Vercel</p>
+                <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Hosting</p>
+                <p className="text-ink font-semibold" style={{ fontSize: 'var(--fs-11)' }}>Vercel</p>
               </div>
             </div>
           </div>
@@ -2512,8 +2526,8 @@ function LogoSettingsSubPanel() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Logo principal */}
       <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
-        <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '4px' }}>Logo principal</h3>
-        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '16px' }}>Aparece en login, portada y reportes. Se recomienda imagen horizontal con fondo transparente.</p>
+        <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)', marginBottom: '4px' }}>Logo principal</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '16px' }}>Aparece en login, portada y reportes. Se recomienda imagen horizontal con fondo transparente.</p>
         <div className="flex items-center" style={{ gap: '16px', marginBottom: '16px' }}>
           <div className="flex items-center justify-center bg-pale rounded-xl border border-border/40" style={{ width: '160px', height: '64px', overflow: 'hidden' }}>
             {displayLogo ? (
@@ -2522,19 +2536,19 @@ function LogoSettingsSubPanel() {
               <img src="/logo-complement.svg" alt="Default" className="object-contain" style={{ maxWidth: '140px', maxHeight: '54px' }} />
             )}
           </div>
-          <span className="text-muted" style={{ fontSize: '10px' }}>{displayLogo ? 'Logo personalizado' : 'Logo por defecto'}</span>
+          <span className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>{displayLogo ? 'Logo personalizado' : 'Logo por defecto'}</span>
         </div>
         <div className="flex items-center" style={{ gap: '8px' }}>
           <input ref={fileRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, 'logo')} className="hidden" />
-          <button onClick={() => fileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
-          {displayLogo && <button onClick={handleRemoveLogo} disabled={saving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Quitar</button>}
+          <button onClick={() => fileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
+          {displayLogo && <button onClick={handleRemoveLogo} disabled={saving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>Quitar</button>}
         </div>
       </div>
 
       {/* Icono header */}
       <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
-        <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '4px' }}>Icono del encabezado</h3>
-        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '16px' }}>Icono cuadrado para la barra de navegación.</p>
+        <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)', marginBottom: '4px' }}>Icono del encabezado</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '16px' }}>Icono cuadrado para la barra de navegación.</p>
         <div className="flex items-center" style={{ gap: '16px', marginBottom: '16px' }}>
           <div className="flex items-center justify-center bg-navy rounded-xl" style={{ width: '52px', height: '52px', overflow: 'hidden' }}>
             {displayIcon ? (
@@ -2543,36 +2557,36 @@ function LogoSettingsSubPanel() {
               <img src="/icon-complement.svg" alt="Default" className="object-contain" style={{ maxWidth: '40px', maxHeight: '40px' }} />
             )}
           </div>
-          <span className="text-muted" style={{ fontSize: '10px' }}>{displayIcon ? 'Icono personalizado' : 'Icono por defecto'}</span>
+          <span className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>{displayIcon ? 'Icono personalizado' : 'Icono por defecto'}</span>
         </div>
         <input ref={iconFileRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, 'icon')} className="hidden" />
-        <button onClick={() => iconFileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
+        <button onClick={() => iconFileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
       </div>
 
       {/* Logo flotante */}
       <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
-        <h3 className="font-bold text-navy" style={{ fontSize: '14px', marginBottom: '4px' }}>Logo flotante (login)</h3>
-        <p className="text-muted" style={{ fontSize: '11px', marginBottom: '16px' }}>Imagen que flota en el fondo del login. Si no se configura, se usa el logo principal.</p>
+        <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)', marginBottom: '4px' }}>Logo flotante (login)</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '16px' }}>Imagen que flota en el fondo del login. Si no se configura, se usa el logo principal.</p>
         <div className="flex items-center" style={{ gap: '16px', marginBottom: '16px' }}>
           <div className="flex items-center justify-center rounded-xl" style={{ width: '64px', height: '64px', overflow: 'hidden', background: 'linear-gradient(135deg, #001845, #002060)' }}>
             <img src={(previewFloating ?? floatingLogo) || companyLogo || '/logo-complement.svg'} alt="Flotante" className="object-contain" style={{ maxWidth: '44px', maxHeight: '44px', filter: 'brightness(0) invert(1)', opacity: 0.5 }} />
           </div>
-          <span className="text-muted" style={{ fontSize: '10px' }}>{(previewFloating ?? floatingLogo) ? 'Logo flotante personalizado' : 'Usando logo principal'}</span>
+          <span className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>{(previewFloating ?? floatingLogo) ? 'Logo flotante personalizado' : 'Usando logo principal'}</span>
         </div>
         <div className="flex items-center" style={{ gap: '8px' }}>
           <input ref={floatingFileRef} type="file" accept="image/*" onChange={(e) => handleFileSelect(e, 'floating')} className="hidden" />
-          <button onClick={() => floatingFileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
+          <button onClick={() => floatingFileRef.current?.click()} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>Seleccionar</button>
           {(previewFloating ?? floatingLogo) && (
-            <button onClick={async () => { setSaving(true); await setFloatingLogo(null); setPreviewFloating(null); setSaving(false); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }} disabled={saving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: '11px', padding: '7px 14px', borderRadius: '8px' }}>Usar logo principal</button>
+            <button onClick={async () => { setSaving(true); await setFloatingLogo(null); setPreviewFloating(null); setSaving(false); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }} disabled={saving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>Usar logo principal</button>
           )}
         </div>
       </div>
 
       {/* Error / Success / Save */}
-      {error && <div className="bg-error/10 rounded-xl" style={{ padding: '10px 14px' }}><p className="text-error font-medium" style={{ fontSize: '11px' }}>{error}</p></div>}
-      {success && <div className="bg-success/10 rounded-xl" style={{ padding: '10px 14px' }}><p className="text-success font-medium" style={{ fontSize: '11px' }}>Logo actualizado correctamente.</p></div>}
+      {error && <div className="bg-error/10 rounded-xl" style={{ padding: '10px 14px' }}><p className="text-error font-medium" style={{ fontSize: 'var(--fs-11)' }}>{error}</p></div>}
+      {success && <div className="bg-success/10 rounded-xl" style={{ padding: '10px 14px' }}><p className="text-success font-medium" style={{ fontSize: 'var(--fs-11)' }}>Logo actualizado correctamente.</p></div>}
       {hasChanges && (
-        <button onClick={handleSave} disabled={saving} className="w-full bg-navy text-white font-bold hover:bg-navy/90 disabled:opacity-50 transition-colors cursor-pointer" style={{ fontSize: '13px', padding: '12px 24px', borderRadius: '10px' }}>
+        <button onClick={handleSave} disabled={saving} className="w-full bg-navy text-white font-bold hover:bg-navy/90 disabled:opacity-50 transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-13)', padding: '12px 24px', borderRadius: '10px' }}>
           {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>
       )}
@@ -2597,11 +2611,11 @@ function BenchmarkSettingsModal({ onClose }: { onClose: () => void }) {
       <div className="bg-white rounded-2xl shadow-xl border border-border max-w-lg w-full animate-fade-up" style={{ padding: '36px 32px', maxHeight: '90vh', overflowY: 'auto' }}>
         <div className="flex items-center justify-between" style={{ marginBottom: '24px' }}>
           <div>
-            <h3 className="font-serif text-navy" style={{ fontSize: '18px' }}>Configuración de Benchmarks</h3>
-            <p className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>Establezca los márgenes aceptables por industria</p>
+            <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)' }}>Configuración de Benchmarks</h3>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginTop: '4px' }}>Establezca los márgenes aceptables por industria</p>
           </div>
-          <button onClick={onClose} className="text-muted hover:text-ink transition-colors cursor-pointer" style={{ fontSize: '20px', padding: '4px' }}>
-            ✕
+          <button onClick={onClose} className="text-muted hover:text-ink transition-colors cursor-pointer" style={{ padding: '4px' }}>
+            <X style={{ width: 'var(--fs-18)', height: 'var(--fs-18)' }} />
           </button>
         </div>
 
@@ -2614,7 +2628,7 @@ function BenchmarkSettingsModal({ onClose }: { onClose: () => void }) {
               className={`font-medium border transition-all cursor-pointer ${
                 activeSector === s.value ? 'border-accent bg-accent/10 text-accent' : 'border-border text-muted hover:text-ink'
               }`}
-              style={{ padding: '8px 18px', borderRadius: '10px', fontSize: '12px', flex: 1 }}
+              style={{ padding: '8px 18px', borderRadius: '10px', fontSize: 'var(--fs-12)', flex: 1 }}
             >
               {s.label}
             </button>
@@ -2630,7 +2644,7 @@ function BenchmarkSettingsModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="border-t border-border/40" style={{ paddingTop: '20px' }}>
-            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px', marginBottom: '14px' }}>Criterios de evaluación</p>
+            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '14px' }}>Criterios de evaluación</p>
             <div className="grid grid-cols-2" style={{ gap: '14px' }}>
               <BenchmarkField label="Tolerancia (±%)" value={b.tolerancia} onChange={v => setBenchmark(activeSector, { tolerancia: v })} hint="Rango para 'En rango'" />
               <BenchmarkField label="Umbral crítico (%)" value={b.criticoUmbral} onChange={v => setBenchmark(activeSector, { criticoUmbral: v })} hint="Debajo de benchmark" />
@@ -2639,23 +2653,23 @@ function BenchmarkSettingsModal({ onClose }: { onClose: () => void }) {
 
           {/* Visual explanation */}
           <div className="rounded-xl bg-pale border border-border/30" style={{ padding: '16px 20px' }}>
-            <p className="font-medium text-navy" style={{ fontSize: '11px', marginBottom: '10px' }}>Ejemplo: Margen Bruto ({b.margenBruto}%)</p>
+            <p className="font-medium text-navy" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>Ejemplo: Margen Bruto ({b.margenBruto}%)</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-success/15 text-success font-semibold" style={{ padding: '1px 8px', fontSize: '10px' }}>Arriba</span>
-                <span className="text-muted" style={{ fontSize: '11px' }}>&gt; {b.margenBruto + b.tolerancia}%</span>
+                <span className="rounded-full bg-success/15 text-success font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Arriba</span>
+                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>&gt; {b.margenBruto + b.tolerancia}%</span>
               </div>
               <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-mid/15 text-mid font-semibold" style={{ padding: '1px 8px', fontSize: '10px' }}>En rango</span>
-                <span className="text-muted" style={{ fontSize: '11px' }}>{b.margenBruto - b.tolerancia}% — {b.margenBruto + b.tolerancia}%</span>
+                <span className="rounded-full bg-mid/15 text-mid font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>En rango</span>
+                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{b.margenBruto - b.tolerancia}% — {b.margenBruto + b.tolerancia}%</span>
               </div>
               <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-warn/15 text-warn font-semibold" style={{ padding: '1px 8px', fontSize: '10px' }}>Debajo</span>
-                <span className="text-muted" style={{ fontSize: '11px' }}>{b.margenBruto - b.criticoUmbral}% — {b.margenBruto - b.tolerancia}%</span>
+                <span className="rounded-full bg-warn/15 text-warn font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Debajo</span>
+                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{b.margenBruto - b.criticoUmbral}% — {b.margenBruto - b.tolerancia}%</span>
               </div>
               <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-error/15 text-error font-semibold" style={{ padding: '1px 8px', fontSize: '10px' }}>Crítico</span>
-                <span className="text-muted" style={{ fontSize: '11px' }}>&lt; {b.margenBruto - b.criticoUmbral}% o negativo</span>
+                <span className="rounded-full bg-error/15 text-error font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Crítico</span>
+                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>&lt; {b.margenBruto - b.criticoUmbral}% o negativo</span>
               </div>
             </div>
           </div>
@@ -2665,14 +2679,14 @@ function BenchmarkSettingsModal({ onClose }: { onClose: () => void }) {
           <button
             onClick={() => { resetBenchmarks(); }}
             className="border border-border text-muted hover:text-ink font-medium transition-all cursor-pointer"
-            style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '12px' }}
+            style={{ padding: '10px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
           >
             Restablecer valores
           </button>
           <button
             onClick={onClose}
             className="flex-1 bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-            style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '13px' }}
+            style={{ padding: '10px 20px', borderRadius: '10px', fontSize: 'var(--fs-13)' }}
           >
             Guardar y cerrar
           </button>
@@ -2685,15 +2699,15 @@ function BenchmarkSettingsModal({ onClose }: { onClose: () => void }) {
 function BenchmarkField({ label, value, onChange, hint }: { label: string; value: number; onChange: (v: number) => void; hint?: string }) {
   return (
     <div>
-      <label className="block font-medium text-ink" style={{ fontSize: '11px', marginBottom: '6px' }}>{label}</label>
-      {hint && <p className="text-muted" style={{ fontSize: '10px', marginBottom: '4px' }}>{hint}</p>}
+      <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-11)', marginBottom: '6px' }}>{label}</label>
+      {hint && <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginBottom: '4px' }}>{hint}</p>}
       <input
         type="number"
         value={value}
         onChange={e => onChange(Number(e.target.value))}
         step="0.5"
         className="input-field"
-        style={{ fontSize: '13px' }}
+        style={{ fontSize: 'var(--fs-13)' }}
       />
     </div>
   );

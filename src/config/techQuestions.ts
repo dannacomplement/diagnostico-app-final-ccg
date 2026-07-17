@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
+import { Monitor, Globe, Settings, BarChart3, Bot, Lock, Brain } from 'lucide-react';
 import type {
   TechToolsData,
   TechDigitalPresence,
@@ -14,19 +16,19 @@ import type {
 export interface TechAreaConfig {
   id: string;
   name: string;
-  icon: string;
+  icon: LucideIcon;
   description: string;
   weight: number; // contribution to maturity score (sum = 100)
 }
 
 export const TECH_AREAS: TechAreaConfig[] = [
-  { id: 'tools', name: 'Herramientas y Software', icon: '\u{1F4BB}', description: 'ERP, CRM, Excel y herramientas de gestión', weight: 15 },
-  { id: 'digital_presence', name: 'Presencia Digital', icon: '\u{1F310}', description: 'Website, e-commerce y redes sociales', weight: 10 },
-  { id: 'automation', name: 'Automatización', icon: '⚙️', description: 'Automatización de procesos y operaciones', weight: 20 },
-  { id: 'data_analytics', name: 'Datos y Analítica', icon: '\u{1F4CA}', description: 'Uso de datos, KPIs y business intelligence', weight: 20 },
-  { id: 'ai', name: 'Inteligencia Artificial', icon: '\u{1F916}', description: 'Adopción de IA y tecnologías emergentes', weight: 15 },
-  { id: 'security', name: 'Ciberseguridad', icon: '\u{1F512}', description: 'Seguridad, respaldos y nube', weight: 10 },
-  { id: 'culture', name: 'Cultura Digital', icon: '\u{1F9E0}', description: 'Mindset digital, capacitación y equipo TI', weight: 10 },
+  { id: 'tools', name: 'Herramientas y Software', icon: Monitor, description: 'ERP, CRM, Excel y herramientas de gestión', weight: 15 },
+  { id: 'digital_presence', name: 'Presencia Digital', icon: Globe, description: 'Website, e-commerce y redes sociales', weight: 10 },
+  { id: 'automation', name: 'Automatización', icon: Settings, description: 'Automatización de procesos y operaciones', weight: 20 },
+  { id: 'data_analytics', name: 'Datos y Analítica', icon: BarChart3, description: 'Uso de datos, KPIs y business intelligence', weight: 20 },
+  { id: 'ai', name: 'Inteligencia Artificial', icon: Bot, description: 'Adopción de IA y tecnologías emergentes', weight: 15 },
+  { id: 'security', name: 'Ciberseguridad', icon: Lock, description: 'Seguridad, respaldos y nube', weight: 10 },
+  { id: 'culture', name: 'Cultura Digital', icon: Brain, description: 'Mindset digital, capacitación y equipo TI', weight: 10 },
 ];
 
 /* ── Per-area scoring functions (each returns 0-100) ─── */

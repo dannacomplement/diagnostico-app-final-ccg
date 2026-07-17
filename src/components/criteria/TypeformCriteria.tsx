@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Check } from 'lucide-react';
 import type { CriterionConfig, CriterionAnswer, ScoreLevel } from '../../lib/types';
 import { CRITERION_CARD_OPTIONS, type CardOption } from '../../config/questions';
 import RadarChart from '../ui/RadarChart';
@@ -117,7 +118,7 @@ export default function TypeformCriteria({
         <div style={{ marginBottom: '24px' }}>
           <RadarChart axes={radarAxes} size={200} animated delay={0} showLabels />
         </div>
-        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#1b2a4a', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>
+        <h3 style={{ fontSize: 'var(--fs-20)', fontWeight: 700, color: '#1b2a4a', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>
           {title} — Resumen
         </h3>
         <div style={{
@@ -130,12 +131,12 @@ export default function TypeformCriteria({
           border: `2px solid ${LEVEL_COLORS[level]}30`,
           marginBottom: '16px',
         }}>
-          <span style={{ fontSize: '28px', fontWeight: 800, color: LEVEL_COLORS[level] }}>
+          <span style={{ fontSize: 'var(--fs-28)', fontWeight: 800, color: LEVEL_COLORS[level] }}>
             {averageScore.toFixed(0)}
           </span>
-          <span style={{ fontSize: '14px', color: '#9ca3af' }}>/100</span>
+          <span style={{ fontSize: 'var(--fs-14)', color: '#9ca3af' }}>/100</span>
           <span style={{
-            fontSize: '12px',
+            fontSize: 'var(--fs-12)',
             fontWeight: 700,
             color: LEVEL_COLORS[level],
             padding: '3px 10px',
@@ -145,14 +146,14 @@ export default function TypeformCriteria({
             {level === 'Avanzado' ? 'Alto' : level}
           </span>
         </div>
-        <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '20px' }}>
+        <p style={{ fontSize: 'var(--fs-12)', color: '#6b7280', marginBottom: '20px' }}>
           {answeredCount} de {criteria.length} preguntas respondidas
         </p>
         <button
           onClick={() => setShowSummary(false)}
           style={{
             padding: '10px 24px',
-            fontSize: '13px',
+            fontSize: 'var(--fs-13)',
             fontWeight: 600,
             color: '#0047AB',
             background: 'rgba(0,71,171,0.08)',
@@ -190,7 +191,7 @@ export default function TypeformCriteria({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
             <span style={{
-              fontSize: '11px',
+              fontSize: 'var(--fs-11)',
               fontWeight: 600,
               color: '#d4922e',
               textTransform: 'uppercase',
@@ -199,10 +200,10 @@ export default function TypeformCriteria({
               {title}
             </span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-              <span style={{ fontSize: '32px', fontWeight: 800, color: '#1b2a4a', lineHeight: 1 }}>
+              <span style={{ fontSize: 'var(--fs-32)', fontWeight: 800, color: '#1b2a4a', lineHeight: 1 }}>
                 {currentIndex + 1}
               </span>
-              <span style={{ fontSize: '14px', color: '#9ca3af', fontWeight: 500 }}>
+              <span style={{ fontSize: 'var(--fs-14)', color: '#9ca3af', fontWeight: 500 }}>
                 / {criteria.length}
               </span>
             </div>
@@ -222,7 +223,7 @@ export default function TypeformCriteria({
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         }}>
           <p style={{
-            fontSize: '16px',
+            fontSize: 'var(--fs-16)',
             fontWeight: 600,
             color: '#1b2a4a',
             lineHeight: 1.5,
@@ -256,7 +257,7 @@ export default function TypeformCriteria({
                   alignItems: 'center',
                   gap: '12px',
                   width: '100%',
-                  padding: '14px 18px',
+                  padding: 'var(--sp-btn-a)',
                   marginBottom: '16px',
                   borderRadius: '12px',
                   border: `2px solid ${isNA ? '#6366f1' : 'rgba(0,0,0,0.08)'}`,
@@ -275,15 +276,15 @@ export default function TypeformCriteria({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '12px',
+                  fontSize: 'var(--fs-12)',
                   fontWeight: 700,
                   flexShrink: 0,
                   transition: 'all 0.2s ease',
                 }}>
-                  {isNA ? '✓' : ''}
+                  {isNA ? <Check style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} /> : ''}
                 </span>
                 <span style={{
-                  fontSize: '13px',
+                  fontSize: 'var(--fs-13)',
                   fontWeight: 600,
                   color: isNA ? '#6366f1' : '#6b7280',
                 }}>
@@ -343,19 +344,19 @@ export default function TypeformCriteria({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '12px',
+                    fontSize: 'var(--fs-12)',
                     fontWeight: 700,
                     flexShrink: 0,
                     transition: 'all 0.2s ease',
                   }}>
-                    {selected ? '✓' : idx + 1}
+                    {selected ? <Check style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> : idx + 1}
                   </span>
 
-                  <span style={{ fontSize: '22px', flexShrink: 0 }}>{option.icon}</span>
+                  <option.icon style={{ width: '22px', height: '22px', flexShrink: 0, color: cs.border }} />
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{
-                      fontSize: '14px',
+                      fontSize: 'var(--fs-14)',
                       fontWeight: 600,
                       color: selected ? checkColor : '#1b2a4a',
                       marginBottom: '2px',
@@ -364,7 +365,7 @@ export default function TypeformCriteria({
                       {option.title}
                     </p>
                     <p style={{
-                      fontSize: '12px',
+                      fontSize: 'var(--fs-12)',
                       color: selected ? checkColor : '#6b7280',
                       lineHeight: 1.4,
                       transition: 'color 0.2s ease',
@@ -405,7 +406,7 @@ export default function TypeformCriteria({
             disabled={currentIndex === 0}
             style={{
               padding: '8px 16px',
-              fontSize: '12px',
+              fontSize: 'var(--fs-12)',
               fontWeight: 500,
               color: currentIndex === 0 ? '#d1d5db' : '#6b7280',
               background: 'none',
@@ -453,7 +454,7 @@ export default function TypeformCriteria({
             }}
             style={{
               padding: '8px 16px',
-              fontSize: '12px',
+              fontSize: 'var(--fs-12)',
               fontWeight: 600,
               color: '#0047AB',
               background: 'rgba(0,71,171,0.08)',
@@ -469,7 +470,7 @@ export default function TypeformCriteria({
         {/* Keyboard hints */}
         <p style={{
           textAlign: 'center',
-          fontSize: '10px',
+          fontSize: 'var(--fs-10)',
           color: '#c4c9d1',
           marginTop: '12px',
         }}>

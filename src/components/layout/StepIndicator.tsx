@@ -1,3 +1,5 @@
+import { Check } from 'lucide-react';
+
 interface Step {
   id: string;
   label: string;
@@ -25,14 +27,14 @@ export default function StepIndicator({ steps, currentStep, onStepClick }: Props
                 ${isDone ? 'text-success' : ''}
                 ${!isActive && !isDone ? 'text-muted hover:text-ink' : ''}
               `}
-              style={{ gap: '8px', padding: '10px 16px', borderRadius: '8px', fontSize: '12px' }}
+              style={{ gap: '8px', padding: 'var(--sp-btn-b)', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
             >
               <span className={`rounded-full flex items-center justify-center font-semibold shrink-0
                 ${isActive ? 'bg-accent text-white' : ''}
                 ${isDone ? 'bg-success text-white' : ''}
                 ${!isActive && !isDone ? 'bg-border text-muted' : ''}
-              `} style={{ width: '28px', height: '28px', fontSize: '12px' }}>
-                {isDone ? '✓' : i + 1}
+              `} style={{ width: '28px', height: '28px', fontSize: 'var(--fs-12)' }}>
+                {isDone ? <Check style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> : i + 1}
               </span>
               <span className="hidden lg:inline">{step.label}</span>
             </button>

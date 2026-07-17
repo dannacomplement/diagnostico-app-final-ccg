@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X, Save } from 'lucide-react';
 import StepIndicator from './StepIndicator';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { useOrgSurveyStore } from '../../store/orgSurveyStore';
@@ -62,17 +63,17 @@ export default function OrgWizardShell() {
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '36px 24px' }}>
+    <div className="wizard-client-scale" style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '36px 24px' }}>
       <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
-        <span className="text-muted" style={{ fontSize: '11px' }}>
+        <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
           Paso {currentStep + 1} de {STEPS.length} — Estructura Organizacional
         </span>
         <button
           onClick={() => setShowExitConfirm(true)}
           className="flex items-center text-muted hover:text-error hover:bg-error/5 border border-transparent hover:border-error/20 transition-all cursor-pointer"
-          style={{ gap: '6px', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 500 }}
+          style={{ gap: '6px', padding: '6px 10px', borderRadius: '8px', fontSize: 'var(--fs-11)', fontWeight: 500 }}
         >
-          <span>✕</span> Salir
+          <X style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} /> Salir
         </button>
       </div>
 
@@ -93,14 +94,14 @@ export default function OrgWizardShell() {
           onClick={handlePrev}
           disabled={currentStep === 0}
           className="border border-border text-muted hover:text-ink hover:border-mid transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-          style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '13px', fontWeight: 500 }}
+          style={{ padding: '12px 28px', borderRadius: '12px', fontSize: 'var(--fs-13)', fontWeight: 500 }}
         >
           ← Anterior
         </button>
         <button
           onClick={handleNext}
           className="bg-accent text-white font-semibold hover:bg-mid transition-all shadow-sm cursor-pointer"
-          style={{ padding: '12px 28px', borderRadius: '12px', fontSize: '13px' }}
+          style={{ padding: '12px 28px', borderRadius: '12px', fontSize: 'var(--fs-13)' }}
         >
           {isLast ? 'Finalizar encuesta' : 'Siguiente →'}
         </button>
@@ -110,31 +111,31 @@ export default function OrgWizardShell() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md w-full text-center animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px' }}>
             <div className="inline-flex items-center justify-center rounded-full bg-accent/10" style={{ width: '48px', height: '48px', marginBottom: '16px' }}>
-              <span style={{ fontSize: '20px' }}>💾</span>
+              <Save className="text-accent" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
             </div>
-            <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '8px' }}>Salir de la encuesta</h3>
-            <p className="text-muted" style={{ fontSize: '13px', marginBottom: '24px' }}>
+            <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '8px' }}>Salir de la encuesta</h3>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-13)', marginBottom: '24px' }}>
               Puedes guardar tu progreso y continuar despues, o salir sin guardar.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={handleSaveAndExit}
-                className="w-full rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-                style={{ padding: '12px 16px', fontSize: '13px' }}
+                className="w-full rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center justify-center"
+                style={{ padding: 'var(--sp-btn-c)', fontSize: 'var(--fs-13)', gap: '6px' }}
               >
-                💾 Guardar y salir
+                <Save style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> Guardar y salir
               </button>
               <button
                 onClick={handleExit}
                 className="w-full rounded-xl border border-error/30 text-error font-medium hover:bg-error/5 transition-all cursor-pointer"
-                style={{ padding: '10px 16px', fontSize: '12px' }}
+                style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-12)' }}
               >
                 Salir sin guardar
               </button>
               <button
                 onClick={() => setShowExitConfirm(false)}
                 className="w-full rounded-xl border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer"
-                style={{ padding: '10px 16px', fontSize: '12px' }}
+                style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-12)' }}
               >
                 Cancelar
               </button>

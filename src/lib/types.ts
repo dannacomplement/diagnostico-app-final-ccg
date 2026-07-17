@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
+
 export type ServiceAreaId =
   | 'estructura_organizacional'
   | 'planeacion_estrategica'
@@ -41,7 +43,7 @@ export interface ServiceAreaConfig {
   id: ServiceAreaId;
   name: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
 }
 
 export interface DatosGenerales {

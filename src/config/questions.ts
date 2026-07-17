@@ -1,8 +1,16 @@
 import type { CriterionConfig } from '../lib/types';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Ban, Banknote, BarChart3, BookOpen, Building2, CircleCheck, CircleHelp, CircleX,
+  ClipboardList, File, FileText, Files, FolderOpen, Gem, Handshake, Inbox, Map,
+  MessageCircle, NotebookText, PiggyBank, Pin, RefreshCw, Rocket, Ruler, Scale,
+  Settings, Shuffle, Sun, Target, TriangleAlert, User, UserX, Users, UsersRound,
+  Wrench, Zap,
+} from 'lucide-react';
 
 /* ── Card Options per Criterion ──────────────────────────── */
 export interface CardOption {
-  icon: string;
+  icon: LucideIcon;
   title: string;
   description: string;
   score: number; // 0 | 5 | 10  – never shown to user
@@ -11,103 +19,103 @@ export interface CardOption {
 export const CRITERION_CARD_OPTIONS: Record<string, CardOption[]> = {
   // ── PROFESIONALIZACIÓN (10 preguntas nuevas) ──────────────
   prof_01: [
-    { icon: '📭', title: 'Nunca', description: 'Nunca hacemos reuniones de resultados.', score: 0 },
-    { icon: '📋', title: 'Esporádico', description: 'Reuniones esporádicas e informales.', score: 5 },
-    { icon: '📊', title: 'Formal mensual', description: 'Reuniones formales mensuales por área.', score: 10 },
+    { icon: Inbox, title: 'Nunca', description: 'Nunca hacemos reuniones de resultados.', score: 0 },
+    { icon: ClipboardList, title: 'Esporádico', description: 'Reuniones esporádicas e informales.', score: 5 },
+    { icon: BarChart3, title: 'Formal mensual', description: 'Reuniones formales mensuales por área.', score: 10 },
   ],
   prof_02: [
-    { icon: '🏗️', title: 'Sin claridad', description: 'No hay claridad de roles. Los familiares no siguen estos lineamientos.', score: 0 },
-    { icon: '🔧', title: 'Existe con diferencias', description: 'Existe pero con diferencias. Confusiones sobre jerarquías y liderazgos.', score: 5 },
-    { icon: '✅', title: 'Todos claros', description: 'Todos tienen claras sus funciones. Incluyendo familiares; liderazgo identificado.', score: 10 },
+    { icon: Building2, title: 'Sin claridad', description: 'No hay claridad de roles. Los familiares no siguen estos lineamientos.', score: 0 },
+    { icon: Wrench, title: 'Existe con diferencias', description: 'Existe pero con diferencias. Confusiones sobre jerarquías y liderazgos.', score: 5 },
+    { icon: CircleCheck, title: 'Todos claros', description: 'Todos tienen claras sus funciones. Incluyendo familiares; liderazgo identificado.', score: 10 },
   ],
   prof_03: [
-    { icon: '❌', title: 'No existe', description: 'No existe método de evaluación.', score: 0 },
-    { icon: '⚙️', title: 'Sin estructura', description: 'Evaluaciones sin estructura.', score: 5 },
-    { icon: '📝', title: 'Proceso formal', description: 'Proceso formal igual para todos.', score: 10 },
+    { icon: CircleX, title: 'No existe', description: 'No existe método de evaluación.', score: 0 },
+    { icon: Settings, title: 'Sin estructura', description: 'Evaluaciones sin estructura.', score: 5 },
+    { icon: FileText, title: 'Proceso formal', description: 'Proceso formal igual para todos.', score: 10 },
   ],
   prof_04: [
-    { icon: '❓', title: 'No conocidos', description: 'No conocemos los procesos clave. Los familiares no siguen procesos.', score: 0 },
-    { icon: '📄', title: 'Algunos documentados', description: 'Algunos documentados. Se siguen de forma manual, no sistematizada.', score: 5 },
-    { icon: '🗂️', title: 'Documentados y sistematizados', description: 'Documentados y sistematizados. Con sistemas que aseguran que se cumplan.', score: 10 },
+    { icon: CircleHelp, title: 'No conocidos', description: 'No conocemos los procesos clave. Los familiares no siguen procesos.', score: 0 },
+    { icon: File, title: 'Algunos documentados', description: 'Algunos documentados. Se siguen de forma manual, no sistematizada.', score: 5 },
+    { icon: FolderOpen, title: 'Documentados y sistematizados', description: 'Documentados y sistematizados. Con sistemas que aseguran que se cumplan.', score: 10 },
   ],
   prof_05: [
-    { icon: '💸', title: 'Solo contable', description: 'Solo conocemos lo contable.', score: 0 },
-    { icon: '📑', title: 'Info parcial', description: 'Algo de info pero no cuadra.', score: 5 },
-    { icon: '💰', title: 'Estados financieros mensuales', description: 'Estados financieros mensuales.', score: 10 },
+    { icon: Banknote, title: 'Solo contable', description: 'Solo conocemos lo contable.', score: 0 },
+    { icon: Files, title: 'Info parcial', description: 'Algo de info pero no cuadra.', score: 5 },
+    { icon: PiggyBank, title: 'Estados financieros mensuales', description: 'Estados financieros mensuales.', score: 10 },
   ],
   prof_06: [
-    { icon: '🎯', title: 'Sin claridad', description: 'No tenemos claro el plan comercial.', score: 0 },
-    { icon: '📌', title: 'Existe sin documentar', description: 'Existe plan pero falta documentar. No toda la organización lo entiende.', score: 5 },
-    { icon: '🚀', title: 'Toda la organización la conoce', description: 'Toda la organización conoce la estrategia. Con métricas y planes de acción aterrizados.', score: 10 },
+    { icon: Target, title: 'Sin claridad', description: 'No tenemos claro el plan comercial.', score: 0 },
+    { icon: Pin, title: 'Existe sin documentar', description: 'Existe plan pero falta documentar. No toda la organización lo entiende.', score: 5 },
+    { icon: Rocket, title: 'Toda la organización la conoce', description: 'Toda la organización conoce la estrategia. Con métricas y planes de acción aterrizados.', score: 10 },
   ],
   prof_07: [
-    { icon: '🗒️', title: 'Nunca', description: 'Nunca nos hemos reunido a planear.', score: 0 },
-    { icon: '📐', title: 'Existe sin actualizar', description: 'Existe pero no actualizado.', score: 5 },
-    { icon: '🗺️', title: 'Plan con seguimiento', description: 'Plan estratégico con seguimiento continuo.', score: 10 },
+    { icon: NotebookText, title: 'Nunca', description: 'Nunca nos hemos reunido a planear.', score: 0 },
+    { icon: Ruler, title: 'Existe sin actualizar', description: 'Existe pero no actualizado.', score: 5 },
+    { icon: Map, title: 'Plan con seguimiento', description: 'Plan estratégico con seguimiento continuo.', score: 10 },
   ],
   prof_08: [
-    { icon: '💸', title: 'No hay presupuesto', description: 'No hay presupuesto formal. Tampoco políticas de reinversión ni dividendos.', score: 0 },
-    { icon: '👤', title: 'Solo dirección', description: 'Presupuesto manejado solo por dirección. Administración o dirección general.', score: 5 },
-    { icon: '✅', title: 'Comprometido por todos', description: 'Presupuesto comprometido por todos. Reinversión y dividendos bien definidos.', score: 10 },
+    { icon: Banknote, title: 'No hay presupuesto', description: 'No hay presupuesto formal. Tampoco políticas de reinversión ni dividendos.', score: 0 },
+    { icon: User, title: 'Solo dirección', description: 'Presupuesto manejado solo por dirección. Administración o dirección general.', score: 5 },
+    { icon: CircleCheck, title: 'Comprometido por todos', description: 'Presupuesto comprometido por todos. Reinversión y dividendos bien definidos.', score: 10 },
   ],
   prof_09: [
-    { icon: '🚷', title: 'No definida', description: 'Dirección no definida o repartida.', score: 0 },
-    { icon: '💭', title: 'Perfil sin métricas', description: 'Existe perfil pero sin métricas claras.', score: 5 },
-    { icon: '📋', title: 'Perfil formal', description: 'Perfil, compensación y supervisión formales.', score: 10 },
+    { icon: UserX, title: 'No definida', description: 'Dirección no definida o repartida.', score: 0 },
+    { icon: MessageCircle, title: 'Perfil sin métricas', description: 'Existe perfil pero sin métricas claras.', score: 5 },
+    { icon: ClipboardList, title: 'Perfil formal', description: 'Perfil, compensación y supervisión formales.', score: 10 },
   ],
   prof_10: [
-    { icon: '❌', title: 'No existe', description: 'No existe tal consejo. Sin supervisión a la dirección ni consejería externa.', score: 0 },
-    { icon: '👥', title: 'Consejo formal con independientes', description: 'Consejo formal con independientes. Patrimoniales e independientes que supervisan la dirección.', score: 10 },
+    { icon: CircleX, title: 'No existe', description: 'No existe tal consejo. Sin supervisión a la dirección ni consejería externa.', score: 0 },
+    { icon: Users, title: 'Consejo formal con independientes', description: 'Consejo formal con independientes. Patrimoniales e independientes que supervisan la dirección.', score: 10 },
   ],
 
   // ── INSTITUCIONALIZACIÓN (10 preguntas) ──────────
   inst_01: [
-    { icon: '❓', title: 'No lo conocemos', description: 'No se conoce el valor de la empresa ni el patrimonio.', score: 0 },
-    { icon: '📊', title: 'Dato sin documentar', description: 'Tenemos el dato pero no está documentado.', score: 5 },
-    { icon: '💎', title: 'Documentado y reconocido', description: 'Conocemos y está documentado. Todos los propietarios y familiares lo reconocen.', score: 10 },
+    { icon: CircleHelp, title: 'No lo conocemos', description: 'No se conoce el valor de la empresa ni el patrimonio.', score: 0 },
+    { icon: BarChart3, title: 'Dato sin documentar', description: 'Tenemos el dato pero no está documentado.', score: 5 },
+    { icon: Gem, title: 'Documentado y reconocido', description: 'Conocemos y está documentado. Todos los propietarios y familiares lo reconocen.', score: 10 },
   ],
   inst_02: [
-    { icon: '🔀', title: 'Totalmente mezcladas', description: 'Las finanzas familiares y de la empresa están totalmente mezcladas.', score: 0 },
-    { icon: '⚖️', title: 'Algunas cosas se mezclan', description: 'Hay cierta separación pero algunas cosas se mezclan.', score: 5 },
-    { icon: '✅', title: 'Completamente separadas', description: 'Finanzas completamente separadas con política de dividendos.', score: 10 },
+    { icon: Shuffle, title: 'Totalmente mezcladas', description: 'Las finanzas familiares y de la empresa están totalmente mezcladas.', score: 0 },
+    { icon: Scale, title: 'Algunas cosas se mezclan', description: 'Hay cierta separación pero algunas cosas se mezclan.', score: 5 },
+    { icon: CircleCheck, title: 'Completamente separadas', description: 'Finanzas completamente separadas con política de dividendos.', score: 10 },
   ],
   inst_03: [
-    { icon: '🚫', title: 'No coinciden', description: 'No coinciden o no se ha hablado. Sin comunicación abierta sobre esto.', score: 0 },
-    { icon: '⚠️', title: 'Coinciden parcialmente', description: 'Coinciden en algunos puntos. Hay discordancias entre generaciones.', score: 5 },
-    { icon: '🎯', title: 'Visión alineada', description: 'Se trabaja en alinear la visión entre propietarios y siguientes generaciones.', score: 10 },
+    { icon: Ban, title: 'No coinciden', description: 'No coinciden o no se ha hablado. Sin comunicación abierta sobre esto.', score: 0 },
+    { icon: TriangleAlert, title: 'Coinciden parcialmente', description: 'Coinciden en algunos puntos. Hay discordancias entre generaciones.', score: 5 },
+    { icon: Target, title: 'Visión alineada', description: 'Se trabaja en alinear la visión entre propietarios y siguientes generaciones.', score: 10 },
   ],
   inst_04: [
-    { icon: '👨‍👩‍👦', title: 'Sin criterios formales', description: 'Sí, hay familiares indirectos sin criterios formales de contratación.', score: 0 },
-    { icon: '📋', title: 'Siguen protocolos de RH', description: 'Sí, pero siguen protocolos de RH para su contratación.', score: 5 },
-    { icon: '🚷', title: 'Política de no contratar', description: 'Política de no contratar familiares indirectos.', score: 10 },
+    { icon: UsersRound, title: 'Sin criterios formales', description: 'Sí, hay familiares indirectos sin criterios formales de contratación.', score: 0 },
+    { icon: ClipboardList, title: 'Siguen protocolos de RH', description: 'Sí, pero siguen protocolos de RH para su contratación.', score: 5 },
+    { icon: UserX, title: 'Política de no contratar', description: 'Política de no contratar familiares indirectos.', score: 10 },
   ],
   inst_05: [
-    { icon: '❓', title: 'Sin definir', description: 'No se sabe quién sucedería. Sin proceso ni candidato.', score: 0 },
-    { icon: '💭', title: 'Sucesor identificado', description: 'Sucesor identificado sin proceso formal. Tiene las capacidades pero sin documento.', score: 5 },
-    { icon: '📝', title: 'Formalizado', description: 'Puesto y sucesor formalizados. Responsabilidades, sueldo, supervisión y sucesor nombrado.', score: 10 },
+    { icon: CircleHelp, title: 'Sin definir', description: 'No se sabe quién sucedería. Sin proceso ni candidato.', score: 0 },
+    { icon: MessageCircle, title: 'Sucesor identificado', description: 'Sucesor identificado sin proceso formal. Tiene las capacidades pero sin documento.', score: 5 },
+    { icon: FileText, title: 'Formalizado', description: 'Puesto y sucesor formalizados. Responsabilidades, sueldo, supervisión y sucesor nombrado.', score: 10 },
   ],
   inst_06: [
-    { icon: '❌', title: 'Sin definir', description: 'No se sabe quiénes serán futuros accionistas.', score: 0 },
-    { icon: '🤝', title: 'Accionistas identificados', description: 'Futuros accionistas identificados pero sin formalización.', score: 5 },
-    { icon: '✅', title: 'Método claro', description: 'Método de asignación y evaluación claros y documentados.', score: 10 },
+    { icon: CircleX, title: 'Sin definir', description: 'No se sabe quiénes serán futuros accionistas.', score: 0 },
+    { icon: Handshake, title: 'Accionistas identificados', description: 'Futuros accionistas identificados pero sin formalización.', score: 5 },
+    { icon: CircleCheck, title: 'Método claro', description: 'Método de asignación y evaluación claros y documentados.', score: 10 },
   ],
   inst_07: [
-    { icon: '📭', title: 'No existe', description: 'No existe tal documento de protocolo familiar.', score: 0 },
-    { icon: '📋', title: 'Reglas empíricas', description: 'Reglas empíricas no documentadas. O documento que no se sigue ni respeta.', score: 5 },
-    { icon: '📖', title: 'Protocolo vivo', description: 'Protocolo conocido y vivo. Se revisa en el consejo de familia.', score: 10 },
+    { icon: Inbox, title: 'No existe', description: 'No existe tal documento de protocolo familiar.', score: 0 },
+    { icon: ClipboardList, title: 'Reglas empíricas', description: 'Reglas empíricas no documentadas. O documento que no se sigue ni respeta.', score: 5 },
+    { icon: BookOpen, title: 'Protocolo vivo', description: 'Protocolo conocido y vivo. Se revisa en el consejo de familia.', score: 10 },
   ],
   inst_08: [
-    { icon: '🔀', title: 'Sin separación', description: 'No existe separación ni claridad de los 3 círculos.', score: 0 },
-    { icon: '🔃', title: 'Roles empíricos', description: 'Roles empíricos sin formalidad.', score: 5 },
-    { icon: '✅', title: 'Roles bien definidos', description: 'Roles bien definidos y respetados para empleado, propietario y familia.', score: 10 },
+    { icon: Shuffle, title: 'Sin separación', description: 'No existe separación ni claridad de los 3 círculos.', score: 0 },
+    { icon: RefreshCw, title: 'Roles empíricos', description: 'Roles empíricos sin formalidad.', score: 5 },
+    { icon: CircleCheck, title: 'Roles bien definidos', description: 'Roles bien definidos y respetados para empleado, propietario y familia.', score: 10 },
   ],
   inst_09: [
-    { icon: '⚡', title: 'Conflictos no resueltos', description: 'Existen conflictos no resueltos. Sin plan para evitar que impacten la empresa.', score: 0 },
-    { icon: '☀️', title: 'Sin conflictos o con protocolos', description: 'No hay conflictos o existen protocolos. Acuerdos de mediación que mitigan riesgos.', score: 10 },
+    { icon: Zap, title: 'Conflictos no resueltos', description: 'Existen conflictos no resueltos. Sin plan para evitar que impacten la empresa.', score: 0 },
+    { icon: Sun, title: 'Sin conflictos o con protocolos', description: 'No hay conflictos o existen protocolos. Acuerdos de mediación que mitigan riesgos.', score: 10 },
   ],
   inst_10: [
-    { icon: '❌', title: 'Sin blindaje legal', description: 'No existen documentos suficientes. Sin blindaje legal.', score: 0 },
-    { icon: '✅', title: 'Documentos completos', description: 'Asesorados con todos los documentos. Contratos, convenios y protocolos para asegurar continuidad.', score: 10 },
+    { icon: CircleX, title: 'Sin blindaje legal', description: 'No existen documentos suficientes. Sin blindaje legal.', score: 0 },
+    { icon: CircleCheck, title: 'Documentos completos', description: 'Asesorados con todos los documentos. Contratos, convenios y protocolos para asegurar continuidad.', score: 10 },
   ],
 };
 

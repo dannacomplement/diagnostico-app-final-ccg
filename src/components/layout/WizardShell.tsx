@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { Sparkles, X, Check, Save } from 'lucide-react';
 import StepIndicator from './StepIndicator';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { useAuthStore } from '../../store/authStore';
@@ -276,7 +277,7 @@ export default function WizardShell() {
   /* ── Prefill success screen ── */
   if (showPrefillSuccess) {
     return (
-      <div style={{ width: '100%', maxWidth: '520px', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '620px', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
         <div className="animate-fade-up bg-white rounded-2xl border border-border/40 shadow-lg" style={{ padding: '48px 36px' }}>
           {/* Success icon */}
           <div className="inline-flex items-center justify-center rounded-full" style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #22c55e20, #22c55e10)', marginBottom: '24px' }}>
@@ -286,18 +287,18 @@ export default function WizardShell() {
             </svg>
           </div>
 
-          <h2 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '8px' }}>
+          <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '8px' }}>
             Pre-llenado completo
           </h2>
-          <p className="text-muted" style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '32px', maxWidth: '360px', margin: '0 auto 32px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-13)', lineHeight: '1.6', marginBottom: '32px', maxWidth: '360px', margin: '0 auto 32px' }}>
             Los datos han sido guardados exitosamente. El cliente verá esta información pre-llenada cuando conteste su radiografía empresarial.
           </p>
 
           {/* Info card */}
           <div className="rounded-xl border border-accent/20 bg-accent/5" style={{ padding: '14px 20px', marginBottom: '28px' }}>
             <div className="flex items-center justify-center" style={{ gap: '8px' }}>
-              <span style={{ fontSize: '14px' }}>✨</span>
-              <p className="text-accent font-semibold" style={{ fontSize: '12px' }}>
+              <Sparkles className="text-accent" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} />
+              <p className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)' }}>
                 El cliente podra modificar cualquier dato antes de enviar
               </p>
             </div>
@@ -312,7 +313,7 @@ export default function WizardShell() {
                 setView('history');
               }}
               style={{
-                fontSize: '14px',
+                fontSize: 'var(--fs-14)',
                 padding: '12px 36px',
                 borderRadius: '12px',
                 background: '#d4922e',
@@ -346,7 +347,7 @@ export default function WizardShell() {
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: 'clamp(20px, 4vw, 36px) clamp(14px, 3vw, 24px)', position: 'relative' }}>
+    <div className="wizard-client-scale" style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: 'clamp(20px, 4vw, 44px) clamp(14px, 3vw, 28px)', position: 'relative' }}>
       {/* ── B6: Auto-save toast ── */}
       {saveToast && (
         <div className="save-toast" style={{
@@ -366,18 +367,18 @@ export default function WizardShell() {
             <circle cx="8" cy="8" r="7" fill="#22c55e" opacity="0.2" />
             <path d="M5 8.5l2 2 4-4" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: 'white' }}>Progreso guardado</span>
+          <span style={{ fontSize: 'var(--fs-12)', fontWeight: 600, color: 'white' }}>Progreso guardado</span>
         </div>
       )}
 
       <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
         <div className="flex items-center" style={{ gap: '12px' }}>
-          <span className="text-muted" style={{ fontSize: '11px' }}>
+          <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
             Paso {currentStep + 1} de {steps.length}
           </span>
           {/* ── B1: Completion % ── */}
           <span style={{
-            fontSize: '10px',
+            fontSize: 'var(--fs-10)',
             fontWeight: 500,
             color: '#d4922e',
             padding: '2px 10px',
@@ -391,9 +392,9 @@ export default function WizardShell() {
         <button
           onClick={() => setShowExitConfirm(true)}
           className="flex items-center text-muted hover:text-error hover:bg-error/5 border border-transparent hover:border-error/20 transition-all cursor-pointer"
-          style={{ gap: '6px', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 500 }}
+          style={{ gap: '6px', padding: '6px 10px', borderRadius: '8px', fontSize: 'var(--fs-11)', fontWeight: 500 }}
         >
-          <span>✕</span> Salir
+          <X style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} /> Salir
         </button>
       </div>
 
@@ -409,7 +410,7 @@ export default function WizardShell() {
 
       {prefillMode && (
         <div className="w-full bg-accent/10 border border-accent/30 rounded-xl text-center" style={{ padding: '10px 20px', marginBottom: '12px' }}>
-          <p className="text-accent font-semibold" style={{ fontSize: '12px' }}>
+          <p className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)' }}>
             Modo pre-llenado — Los datos que ingrese aqui apareceran cuando el cliente conteste la encuesta
           </p>
         </div>
@@ -425,12 +426,12 @@ export default function WizardShell() {
 
       {validationErrors.length > 0 && (
         <div className="bg-error/10 border border-error/30 rounded-xl" style={{ padding: '16px 20px', marginTop: '20px' }}>
-          <p className="text-error font-semibold" style={{ fontSize: '13px', marginBottom: '8px' }}>
+          <p className="text-error font-semibold" style={{ fontSize: 'var(--fs-13)', marginBottom: '8px' }}>
             Complete las siguientes preguntas antes de continuar:
           </p>
           <ul style={{ paddingLeft: '20px', margin: 0 }}>
             {validationErrors.map((err, i) => (
-              <li key={i} className="text-error" style={{ fontSize: '12px', marginBottom: '4px' }}>{err}</li>
+              <li key={i} className="text-error" style={{ fontSize: 'var(--fs-12)', marginBottom: '4px' }}>{err}</li>
             ))}
           </ul>
         </div>
@@ -441,7 +442,7 @@ export default function WizardShell() {
           onClick={handlePrev}
           disabled={currentStep === 0}
           className="border border-border text-muted hover:text-ink hover:border-mid transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-          style={{ padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 28px)', borderRadius: '12px', fontSize: '13px', fontWeight: 500 }}
+          style={{ padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 28px)', borderRadius: '12px', fontSize: 'var(--fs-13)', fontWeight: 500 }}
         >
           ← Anterior
         </button>
@@ -452,7 +453,7 @@ export default function WizardShell() {
           style={{
             padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 28px)',
             borderRadius: '12px',
-            fontSize: '13px',
+            fontSize: 'var(--fs-13)',
             ...(prefillMode && isLast
               ? {}
               : {
@@ -473,7 +474,13 @@ export default function WizardShell() {
             }
           }}
         >
-          {savingPrefill ? 'Guardando...' : isLast ? (prefillMode ? 'Guardar pre-llenado' : 'Finalizar radiografía ✓') : 'Siguiente →'}
+          {savingPrefill
+            ? 'Guardando...'
+            : isLast
+              ? prefillMode
+                ? 'Guardar pre-llenado'
+                : <span className="inline-flex items-center" style={{ gap: '6px' }}>Finalizar radiografía <Check style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /></span>
+              : 'Siguiente →'}
         </button>
       </div>
 
@@ -481,20 +488,20 @@ export default function WizardShell() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md w-full text-center animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px' }}>
             <div className="inline-flex items-center justify-center rounded-full bg-accent/10" style={{ width: '48px', height: '48px', marginBottom: '16px' }}>
-              <span style={{ fontSize: '20px' }}>💾</span>
+              <Save className="text-accent" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
             </div>
-            <h3 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '8px' }}>Salir de la radiografía</h3>
-            <p className="text-muted" style={{ fontSize: '13px', marginBottom: '24px' }}>
+            <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '8px' }}>Salir de la radiografía</h3>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-13)', marginBottom: '24px' }}>
               Puedes guardar tu progreso y continuar despues, o salir sin guardar.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button onClick={handleSaveAndExit} className="w-full rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ padding: '12px 16px', fontSize: '13px' }}>
-                💾 Guardar y salir
+              <button onClick={handleSaveAndExit} className="w-full rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center justify-center" style={{ padding: 'var(--sp-btn-c)', fontSize: 'var(--fs-13)', gap: '6px' }}>
+                <Save style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> Guardar y salir
               </button>
-              <button onClick={handleExit} className="w-full rounded-xl border border-error/30 text-error font-medium hover:bg-error/5 transition-all cursor-pointer" style={{ padding: '10px 16px', fontSize: '12px' }}>
+              <button onClick={handleExit} className="w-full rounded-xl border border-error/30 text-error font-medium hover:bg-error/5 transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-12)' }}>
                 Salir sin guardar
               </button>
-              <button onClick={() => setShowExitConfirm(false)} className="w-full rounded-xl border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer" style={{ padding: '10px 16px', fontSize: '12px' }}>
+              <button onClick={() => setShowExitConfirm(false)} className="w-full rounded-xl border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-12)' }}>
                 Cancelar
               </button>
             </div>

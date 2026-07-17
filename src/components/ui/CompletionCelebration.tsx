@@ -111,7 +111,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
           style={{ height: '48px', filter: 'brightness(0) invert(1) brightness(0.85)' }}
         />
         <p style={{
-          fontSize: '11px',
+          fontSize: 'var(--fs-11)',
           fontWeight: 600,
           color: '#d4922e',
           letterSpacing: '0.25em',
@@ -143,7 +143,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
           margin: '0 auto 24px',
         }}>
           <span style={{
-            fontSize: '42px',
+            fontSize: 'var(--fs-42)',
             fontWeight: 800,
             color: '#d4922e',
             lineHeight: 1,
@@ -152,7 +152,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
             {displayScore}
           </span>
           <span style={{
-            fontSize: '11px',
+            fontSize: 'var(--fs-11)',
             color: 'rgba(255,255,255,0.5)',
             fontWeight: 500,
           }}>
@@ -161,7 +161,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
         </div>
 
         <h1 style={{
-          fontSize: '28px',
+          fontSize: 'var(--fs-28)',
           fontWeight: 700,
           color: 'white',
           marginBottom: '8px',
@@ -170,7 +170,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
           Radiografía Completada
         </h1>
         <p style={{
-          fontSize: '15px',
+          fontSize: 'var(--fs-15)',
           color: 'rgba(255,255,255,0.6)',
           marginBottom: '8px',
         }}>
@@ -186,7 +186,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
               onClick={onFinish}
               style={{
                 padding: '14px 40px',
-                fontSize: '14px',
+                fontSize: 'var(--fs-14)',
                 fontWeight: 600,
                 color: 'white',
                 background: '#d4922e',
@@ -207,7 +207,7 @@ export default function CompletionCelebration({ score, companyName, onFinish }: 
               Ver Resultados →
             </button>
             <p style={{
-              fontSize: '11px',
+              fontSize: 'var(--fs-11)',
               color: 'rgba(255,255,255,0.3)',
               marginTop: '16px',
             }}>

@@ -118,7 +118,7 @@ export default function ReportPage() {
   const nextNum = () => String(++sectionNum).padStart(2, '0');
 
   return (
-    <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ width: '100%', maxWidth: '930px', margin: '0 auto', padding: 'var(--sp-pagepad)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
       {/* ═══ Branded Header ═══ */}
       <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 animate-fade-up" style={{ padding: '32px 32px 28px', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
@@ -131,17 +131,17 @@ export default function ReportPage() {
             src="/logo-complement.svg"
             alt="Complement Consulting Group"
             className="object-contain shrink-0"
-            style={{ height: '44px' }}
+            style={{ height: 'var(--sz-logo-report)' }}
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
 
           <div className="flex-1 text-center sm:text-right">
-            <h1 className="font-serif text-navy" style={{ fontSize: '20px', marginBottom: '4px' }}>Reporte Ejecutivo</h1>
-            <p className="text-muted" style={{ fontSize: '12px', marginBottom: '2px' }}>Radiografía Empresarial</p>
-            <p className="font-semibold text-navy" style={{ fontSize: '13px' }}>
+            <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-20)', marginBottom: '4px' }}>Reporte Ejecutivo</h1>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '2px' }}>Radiografía Empresarial</p>
+            <p className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)' }}>
               {datosGenerales.nombreComercial || 'Empresa'}
             </p>
-            <p className="text-muted" style={{ fontSize: '11px' }}>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
               {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
@@ -157,14 +157,14 @@ export default function ReportPage() {
           <div className="text-center shrink-0">
             <div
               className={`inline-flex items-center justify-center rounded-full border-4 ${MATURITY_BG[maturity.level] || 'bg-pale border-border'}`}
-              style={{ width: '100px', height: '100px' }}
+              style={{ width: 'var(--sz-ring)', height: 'var(--sz-ring)' }}
             >
               <div>
-                <p className={`font-bold ${MATURITY_COLOR[maturity.level] || 'text-ink'}`} style={{ fontSize: '28px', lineHeight: 1 }}>{maturity.score}</p>
-                <p className="text-muted" style={{ fontSize: '10px' }}>/100</p>
+                <p className={`font-bold ${MATURITY_COLOR[maturity.level] || 'text-ink'}`} style={{ fontSize: 'var(--fs-28)', lineHeight: 1 }}>{maturity.score}</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>/100</p>
               </div>
             </div>
-            <p className={`font-bold ${MATURITY_COLOR[maturity.level]} mt-2`} style={{ fontSize: '13px' }}>{maturity.level}</p>
+            <p className={`font-bold ${MATURITY_COLOR[maturity.level]} mt-2`} style={{ fontSize: 'var(--fs-13)' }}>{maturity.level}</p>
           </div>
 
           {/* Contribution breakdown */}
@@ -178,7 +178,7 @@ export default function ReportPage() {
 
         {/* Narrative */}
         <div className="rounded-xl bg-pale border border-border/30" style={{ padding: '18px 22px' }}>
-          <p className="text-ink leading-relaxed" style={{ fontSize: '13px' }}>{narrative}</p>
+          <p className="text-ink leading-relaxed" style={{ fontSize: 'var(--fs-13)' }}>{narrative}</p>
         </div>
       </Section>
 
@@ -213,12 +213,12 @@ export default function ReportPage() {
                 style={{ padding: '16px 20px' }}
               >
                 <div className="flex items-center flex-wrap" style={{ gap: '8px', marginBottom: '6px' }}>
-                  <span className="font-bold text-navy" style={{ fontSize: '13px' }}>{risk.risk}</span>
-                  <span className={`font-bold rounded-full ${SEVERITY_BADGE[risk.severity]}`} style={{ fontSize: '9px', padding: '2px 10px' }}>
+                  <span className="font-bold text-navy" style={{ fontSize: 'var(--fs-13)' }}>{risk.risk}</span>
+                  <span className={`font-bold rounded-full ${SEVERITY_BADGE[risk.severity]}`} style={{ fontSize: 'var(--fs-9)', padding: '2px 10px' }}>
                     {risk.severity === 'critico' ? 'CRITICO' : risk.severity === 'alto' ? 'ALTO' : 'MODERADO'}
                   </span>
                 </div>
-                <p className="text-ink" style={{ fontSize: '12px' }}>{risk.impact}</p>
+                <p className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{risk.impact}</p>
               </div>
             ))}
           </div>
@@ -232,8 +232,8 @@ export default function ReportPage() {
         <div className="flex flex-col sm:flex-row items-center" style={{ gap: '20px' }}>
           {/* Score */}
           <div className="text-center shrink-0">
-            <p className={`font-bold ${growth.ready ? 'text-success' : 'text-warn'}`} style={{ fontSize: '32px', lineHeight: 1 }}>{growth.score}%</p>
-            <div className="rounded-full" style={{ width: '100px', height: '6px', background: '#e2e8f0', marginTop: '8px' }}>
+            <p className={`font-bold ${growth.ready ? 'text-success' : 'text-warn'}`} style={{ fontSize: 'var(--fs-32)', lineHeight: 1 }}>{growth.score}%</p>
+            <div className="rounded-full mx-auto" style={{ width: 'var(--sz-bar-track)', height: '6px', background: '#e2e8f0', marginTop: '8px' }}>
               <div
                 className={`rounded-full h-full ${growth.ready ? 'bg-success' : 'bg-warn'}`}
                 style={{ width: `${growth.score}%` }}
@@ -241,7 +241,7 @@ export default function ReportPage() {
             </div>
             <span
               className={`inline-block font-bold text-white rounded-full mt-2 ${growth.ready ? 'bg-success' : 'bg-warn'}`}
-              style={{ fontSize: '10px', padding: '4px 14px' }}
+              style={{ fontSize: 'var(--fs-10)', padding: 'var(--sp-btn-d)' }}
             >
               {growth.ready ? 'LISTA PARA CRECER' : 'CONSOLIDAR PRIMERO'}
             </span>
@@ -253,10 +253,10 @@ export default function ReportPage() {
               const isPositive = !factor.startsWith('Falta');
               return (
                 <div key={i} className="flex items-center" style={{ gap: '8px' }}>
-                  <span className={`font-bold ${isPositive ? 'text-success' : 'text-warn'}`} style={{ fontSize: '14px' }}>
+                  <span className={`font-bold ${isPositive ? 'text-success' : 'text-warn'}`} style={{ fontSize: 'var(--fs-14)' }}>
                     {isPositive ? '+' : '−'}
                   </span>
-                  <span className="text-ink" style={{ fontSize: '12px' }}>{factor}</span>
+                  <span className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{factor}</span>
                 </div>
               );
             })}
@@ -297,9 +297,9 @@ export default function ReportPage() {
               };
               return (
                 <div key={m.key} className={`rounded-xl text-center border ${levelColors[ev.level]}`} style={{ padding: '20px 14px' }}>
-                  <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: '9px', marginBottom: '6px' }}>{m.label}</p>
-                  <p className="font-bold text-ink" style={{ fontSize: '18px' }}>{ev.value}%</p>
-                  <p className={`font-semibold ${textColors[ev.level]}`} style={{ fontSize: '11px', marginTop: '6px' }}>{levelLabels[ev.level]}</p>
+                  <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{m.label}</p>
+                  <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{ev.value}%</p>
+                  <p className={`font-semibold ${textColors[ev.level]}`} style={{ fontSize: 'var(--fs-11)', marginTop: '6px' }}>{levelLabels[ev.level]}</p>
                 </div>
               );
             })}
@@ -307,7 +307,7 @@ export default function ReportPage() {
 
           {/* Benchmark comparison */}
           <div>
-            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px', marginBottom: '12px' }}>
+            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '12px' }}>
               Comparativo vs. Industria — {sectorLabel}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -324,14 +324,14 @@ export default function ReportPage() {
                 const barColor = diff >= 0 ? 'bg-success' : diff >= -5 ? 'bg-warn' : 'bg-error';
                 const maxDisplay = Math.max(item.benchmark * 1.5, ev.value * 1.2, 30);
                 return (
-                  <div key={item.key} className="rounded-lg bg-pale" style={{ padding: '12px 16px' }}>
+                  <div key={item.key} className="rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-c)' }}>
                     <div className="flex items-center justify-between" style={{ marginBottom: '6px' }}>
-                      <span className="font-bold text-navy" style={{ fontSize: '12px' }}>{item.label}</span>
+                      <span className="font-bold text-navy" style={{ fontSize: 'var(--fs-12)' }}>{item.label}</span>
                       <div className="flex items-center" style={{ gap: '12px' }}>
-                        <span className={`font-bold ${diffColor}`} style={{ fontSize: '13px' }}>{ev.value}%</span>
-                        <span className="text-muted" style={{ fontSize: '11px' }}>vs.</span>
-                        <span className="font-bold text-navy" style={{ fontSize: '13px' }}>{item.benchmark}%</span>
-                        <span className={`font-bold ${diffColor}`} style={{ fontSize: '11px' }}>{diffStr}</span>
+                        <span className={`font-bold ${diffColor}`} style={{ fontSize: 'var(--fs-13)' }}>{ev.value}%</span>
+                        <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>vs.</span>
+                        <span className="font-bold text-navy" style={{ fontSize: 'var(--fs-13)' }}>{item.benchmark}%</span>
+                        <span className={`font-bold ${diffColor}`} style={{ fontSize: 'var(--fs-11)' }}>{diffStr}</span>
                       </div>
                     </div>
                     <div className="rounded-full" style={{ width: '100%', height: '5px', background: '#e2e8f0' }}>
@@ -352,7 +352,7 @@ export default function ReportPage() {
          ═══════════════════════════════════════════════ */}
       {descripcionNegocio && (
         <Section title="Descripción del Negocio" number={nextNum()}>
-          <p className="text-ink leading-relaxed" style={{ fontSize: '13px' }}>{descripcionNegocio}</p>
+          <p className="text-ink leading-relaxed" style={{ fontSize: 'var(--fs-13)' }}>{descripcionNegocio}</p>
         </Section>
       )}
 
@@ -362,10 +362,10 @@ export default function ReportPage() {
       <Section title={`Profesionalización (${profScore.average.toFixed(0)}/100 — ${profScore.level})`} number={nextNum()}>
         <div className="flex items-center" style={{ gap: '14px', marginBottom: '20px' }}>
           <div className="text-center">
-            <p className="font-bold text-ink" style={{ fontSize: '18px' }}>{profScore.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '12px' }}>/100</span></p>
-            <p className="text-muted" style={{ fontSize: '10px' }}>Promedio</p>
+            <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{profScore.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: 'var(--fs-12)' }}>/100</span></p>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>Promedio</p>
           </div>
-          <span className={`font-semibold border rounded-full ${LEVEL_COLORS[profScore.level]}`} style={{ fontSize: '12px', padding: '4px 12px' }}>
+          <span className={`font-semibold border rounded-full ${LEVEL_COLORS[profScore.level]}`} style={{ fontSize: 'var(--fs-12)', padding: '4px 12px' }}>
             {profScore.level}
           </span>
         </div>
@@ -377,18 +377,18 @@ export default function ReportPage() {
             if (!config) return null;
             return (
               <div key={a.criterionId} className="flex items-start rounded-lg bg-pale/50 border border-border/20" style={{ padding: '10px 14px', gap: '10px' }}>
-                <span className="font-semibold text-navy shrink-0" style={{ fontSize: '11px', minWidth: '140px' }}>{config.shortLabel}</span>
+                <span className="font-semibold text-navy shrink-0" style={{ fontSize: 'var(--fs-11)', minWidth: '140px' }}>{config.shortLabel}</span>
                 <div className="flex-1 flex items-center" style={{ gap: '8px' }}>
                   {/* Rating bar */}
                   <div className="rounded-full shrink-0" style={{ width: '60px', height: '5px', background: '#e2e8f0' }}>
                     <div className={`rounded-full h-full ${ratingBg(a.rating)}`} style={{ width: `${Math.max(0, Math.min(100, (a.rating / 10) * 100))}%` }} />
                   </div>
-                  <span className={`font-bold shrink-0 ${ratingColor(a.rating)}`} style={{ fontSize: '11px', minWidth: '36px' }}>
+                  <span className={`font-bold shrink-0 ${ratingColor(a.rating)}`} style={{ fontSize: 'var(--fs-11)', minWidth: '36px' }}>
                     {ratingLabel(a.rating)}
                   </span>
                 </div>
                 {a.comentario && (
-                  <span className="text-muted" style={{ fontSize: '10px', maxWidth: '200px' }}>{a.comentario}</span>
+                  <span className="text-muted" style={{ fontSize: 'var(--fs-10)', maxWidth: '200px' }}>{a.comentario}</span>
                 )}
               </div>
             );
@@ -402,10 +402,10 @@ export default function ReportPage() {
       <Section title={`Institucionalización (${instScore.average.toFixed(0)}/100 — ${instScore.level})`} number={nextNum()}>
         <div className="flex items-center" style={{ gap: '14px', marginBottom: '20px' }}>
           <div className="text-center">
-            <p className="font-bold text-ink" style={{ fontSize: '18px' }}>{instScore.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: '12px' }}>/100</span></p>
-            <p className="text-muted" style={{ fontSize: '10px' }}>Promedio</p>
+            <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{instScore.average.toFixed(0)}<span className="text-muted font-normal" style={{ fontSize: 'var(--fs-12)' }}>/100</span></p>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>Promedio</p>
           </div>
-          <span className={`font-semibold border rounded-full ${LEVEL_COLORS[instScore.level]}`} style={{ fontSize: '12px', padding: '4px 12px' }}>
+          <span className={`font-semibold border rounded-full ${LEVEL_COLORS[instScore.level]}`} style={{ fontSize: 'var(--fs-12)', padding: '4px 12px' }}>
             {instScore.level}
           </span>
         </div>
@@ -416,17 +416,17 @@ export default function ReportPage() {
             if (!config) return null;
             return (
               <div key={a.criterionId} className="flex items-start rounded-lg bg-pale/50 border border-border/20" style={{ padding: '10px 14px', gap: '10px' }}>
-                <span className="font-semibold text-navy shrink-0" style={{ fontSize: '11px', minWidth: '140px' }}>{config.shortLabel}</span>
+                <span className="font-semibold text-navy shrink-0" style={{ fontSize: 'var(--fs-11)', minWidth: '140px' }}>{config.shortLabel}</span>
                 <div className="flex-1 flex items-center" style={{ gap: '8px' }}>
                   <div className="rounded-full shrink-0" style={{ width: '60px', height: '5px', background: '#e2e8f0' }}>
                     <div className={`rounded-full h-full ${ratingBg(a.rating)}`} style={{ width: `${Math.max(0, Math.min(100, (a.rating / 10) * 100))}%` }} />
                   </div>
-                  <span className={`font-bold shrink-0 ${ratingColor(a.rating)}`} style={{ fontSize: '11px', minWidth: '36px' }}>
+                  <span className={`font-bold shrink-0 ${ratingColor(a.rating)}`} style={{ fontSize: 'var(--fs-11)', minWidth: '36px' }}>
                     {ratingLabel(a.rating)}
                   </span>
                 </div>
                 {a.comentario && (
-                  <span className="text-muted" style={{ fontSize: '10px', maxWidth: '200px' }}>{a.comentario}</span>
+                  <span className="text-muted" style={{ fontSize: 'var(--fs-10)', maxWidth: '200px' }}>{a.comentario}</span>
                 )}
               </div>
             );
@@ -440,13 +440,13 @@ export default function ReportPage() {
       <Section title="Gerencias / Puestos Clave" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
           {gerencias.map(g => (
-            <div key={g.area} className="flex items-center rounded-lg bg-pale" style={{ gap: '10px', padding: '12px 16px' }}>
-              <span className={`rounded-full shrink-0 ${g.cubierto ? (g.soyYo ? 'bg-accent' : g.calificado === 'si' ? 'bg-success' : g.calificado === 'no' ? 'bg-error' : 'bg-warn') : 'bg-error'}`} style={{ width: '8px', height: '8px' }} />
-              <span className="font-bold text-navy flex-1" style={{ fontSize: '12px' }}>{g.area}</span>
+            <div key={g.area} className="flex items-center rounded-lg bg-pale" style={{ gap: '10px', padding: 'var(--sp-btn-c)' }}>
+              <span className={`rounded-full shrink-0 ${g.cubierto ? (g.soyYo ? 'bg-accent' : g.calificado === 'si' ? 'bg-success' : g.calificado === 'no' ? 'bg-error' : 'bg-warn') : 'bg-error'}`} style={{ width: 'var(--fs-8)', height: 'var(--fs-8)' }} />
+              <span className="font-bold text-navy flex-1" style={{ fontSize: 'var(--fs-12)' }}>{g.area}</span>
               {g.cubierto ? (
                 <>
                   {g.soyYo ? (
-                    <span className="font-semibold rounded-full bg-accent/15 text-accent" style={{ fontSize: '10px', padding: '2px 8px' }}>
+                    <span className="font-semibold rounded-full bg-accent/15 text-accent" style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
                       Soy Yo
                     </span>
                   ) : (
@@ -454,27 +454,27 @@ export default function ReportPage() {
                       ${g.calificado === 'si' ? 'bg-success/15 text-success' :
                         g.calificado === 'no' ? 'bg-error/15 text-error' :
                         'bg-warn/15 text-warn'}
-                    `} style={{ fontSize: '10px', padding: '2px 8px' }}>
+                    `} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
                       {g.calificado === 'si' ? 'Calificado' : g.calificado === 'no' ? 'No calificado' : 'Por evaluar'}
                     </span>
                   )}
-                  <div className="flex items-center text-muted" style={{ gap: '8px', fontSize: '10px' }}>
+                  <div className="flex items-center text-muted" style={{ gap: '8px', fontSize: 'var(--fs-10)' }}>
                     {g.antiguedad && <span>{g.antiguedad} anos</span>}
                     {(g as any).rangoSueldo && <span>{(g as any).rangoSueldo}</span>}
                     {(g as any).esFamiliar === true && <span className="text-accent font-medium">Familiar</span>}
                   </div>
                 </>
               ) : (
-                <span className="text-error font-semibold" style={{ fontSize: '11px' }}>No cubierto</span>
+                <span className="text-error font-semibold" style={{ fontSize: 'var(--fs-11)' }}>No cubierto</span>
               )}
             </div>
           ))}
         </div>
-        <p className="font-semibold text-navy" style={{ fontSize: '12px' }}>
+        <p className="font-semibold text-navy" style={{ fontSize: 'var(--fs-12)' }}>
           {gerenciasCubiertas} de {gerencias.length} puestos cubiertos
         </p>
         {gerenciasCubiertas < gerencias.length && (
-          <p className="text-error" style={{ fontSize: '12px', marginTop: '6px' }}>
+          <p className="text-error" style={{ fontSize: 'var(--fs-12)', marginTop: '6px' }}>
             Hay {gerencias.length - gerenciasCubiertas} posición(es) gerencial(es) sin cubrir.
           </p>
         )}
@@ -489,20 +489,20 @@ export default function ReportPage() {
             {opportunityAreas.map(area => (
               <div key={area.serviceArea.id} className="rounded-xl border border-border/50 bg-pale/50" style={{ padding: '20px 24px' }}>
                 <div className="flex items-start" style={{ gap: '10px' }}>
-                  <span style={{ fontSize: '16px' }}>{area.serviceArea.icon}</span>
+                  <area.serviceArea.icon style={{ width: 'var(--fs-16)', height: 'var(--fs-16)', flexShrink: 0 }} />
                   <div className="flex-1">
                     <div className="flex items-center flex-wrap" style={{ gap: '6px', marginBottom: '4px' }}>
-                      <h4 className="font-semibold text-ink" style={{ fontSize: '13px' }}>{area.serviceArea.name}</h4>
+                      <h4 className="font-semibold text-ink" style={{ fontSize: 'var(--fs-13)' }}>{area.serviceArea.name}</h4>
                       <span className={`font-semibold rounded-full
                         ${area.priority === 'alta' ? 'bg-error/15 text-error' :
                           area.priority === 'media' ? 'bg-warn/15 text-warn' :
                           'bg-mid/15 text-mid'}
-                      `} style={{ fontSize: '10px', padding: '2px 8px' }}>
+                      `} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
                         Prioridad {area.priority}
                       </span>
                     </div>
-                    <p className="text-muted" style={{ fontSize: '11px', marginBottom: '4px' }}>{area.serviceArea.description}</p>
-                    <p className="text-muted" style={{ fontSize: '10px' }}>
+                    <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '4px' }}>{area.serviceArea.description}</p>
+                    <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>
                       <span className="font-medium">Criterios:</span>{' '}
                       {area.triggeringCriteria.map(c => `${c.text} (${ratingLabel(c.rating)})`).join(', ')}
                     </p>
@@ -525,9 +525,9 @@ export default function ReportPage() {
             'Definir un plan de accion con plazos y responsables para cada area.',
             'Implementar mejoras de forma gradual, comenzando por los focos rojos identificados.',
           ].map((step, i) => (
-            <div key={i} className="flex items-start rounded-lg bg-navy/5" style={{ padding: '12px 16px', gap: '10px' }}>
-              <span className="text-accent font-bold" style={{ fontSize: '14px' }}>→</span>
-              <p className="text-ink" style={{ fontSize: '12px' }}>{step}</p>
+            <div key={i} className="flex items-start rounded-lg bg-navy/5" style={{ padding: 'var(--sp-btn-c)', gap: '10px' }}>
+              <span className="text-accent font-bold" style={{ fontSize: 'var(--fs-14)' }}>→</span>
+              <p className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{step}</p>
             </div>
           ))}
         </div>
@@ -540,17 +540,17 @@ export default function ReportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
           {retos.map((r, i) => r && (
             <div key={i} className="rounded-lg bg-pale" style={{ padding: '16px 20px' }}>
-              <span className="font-semibold text-navy" style={{ fontSize: '11px' }}>Reto o problema #{i + 1}:</span>
-              <p className="text-ink" style={{ fontSize: '12px', marginTop: '4px' }}>{r}</p>
+              <span className="font-semibold text-navy" style={{ fontSize: 'var(--fs-11)' }}>Reto o problema #{i + 1}:</span>
+              <p className="text-ink" style={{ fontSize: 'var(--fs-12)', marginTop: '4px' }}>{r}</p>
             </div>
           ))}
           {!retos.some(r => r) && (
-            <p className="text-muted" style={{ fontSize: '12px' }}>No se registraron retos.</p>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>No se registraron retos.</p>
           )}
         </div>
-        <div className="rounded-lg bg-navy/5 border border-navy/10" style={{ padding: '14px 18px' }}>
-          <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px', marginBottom: '4px' }}>Nivel de urgencia</p>
-          <p className="text-ink font-medium" style={{ fontSize: '12px' }}>
+        <div className="rounded-lg bg-navy/5 border border-navy/10" style={{ padding: 'var(--sp-btn-a)' }}>
+          <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '4px' }}>Nivel de urgencia</p>
+          <p className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)' }}>
             {urgencyLevel ?? '—'}
             {urgencia === 'muy_urgente' && ' — Requiere atencion inmediata.'}
             {urgencia === 'necesario' && ' — Necesario avanzar con planificacion adecuada.'}
@@ -618,7 +618,7 @@ export default function ReportPage() {
                     ? 'bg-accent/10 border-accent text-accent'
                     : 'bg-pale border-border/30 text-muted'
                 }`}
-                style={{ padding: '14px 12px', fontSize: '14px', minWidth: '80px' }}
+                style={{ padding: '14px 12px', fontSize: 'var(--fs-14)', minWidth: '80px' }}
               >
                 {size}
               </div>
@@ -626,16 +626,16 @@ export default function ReportPage() {
           </div>
           <div className="grid grid-cols-2" style={{ gap: '14px' }}>
             <div className="rounded-xl text-center bg-accent/5 border border-accent/10" style={{ padding: '18px 14px' }}>
-              <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '6px' }}>Productividad Per Capita</p>
-              <p className="font-bold text-navy" style={{ fontSize: '16px' }}>${sizeResult.productivityIndex.toFixed(2)} MDP</p>
+              <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Productividad Per Capita</p>
+              <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-16)' }}>${sizeResult.productivityIndex.toFixed(2)} MDP</p>
             </div>
             <div className="rounded-xl text-center bg-pale border border-border/30" style={{ padding: '18px 14px' }}>
-              <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '6px' }}>Antiguedad</p>
-              <p className="font-bold text-navy" style={{ fontSize: '14px' }}>
+              <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Antiguedad</p>
+              <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)' }}>
                 {datosGenerales.antiguedadConstituida ? `${datosGenerales.antiguedadConstituida} anos constituida` : datosGenerales.antiguedadOperativa ? `${datosGenerales.antiguedadOperativa} anos operativa` : '—'}
               </p>
               {datosGenerales.antiguedadConstituida && datosGenerales.antiguedadOperativa && (
-                <p className="text-muted" style={{ fontSize: '10px', marginTop: '4px' }}>{datosGenerales.antiguedadOperativa} anos operativa</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>{datosGenerales.antiguedadOperativa} anos operativa</p>
               )}
             </div>
           </div>
@@ -645,7 +645,7 @@ export default function ReportPage() {
       {/* ═══════════════════════════════════════════════
           BRANDED FOOTER
          ═══════════════════════════════════════════════ */}
-      <div className="w-full bg-navy rounded-2xl text-center" style={{ padding: '40px 32px', marginTop: '4px', position: 'relative', overflow: 'hidden' }}>
+      <div className="w-full bg-navy rounded-2xl text-center" style={{ padding: 'var(--sp-footer)', marginTop: '4px', position: 'relative', overflow: 'hidden' }}>
         {/* Orange accent bar at top of footer */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#d4922e' }} />
 
@@ -655,21 +655,21 @@ export default function ReportPage() {
             src={companyLogo || '/icon-complement.svg'}
             alt="Complement"
             className="mx-auto object-contain"
-            style={{ height: '40px', filter: companyLogo ? 'none' : 'brightness(0) invert(1)' }}
+            style={{ height: 'var(--sz-logo-footer-lg)', filter: companyLogo ? 'none' : 'brightness(0) invert(1)' }}
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         </div>
 
-        <h3 className="font-serif text-white tracking-wider" style={{ fontSize: '14px', marginBottom: '2px', letterSpacing: '3px' }}>COMPLEMENT</h3>
-        <p className="text-white/50 tracking-widest uppercase" style={{ fontSize: '9px', marginBottom: '16px', letterSpacing: '4px' }}>Consulting Group</p>
+        <h3 className="font-serif text-white tracking-wider" style={{ fontSize: 'var(--fs-14)', marginBottom: '2px', letterSpacing: '3px' }}>COMPLEMENT</h3>
+        <p className="text-white/50 tracking-widest uppercase" style={{ fontSize: 'var(--fs-9)', marginBottom: '16px', letterSpacing: '4px' }}>Consulting Group</p>
 
         {/* Orange divider */}
         <div className="mx-auto" style={{ width: '60px', height: '2px', background: '#d4922e', marginBottom: '16px' }} />
 
-        <p className="text-white/50 mx-auto" style={{ fontSize: '10px', marginBottom: '6px', maxWidth: '400px' }}>
+        <p className="text-white/50 mx-auto" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px', maxWidth: '400px' }}>
           Documento confidencial — Uso exclusivo del destinatario
         </p>
-        <p className="text-white/40 mx-auto" style={{ fontSize: '9px', marginBottom: '24px', maxWidth: '400px' }}>
+        <p className="text-white/40 mx-auto" style={{ fontSize: 'var(--fs-9)', marginBottom: '24px', maxWidth: '400px' }}>
           Reporte generado automaticamente. Contacte a nuestro equipo para profundizar en los resultados.
         </p>
 
@@ -677,7 +677,7 @@ export default function ReportPage() {
           <button
             onClick={handleDownloadPdf}
             className="font-semibold hover:opacity-90 transition-all cursor-pointer"
-            style={{ fontSize: '12px', padding: '9px 22px', borderRadius: '10px', background: '#d4922e', color: 'white' }}
+            style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-pill-lg)', borderRadius: '10px', background: '#d4922e', color: 'white' }}
           >
             Descargar PDF
           </button>
@@ -685,7 +685,7 @@ export default function ReportPage() {
             <button
               onClick={() => setView('history')}
               className="bg-white text-navy font-semibold hover:bg-white/90 transition-all cursor-pointer"
-              style={{ fontSize: '12px', padding: '9px 22px', borderRadius: '10px' }}
+              style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-pill-lg)', borderRadius: '10px' }}
             >
               Expedientes
             </button>
@@ -694,14 +694,14 @@ export default function ReportPage() {
               <button
                 onClick={() => setView('result')}
                 className="bg-white text-navy font-semibold hover:bg-white/90 transition-all cursor-pointer"
-                style={{ fontSize: '12px', padding: '9px 22px', borderRadius: '10px' }}
+                style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-pill-lg)', borderRadius: '10px' }}
               >
                 Resultados
               </button>
               <button
                 onClick={() => setView('dashboard')}
                 className="bg-white/10 text-white/80 font-medium border border-white/20 hover:bg-white/20 transition-all cursor-pointer"
-                style={{ fontSize: '12px', padding: '9px 22px', borderRadius: '10px' }}
+                style={{ fontSize: 'var(--fs-12)', padding: 'var(--sp-btn-pill-lg)', borderRadius: '10px' }}
               >
                 Mis Encuestas
               </button>
@@ -721,8 +721,8 @@ function Section({ title, number, children }: { title: string; number: string; c
   return (
     <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 animate-fade-up" style={{ padding: '36px 32px', marginBottom: '24px' }}>
       <div className="flex items-center" style={{ gap: '12px', marginBottom: '28px', paddingBottom: '16px', borderBottom: '2px solid #d4922e33' }}>
-        <span className="font-bold text-white rounded-full flex items-center justify-center shrink-0" style={{ fontSize: '11px', width: '32px', height: '32px', background: '#d4922e' }}>{number}</span>
-        <h2 className="font-serif text-navy" style={{ fontSize: '16px' }}>{title}</h2>
+        <span className="font-bold text-white rounded-full flex items-center justify-center shrink-0" style={{ fontSize: 'var(--fs-11)', width: '32px', height: '32px', background: '#d4922e' }}>{number}</span>
+        <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-16)' }}>{title}</h2>
       </div>
       {children}
     </div>
@@ -732,8 +732,8 @@ function Section({ title, number, children }: { title: string; number: string; c
 function MetricBox({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className={`rounded-xl text-center ${highlight ? 'bg-accent/10 border border-accent/20' : 'bg-pale border border-border/30'}`} style={{ padding: '18px 12px' }}>
-      <p className="text-muted font-medium uppercase tracking-wider" style={{ fontSize: '9px', marginBottom: '6px' }}>{label}</p>
-      <p className={`font-semibold ${highlight ? 'text-accent' : 'text-ink'}`} style={{ fontSize: '13px' }}>{value}</p>
+      <p className="text-muted font-medium uppercase tracking-wider" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{label}</p>
+      <p className={`font-semibold ${highlight ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'var(--fs-13)' }}>{value}</p>
     </div>
   );
 }
@@ -743,8 +743,8 @@ function ContribBar({ label, value, max, color }: { label: string; value: number
   return (
     <div>
       <div className="flex items-center justify-between" style={{ marginBottom: '3px' }}>
-        <span className="text-muted font-medium" style={{ fontSize: '11px' }}>{label}</span>
-        <span className="font-bold text-navy" style={{ fontSize: '11px' }}>{value}/{max}</span>
+        <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)' }}>{label}</span>
+        <span className="font-bold text-navy" style={{ fontSize: 'var(--fs-11)' }}>{value}/{max}</span>
       </div>
       <div className="rounded-full" style={{ width: '100%', height: '6px', background: '#e2e8f0' }}>
         <div className={`rounded-full h-full ${color}`} style={{ width: `${pct}%`, transition: 'width 0.5s ease' }} />
@@ -755,9 +755,9 @@ function ContribBar({ label, value, max, color }: { label: string; value: number
 
 function DetailRow({ label, value, alt }: { label: string; value: string; alt?: boolean }) {
   return (
-    <div className={`flex items-center ${alt ? 'bg-pale' : 'bg-white'}`} style={{ padding: '10px 16px', gap: '12px' }}>
-      <span className="font-bold text-navy shrink-0" style={{ fontSize: '12px', minWidth: '160px' }}>{label}</span>
-      <span className="text-ink" style={{ fontSize: '12px' }}>{value}</span>
+    <div className={`flex items-center ${alt ? 'bg-pale' : 'bg-white'}`} style={{ padding: 'var(--sp-btn-b)', gap: '12px' }}>
+      <span className="font-bold text-navy shrink-0" style={{ fontSize: 'var(--fs-12)', minWidth: '160px' }}>{label}</span>
+      <span className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{value}</span>
     </div>
   );
 }

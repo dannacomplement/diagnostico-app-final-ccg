@@ -171,7 +171,7 @@ export function exportTechSurveyToPdf(
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...INK);
-    doc.text(`${area.icon} ${area.name}`, margin, y + 3);
+    doc.text(area.name, margin, y + 3);
 
     // Score value
     doc.setFont('helvetica', 'bold');

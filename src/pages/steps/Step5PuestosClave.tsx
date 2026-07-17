@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Building, Briefcase, BarChart3, Settings, Users, ClipboardList, X } from 'lucide-react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import type { CalificadoStatus, DGEvaluation } from '../../lib/types';
 
@@ -68,12 +70,12 @@ function dgScoreLabel(score: number): string {
   return 'Bajo';
 }
 
-const AREA_ICONS: Record<string, string> = {
-  'Dirección General': '🏢',
-  'Administración y Finanzas': '💼',
-  'Comercial y Ventas': '📊',
-  'Operaciones': '⚙️',
-  'Capital Humano': '👥',
+const AREA_ICONS: Record<string, LucideIcon> = {
+  'Dirección General': Building,
+  'Administración y Finanzas': Briefcase,
+  'Comercial y Ventas': BarChart3,
+  'Operaciones': Settings,
+  'Capital Humano': Users,
 };
 
 function DGEvaluationPanel({ evaluation, onChange }: {
@@ -90,12 +92,12 @@ function DGEvaluationPanel({ evaluation, onChange }: {
   ) {
     return (
       <div className="flex items-center" style={{ gap: '8px', marginBottom: '10px' }}>
-        <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '200px' }}>{label}</span>
+        <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '200px' }}>{label}</span>
         <select
           value={current ?? ''}
           onChange={e => onSelect(Number(e.target.value))}
           className="input-field-sm"
-          style={{ flex: 1, fontSize: '11px' }}
+          style={{ flex: 1, fontSize: 'var(--fs-11)' }}
         >
           <option value="">Seleccionar...</option>
           {options.map(opt => (
@@ -109,8 +111,8 @@ function DGEvaluationPanel({ evaluation, onChange }: {
   return (
     <div className="border-t border-accent/20" style={{ marginTop: '16px', paddingTop: '16px' }}>
       <div className="flex items-center" style={{ gap: '8px', marginBottom: '14px' }}>
-        <span style={{ fontSize: '14px' }}>📋</span>
-        <h4 className="font-bold text-navy" style={{ fontSize: '12px' }}>Evaluación del Director General</h4>
+        <ClipboardList className="text-navy" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} />
+        <h4 className="font-bold text-navy" style={{ fontSize: 'var(--fs-12)' }}>Evaluación del Director General</h4>
       </div>
 
       {renderSelect(
@@ -133,14 +135,14 @@ function DGEvaluationPanel({ evaluation, onChange }: {
       )}
 
       {score != null && (
-        <div className="rounded-xl bg-pale border border-border/50 flex items-center justify-between" style={{ padding: '12px 16px', marginTop: '4px' }}>
-          <span className="font-medium text-ink" style={{ fontSize: '12px' }}>Calificación Director General</span>
+        <div className="rounded-xl bg-pale border border-border/50 flex items-center justify-between" style={{ padding: 'var(--sp-btn-c)', marginTop: '4px' }}>
+          <span className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>Calificación Director General</span>
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className={`font-bold ${dgScoreColor(score)}`} style={{ fontSize: '18px' }}>
+            <span className={`font-bold ${dgScoreColor(score)}`} style={{ fontSize: 'var(--fs-18)' }}>
               {score.toFixed(1)}
             </span>
-            <span className="text-muted" style={{ fontSize: '11px' }}>/ 10</span>
-            <span className={`font-semibold ${dgScoreColor(score)} rounded-md`} style={{ fontSize: '9px', padding: '2px 6px', background: 'var(--color-light)' }}>
+            <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>/ 10</span>
+            <span className={`font-semibold ${dgScoreColor(score)} rounded-md`} style={{ fontSize: 'var(--fs-9)', padding: '2px 6px', background: 'var(--color-light)' }}>
               {dgScoreLabel(score)}
             </span>
           </div>
@@ -172,22 +174,25 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
       {/* Header */}
       <div className="flex items-center justify-between" style={{ marginBottom: '18px' }}>
         <div className="flex items-center" style={{ gap: '10px' }}>
-          <span style={{ fontSize: '18px' }}>{AREA_ICONS[g.area] || '📋'}</span>
-          <h3 className="font-bold text-navy" style={{ fontSize: '15px' }}>{g.area}</h3>
+          {(() => {
+            const AreaIcon = AREA_ICONS[g.area] || ClipboardList;
+            return <AreaIcon className="text-navy" style={{ width: 'var(--fs-18)', height: 'var(--fs-18)' }} />;
+          })()}
+          <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-15)' }}>{g.area}</h3>
         </div>
         <button
           type="button"
           onClick={onClose}
           className="text-muted hover:text-ink hover:bg-pale transition-all cursor-pointer rounded-lg"
-          style={{ padding: '4px 8px', fontSize: '18px', lineHeight: 1 }}
+          style={{ padding: '4px 8px', lineHeight: 1 }}
         >
-          ✕
+          <X style={{ width: 'var(--fs-16)', height: 'var(--fs-16)' }} />
         </button>
       </div>
 
       {/* Cubierto? */}
       <div className="flex items-center" style={{ gap: '10px', marginBottom: '16px' }}>
-        <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Puesto cubierto?</span>
+        <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Puesto cubierto?</span>
         <div className="flex" style={{ gap: '4px' }}>
           <button
             type="button"
@@ -195,7 +200,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
             className={`font-semibold transition-all cursor-pointer
               ${g.cubierto === true && !g.soyYo ? 'bg-success text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
             `}
-            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '12px' }}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
           >
             Si
           </button>
@@ -205,7 +210,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
             className={`font-semibold transition-all cursor-pointer
               ${g.soyYo ? 'bg-accent text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
             `}
-            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '12px' }}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
           >
             Soy Yo
           </button>
@@ -215,7 +220,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
             className={`font-semibold transition-all cursor-pointer
               ${g.cubierto === false ? 'bg-error/80 text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
             `}
-            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: '12px' }}
+            style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-12)' }}
           >
             No
           </button>
@@ -227,7 +232,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
         <div className="border-t border-border/40" style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Nombre */}
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Nombre:</span>
+            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Nombre:</span>
             <input
               type="text"
               value={g.nombre ?? ''}
@@ -240,7 +245,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
 
           {/* Antigüedad */}
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Antigüedad:</span>
+            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Antigüedad:</span>
             <input
               type="number"
               value={g.antiguedad}
@@ -250,17 +255,17 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
               className="input-field-sm"
               style={{ maxWidth: '80px' }}
             />
-            <span className="text-muted font-medium" style={{ fontSize: '11px' }}>años</span>
+            <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)' }}>años</span>
           </div>
 
           {/* Rango de sueldo */}
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Sueldo mensual:</span>
+            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Sueldo mensual:</span>
             <select
               value={g.rangoSueldo || ''}
               onChange={e => setGerencia(i, { rangoSueldo: e.target.value })}
               className="input-field-sm"
-              style={{ maxWidth: '160px', fontSize: '11px' }}
+              style={{ maxWidth: '160px', fontSize: 'var(--fs-11)' }}
             >
               <option value="">Seleccionar...</option>
               {SUELDO_RANGES.map(r => (
@@ -271,7 +276,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
 
           {/* Es familiar? */}
           <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Es familiar?</span>
+            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Es familiar?</span>
             <div className="flex" style={{ gap: '4px' }}>
               <button
                 type="button"
@@ -279,7 +284,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
                 className={`font-semibold transition-all cursor-pointer
                   ${g.esFamiliar === true ? 'bg-accent text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
                 `}
-                style={{ padding: '4px 14px', borderRadius: '8px', fontSize: '11px' }}
+                style={{ padding: '4px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
               >
                 Si
               </button>
@@ -289,7 +294,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
                 className={`font-semibold transition-all cursor-pointer
                   ${g.esFamiliar === false ? 'bg-navy/70 text-white' : 'bg-pale text-muted hover:bg-light border border-border'}
                 `}
-                style={{ padding: '4px 14px', borderRadius: '8px', fontSize: '11px' }}
+                style={{ padding: '4px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
               >
                 No
               </button>
@@ -298,7 +303,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
 
           {/* Calificado? */}
           <div className="flex items-center" style={{ gap: '10px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: '11px', width: '110px' }}>Calificado?</span>
+            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Calificado?</span>
             <div className="flex" style={{ gap: '4px' }}>
               {CALIFICADO_OPTIONS.map(opt => (
                 <button
@@ -308,7 +313,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
                   className={`font-semibold transition-all cursor-pointer
                     ${g.calificado === opt.value ? opt.color : 'bg-pale text-muted hover:bg-light border border-border'}
                   `}
-                  style={{ padding: '4px 12px', borderRadius: '8px', fontSize: '11px' }}
+                  style={{ padding: '4px 12px', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
                 >
                   {opt.label}
                 </button>
@@ -360,11 +365,11 @@ export default function Step5Gerencias() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Gerencias</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '8px' }}>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Gerencias</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '8px' }}>
         Toque cada puesto en la pirámide para completar su información.
       </p>
-      <p className="text-muted" style={{ fontSize: '11px', marginBottom: '32px', fontStyle: 'italic' }}>
+      <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '32px', fontStyle: 'italic' }}>
         Rangos salariales en miles de pesos mensuales.
       </p>
 
@@ -387,30 +392,30 @@ export default function Step5Gerencias() {
             }`}
             style={{ padding: '10px 24px', minWidth: '190px' }}
           >
-            <span style={{ fontSize: '16px' }}>🏢</span>
-            <p className="font-bold text-navy" style={{ fontSize: '11px', marginTop: '3px' }}>
+            <Building className="mx-auto text-navy" style={{ width: 'var(--fs-16)', height: 'var(--fs-16)' }} />
+            <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-11)', marginTop: '3px' }}>
               {dg.area}
             </p>
             <p
               className={`font-semibold ${dg.cubierto === true ? dg.soyYo ? 'text-accent' : 'text-success' : dg.cubierto === false ? 'text-error' : 'text-muted'}`}
-              style={{ fontSize: '9px', marginTop: '1px' }}
+              style={{ fontSize: 'var(--fs-9)', marginTop: '1px' }}
             >
               {dg.cubierto === true ? dg.soyYo ? 'Soy Yo' : 'Cubierto' : dg.cubierto === false ? 'No cubierto' : 'Sin definir'}
             </p>
             {(dg.nombre || (dg.soyYo && respondentName)) && (
-              <p className="text-accent/70 font-medium truncate" style={{ fontSize: '8px', marginTop: '2px', maxWidth: '160px' }}>
+              <p className="text-accent/70 font-medium truncate" style={{ fontSize: 'var(--fs-8)', marginTop: '2px', maxWidth: '160px' }}>
                 {dg.nombre || respondentName}
               </p>
             )}
             {nodeSubtext(dg) && (
-              <p className="text-muted" style={{ fontSize: '8px', marginTop: '2px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-8)', marginTop: '2px' }}>
                 {nodeSubtext(dg)}
               </p>
             )}
             {dg.dgEvaluation && (() => {
               const s = calcDGScore(dg.dgEvaluation);
               return s != null ? (
-                <p className={`font-bold ${dgScoreColor(s)}`} style={{ fontSize: '9px', marginTop: '3px' }}>
+                <p className={`font-bold ${dgScoreColor(s)}`} style={{ fontSize: 'var(--fs-9)', marginTop: '3px' }}>
                   Calif. DG: {s.toFixed(1)}/10
                 </p>
               ) : null;
@@ -472,23 +477,26 @@ export default function Step5Gerencias() {
                 }`}
                 style={{ padding: '8px 6px' }}
               >
-                <span style={{ fontSize: '13px' }}>{AREA_ICONS[g.area] || '📋'}</span>
-                <p className="font-semibold text-navy" style={{ fontSize: '9px', marginTop: '3px', lineHeight: '1.3' }}>
+                {(() => {
+                  const AreaIcon = AREA_ICONS[g.area] || ClipboardList;
+                  return <AreaIcon className="mx-auto text-navy" style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} />;
+                })()}
+                <p className="font-semibold text-navy" style={{ fontSize: 'var(--fs-9)', marginTop: '3px', lineHeight: '1.3' }}>
                   {g.area}
                 </p>
                 <p
                   className={`font-semibold ${g.cubierto === true ? g.soyYo ? 'text-accent' : 'text-success' : g.cubierto === false ? 'text-error' : 'text-muted'}`}
-                  style={{ fontSize: '8px', marginTop: '1px' }}
+                  style={{ fontSize: 'var(--fs-8)', marginTop: '1px' }}
                 >
                   {g.cubierto === true ? g.soyYo ? 'Soy Yo' : 'Cubierto' : g.cubierto === false ? 'No cubierto' : 'Sin definir'}
                 </p>
                 {(g.nombre || (g.soyYo && respondentName)) && (
-                  <p className="text-accent/70 font-medium truncate" style={{ fontSize: '7px', marginTop: '2px', maxWidth: '100px' }}>
+                  <p className="text-accent/70 font-medium truncate" style={{ fontSize: 'var(--fs-7)', marginTop: '2px', maxWidth: '100px' }}>
                     {g.nombre || respondentName}
                   </p>
                 )}
                 {nodeSubtext(g) && (
-                  <p className="text-muted" style={{ fontSize: '7px', marginTop: '2px' }}>
+                  <p className="text-muted" style={{ fontSize: 'var(--fs-7)', marginTop: '2px' }}>
                     {nodeSubtext(g)}
                   </p>
                 )}
@@ -511,7 +519,7 @@ export default function Step5Gerencias() {
       {/* Sueldo mas alto */}
       <div className="border-t border-border/50" style={{ marginTop: '28px', paddingTop: '24px' }}>
         <div className="flex items-center flex-wrap" style={{ gap: '10px' }}>
-          <label className="font-medium text-ink shrink-0" style={{ fontSize: '12px' }}>
+          <label className="font-medium text-ink shrink-0" style={{ fontSize: 'var(--fs-12)' }}>
             ¿Cuál gerencia tiene el sueldo más alto?
           </label>
           <select
@@ -528,7 +536,7 @@ export default function Step5Gerencias() {
               }
             }}
             className="input-field"
-            style={{ maxWidth: '240px', fontSize: '12px' }}
+            style={{ maxWidth: '240px', fontSize: 'var(--fs-12)' }}
           >
             <option value="">Seleccionar...</option>
             {gerencias.filter(g => g.cubierto && g.rangoSueldo).map(g => (
@@ -542,7 +550,7 @@ export default function Step5Gerencias() {
           const match = gerencias.find(g => g.area === situacion.sueldoMasAlto);
           if (match?.rangoSueldo) {
             return (
-              <p className="text-accent font-semibold" style={{ fontSize: '12px', marginTop: '8px' }}>
+              <p className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)', marginTop: '8px' }}>
                 Sueldo: ${match.rangoSueldo}
               </p>
             );

@@ -1,14 +1,16 @@
+import type { ReactNode } from 'react';
+import { Check, X, FlaskConical, Circle, Gem } from 'lucide-react';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useTechSurveyStore } from '../store/techSurveyStore';
 import { useAuthStore } from '../store/authStore';
 import { computeTechMaturityScore } from '../config/techQuestions';
 import type { TechMaturityLevel } from '../lib/types';
 
-const LEVEL_CONFIG: Record<TechMaturityLevel, { label: string; emoji: string; className: string }> = {
-  basico: { label: 'Básico', emoji: '🔴', className: 'bg-error/10 border-error/20 text-error' },
-  intermedio: { label: 'Intermedio', emoji: '🟡', className: 'bg-warn/10 border-warn/20 text-warn' },
-  avanzado: { label: 'Avanzado', emoji: '🟢', className: 'bg-success/10 border-success/20 text-success' },
-  lider_digital: { label: 'Líder Digital', emoji: '💎', className: 'bg-accent/10 border-accent/20 text-accent' },
+const LEVEL_CONFIG: Record<TechMaturityLevel, { label: string; icon: typeof Circle; iconClassName: string; className: string }> = {
+  basico: { label: 'Básico', icon: Circle, iconClassName: 'fill-error text-error', className: 'bg-error/10 border-error/20 text-error' },
+  intermedio: { label: 'Intermedio', icon: Circle, iconClassName: 'fill-warn text-warn', className: 'bg-warn/10 border-warn/20 text-warn' },
+  avanzado: { label: 'Avanzado', icon: Circle, iconClassName: 'fill-success text-success', className: 'bg-success/10 border-success/20 text-success' },
+  lider_digital: { label: 'Líder Digital', icon: Gem, iconClassName: 'text-accent', className: 'bg-accent/10 border-accent/20 text-accent' },
 };
 
 export default function TechResultPage() {
@@ -38,24 +40,26 @@ export default function TechResultPage() {
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '720px', margin: '0 auto', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ width: '100%', maxWidth: '880px', margin: '0 auto', padding: 'var(--sp-pagepad)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
       {/* Test mode banner */}
       {testMode && (
         <div className="w-full bg-warn/10 border border-warn/30 rounded-xl text-center" style={{ padding: '14px 20px', marginBottom: '20px' }}>
-          <p className="text-warn font-semibold" style={{ fontSize: '13px' }}>🧪 Modo de prueba — estos datos no se guardaron</p>
+          <p className="text-warn font-semibold flex items-center justify-center" style={{ fontSize: 'var(--fs-13)', gap: '6px' }}>
+            <FlaskConical style={{ width: 'var(--fs-15)', height: 'var(--fs-15)' }} /> Modo de prueba — estos datos no se guardaron
+          </p>
         </div>
       )}
 
       {/* Confirmation card */}
       <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 text-center animate-fade-up" style={{ padding: '48px 36px', marginBottom: '28px' }}>
         <div className="inline-flex items-center justify-center rounded-full bg-success/10" style={{ width: '56px', height: '56px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '24px' }}>✓</span>
+          <Check className="text-success" style={{ width: '24px', height: '24px' }} />
         </div>
-        <h1 className="font-serif text-navy" style={{ fontSize: '22px', marginBottom: '10px' }}>
+        <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '10px' }}>
           Encuesta completada
         </h1>
-        <p className="text-muted leading-relaxed mx-auto" style={{ fontSize: '13px', maxWidth: '440px' }}>
+        <p className="text-muted leading-relaxed mx-auto" style={{ fontSize: 'var(--fs-13)', maxWidth: '440px' }}>
           {testMode
             ? 'Esta fue una prueba de la Prueba de Tecnología. Los datos no se guardaron.'
             : 'La Prueba de Tecnología ha sido registrada exitosamente. A continuación se muestra un resumen de los resultados.'
@@ -65,33 +69,33 @@ export default function TechResultPage() {
 
       {/* Summary card */}
       <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 animate-fade-up" style={{ padding: '40px 36px', marginBottom: '28px' }}>
-        <h2 className="font-serif text-navy" style={{ fontSize: '18px', marginBottom: '28px' }}>Resumen</h2>
+        <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '28px' }}>Resumen</h2>
 
         {/* Score + Level */}
         <div className="flex items-center justify-center" style={{ gap: '24px', marginBottom: '28px' }}>
           <div className="text-center">
-            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '6px' }}>Score</p>
-            <p className="font-bold text-navy" style={{ fontSize: '42px', lineHeight: 1 }}>{score}</p>
-            <p className="text-muted" style={{ fontSize: '10px' }}>de 100</p>
+            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Score</p>
+            <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-42)', lineHeight: 1 }}>{score}</p>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>de 100</p>
           </div>
           <div className={`rounded-xl border text-center ${levelCfg.className}`} style={{ padding: '16px 24px' }}>
-            <span style={{ fontSize: '24px' }}>{levelCfg.emoji}</span>
-            <p className="font-bold" style={{ fontSize: '14px', marginTop: '4px' }}>{levelCfg.label}</p>
+            <levelCfg.icon className={`mx-auto ${levelCfg.iconClassName}`} style={{ width: '24px', height: '24px' }} />
+            <p className="font-bold" style={{ fontSize: 'var(--fs-14)', marginTop: '4px' }}>{levelCfg.label}</p>
           </div>
         </div>
 
         {/* Company name */}
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px' }}>
           <MetricBox label="Empresa" value={companyName || '—'} />
-          <MetricBox label="Tiene ERP" value={tools.tieneERP ? '✓' : '✗'} highlight={tools.tieneERP} />
-          <MetricBox label="Usa IA" value={aiAdoption.usaIAEnEmpresa ? '✓' : '✗'} highlight={aiAdoption.usaIAEnEmpresa} />
-          <MetricBox label="Nube" value={security.usaNube ? '✓' : '✗'} highlight={security.usaNube} />
+          <MetricBox label="Tiene ERP" value={boolIcon(tools.tieneERP)} highlight={tools.tieneERP} />
+          <MetricBox label="Usa IA" value={boolIcon(aiAdoption.usaIAEnEmpresa)} highlight={aiAdoption.usaIAEnEmpresa} />
+          <MetricBox label="Nube" value={boolIcon(security.usaNube)} highlight={security.usaNube} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px', marginTop: '14px' }}>
-          <MetricBox label="KPIs" value={dataAnalytics.tieneKPIs ? '✓' : '✗'} highlight={dataAnalytics.tieneKPIs} />
-          <MetricBox label="Website" value={digitalPresence.tieneWebsite ? '✓' : '✗'} highlight={digitalPresence.tieneWebsite} />
-          <MetricBox label="Automatización" value={automation.procesosAutomatizados !== 'ninguno' ? '✓' : '✗'} highlight={automation.procesosAutomatizados !== 'ninguno'} />
-          <MetricBox label="Equipo TI" value={useTechSurveyStore.getState().culture.equipoTI ? '✓' : '✗'} highlight={useTechSurveyStore.getState().culture.equipoTI} />
+          <MetricBox label="KPIs" value={boolIcon(dataAnalytics.tieneKPIs)} highlight={dataAnalytics.tieneKPIs} />
+          <MetricBox label="Website" value={boolIcon(digitalPresence.tieneWebsite)} highlight={digitalPresence.tieneWebsite} />
+          <MetricBox label="Automatización" value={boolIcon(automation.procesosAutomatizados !== 'ninguno')} highlight={automation.procesosAutomatizados !== 'ninguno'} />
+          <MetricBox label="Equipo TI" value={boolIcon(useTechSurveyStore.getState().culture.equipoTI)} highlight={useTechSurveyStore.getState().culture.equipoTI} />
         </div>
       </div>
 
@@ -100,7 +104,7 @@ export default function TechResultPage() {
         <button
           onClick={() => setView('tech_wizard')}
           className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-          style={{ fontSize: '13px', padding: '12px 32px', borderRadius: '12px' }}
+          style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
         >
           ← Editar respuestas
         </button>
@@ -108,7 +112,7 @@ export default function TechResultPage() {
           <button
             onClick={handleMasterNav}
             className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-            style={{ fontSize: '13px', padding: '12px 32px', borderRadius: '12px' }}
+            style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
           >
             {testMode ? '← Página Principal' : 'Página Principal'}
           </button>
@@ -116,7 +120,7 @@ export default function TechResultPage() {
           <button
             onClick={() => setView('dashboard')}
             className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-            style={{ fontSize: '13px', padding: '12px 32px', borderRadius: '12px' }}
+            style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
           >
             Ver mis encuestas
           </button>
@@ -126,14 +130,20 @@ export default function TechResultPage() {
   );
 }
 
-function MetricBox({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function boolIcon(value: boolean): ReactNode {
+  return value
+    ? <Check className="text-success" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)', display: 'inline' }} />
+    : <X className="text-error" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)', display: 'inline' }} />;
+}
+
+function MetricBox({ label, value, highlight }: { label: string; value: ReactNode; highlight?: boolean }) {
   return (
     <div
       className={`rounded-xl border text-center ${highlight ? 'border-accent/30 bg-accent/5' : 'border-border/60 bg-pale'}`}
       style={{ padding: '16px 12px' }}
     >
-      <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: '9px', marginBottom: '6px' }}>{label}</p>
-      <p className={`font-bold ${highlight ? 'text-accent' : 'text-ink'}`} style={{ fontSize: '13px' }}>{value}</p>
+      <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{label}</p>
+      <p className={`font-bold ${highlight ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'var(--fs-13)' }}>{value}</p>
     </div>
   );
 }

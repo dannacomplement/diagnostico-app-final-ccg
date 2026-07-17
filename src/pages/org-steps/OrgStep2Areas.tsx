@@ -1,12 +1,14 @@
+import type { LucideIcon } from 'lucide-react';
+import { Building, Briefcase, BarChart3, Settings, Users, ClipboardList, X } from 'lucide-react';
 import { useOrgSurveyStore } from '../../store/orgSurveyStore';
 
-function getAreaIcon(name: string): string {
-  if (name === 'Dirección General') return '🏢';
-  if (name === 'Administración y Finanzas') return '💼';
-  if (name === 'Comercial y Ventas') return '📊';
-  if (name === 'Operaciones') return '⚙️';
-  if (name === 'Capital Humano') return '👥';
-  return '📋';
+function getAreaIcon(name: string): LucideIcon {
+  if (name === 'Dirección General') return Building;
+  if (name === 'Administración y Finanzas') return Briefcase;
+  if (name === 'Comercial y Ventas') return BarChart3;
+  if (name === 'Operaciones') return Settings;
+  if (name === 'Capital Humano') return Users;
+  return ClipboardList;
 }
 
 export default function OrgStep2Areas() {
@@ -22,13 +24,15 @@ export default function OrgStep2Areas() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Detalle por Área</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '36px' }}>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Detalle por Área</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '36px' }}>
         Para cada área de la empresa, indique el número de colaboradores, sueldo promedio y si cuenta con un líder formal.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {areas.map((area, i) => (
+        {areas.map((area, i) => {
+          const AreaIcon = getAreaIcon(area.nombre);
+          return (
           <div
             key={i}
             className="rounded-xl border border-border bg-pale"
@@ -37,7 +41,7 @@ export default function OrgStep2Areas() {
             {/* Header */}
             <div className="flex items-center justify-between" style={{ marginBottom: '16px' }}>
               <div className="flex items-center" style={{ gap: '10px' }}>
-                <span style={{ fontSize: '16px' }}>{getAreaIcon(area.nombre)}</span>
+                <AreaIcon className="text-navy" style={{ width: 'var(--fs-16)', height: 'var(--fs-16)' }} />
                 {area.isCustom ? (
                   <input
                     type="text"
@@ -48,12 +52,12 @@ export default function OrgStep2Areas() {
                     style={{ maxWidth: '200px' }}
                   />
                 ) : (
-                  <h3 className="font-semibold text-ink" style={{ fontSize: '13px' }}>{area.nombre}</h3>
+                  <h3 className="font-semibold text-ink" style={{ fontSize: 'var(--fs-13)' }}>{area.nombre}</h3>
                 )}
               </div>
               <div className="flex items-center" style={{ gap: '8px' }}>
                 {/* Líder toggle */}
-                <span className="text-muted font-medium" style={{ fontSize: '10px' }}>¿Líder formal?</span>
+                <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-10)' }}>¿Líder formal?</span>
                 <div className="flex" style={{ gap: '4px' }}>
                   <button
                     type="button"
@@ -61,7 +65,7 @@ export default function OrgStep2Areas() {
                     className={`font-semibold transition-all cursor-pointer ${
                       area.tieneLider ? 'bg-success text-white' : 'bg-white text-muted hover:bg-light border border-border'
                     }`}
-                    style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '10px' }}
+                    style={{ padding: '4px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}
                   >
                     Sí
                   </button>
@@ -71,7 +75,7 @@ export default function OrgStep2Areas() {
                     className={`font-semibold transition-all cursor-pointer ${
                       !area.tieneLider ? 'bg-error/80 text-white' : 'bg-white text-muted hover:bg-light border border-border'
                     }`}
-                    style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '10px' }}
+                    style={{ padding: '4px 10px', borderRadius: '6px', fontSize: 'var(--fs-10)' }}
                   >
                     No
                   </button>
@@ -81,10 +85,10 @@ export default function OrgStep2Areas() {
                     type="button"
                     onClick={() => removeArea(i)}
                     className="text-muted hover:text-error transition-colors cursor-pointer"
-                    style={{ fontSize: '14px', padding: '2px 6px' }}
+                    style={{ fontSize: 'var(--fs-14)', padding: '2px 6px' }}
                     title="Eliminar área"
                   >
-                    ✕
+                    <X style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} />
                   </button>
                 )}
               </div>
@@ -93,7 +97,7 @@ export default function OrgStep2Areas() {
             {/* Inputs */}
             <div className="flex flex-wrap items-center" style={{ gap: '16px' }}>
               <div>
-                <label className="block text-muted font-medium" style={{ fontSize: '10px', marginBottom: '4px' }}>
+                <label className="block text-muted font-medium" style={{ fontSize: 'var(--fs-10)', marginBottom: '4px' }}>
                   # Colaboradores
                 </label>
                 <input
@@ -107,11 +111,11 @@ export default function OrgStep2Areas() {
                 />
               </div>
               <div>
-                <label className="block text-muted font-medium" style={{ fontSize: '10px', marginBottom: '4px' }}>
+                <label className="block text-muted font-medium" style={{ fontSize: 'var(--fs-10)', marginBottom: '4px' }}>
                   Sueldo promedio mensual
                 </label>
                 <div className="flex items-center" style={{ gap: '4px' }}>
-                  <span className="text-muted" style={{ fontSize: '12px' }}>$</span>
+                  <span className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>$</span>
                   <input
                     type="number"
                     value={area.sueldoPromedio ?? ''}
@@ -125,29 +129,30 @@ export default function OrgStep2Areas() {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         {/* Add custom area button */}
         <button
           type="button"
           onClick={addCustomArea}
           className="w-full rounded-xl border-2 border-dashed border-accent/30 text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
-          style={{ padding: '14px', fontSize: '12px' }}
+          style={{ padding: '14px', fontSize: 'var(--fs-12)' }}
         >
           + Agregar otra área
         </button>
 
         {/* Totals summary */}
         <div className="rounded-xl bg-navy/5 border border-navy/10" style={{ padding: '16px 20px' }}>
-          <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: '10px', marginBottom: '10px' }}>Resumen</p>
+          <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '10px' }}>Resumen</p>
           <div className="flex" style={{ gap: '24px' }}>
             <div>
-              <p className="text-muted" style={{ fontSize: '10px' }}>Total colaboradores</p>
-              <p className="font-bold text-ink" style={{ fontSize: '16px' }}>{totalColab}</p>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>Total colaboradores</p>
+              <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-16)' }}>{totalColab}</p>
             </div>
             <div>
-              <p className="text-muted" style={{ fontSize: '10px' }}>Nómina mensual estimada</p>
-              <p className="font-bold text-ink" style={{ fontSize: '16px' }}>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>Nómina mensual estimada</p>
+              <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-16)' }}>
                 ${totalNomina.toLocaleString('es-MX')}
               </p>
             </div>

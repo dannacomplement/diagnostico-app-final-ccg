@@ -1,9 +1,10 @@
+import { BarChart3, TrendingUp, Calculator } from 'lucide-react';
 import { useTechSurveyStore } from '../../store/techSurveyStore';
 
 const EXCEL_NIVELES = [
-  { value: 'basico' as const, icon: '📊', label: 'Básico', desc: 'Fórmulas simples' },
-  { value: 'intermedio' as const, icon: '📈', label: 'Intermedio', desc: 'Tablas dinámicas' },
-  { value: 'avanzado' as const, icon: '🧮', label: 'Avanzado', desc: 'Macros y VBA' },
+  { value: 'basico' as const, icon: BarChart3, label: 'Básico', desc: 'Fórmulas simples' },
+  { value: 'intermedio' as const, icon: TrendingUp, label: 'Intermedio', desc: 'Tablas dinámicas' },
+  { value: 'avanzado' as const, icon: Calculator, label: 'Avanzado', desc: 'Macros y VBA' },
 ];
 
 const ERP_OPTIONS = ['SAP', 'Odoo', 'Oracle', 'NetSuite', 'Microsoft Dynamics', 'Epicor', 'Otro'];
@@ -18,17 +19,17 @@ export default function TechStep1Tools() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>
         Herramientas y Software
       </h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '36px' }}>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '36px' }}>
         Identifiquemos las herramientas tecnológicas que utiliza actualmente su empresa.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* Nombre de la empresa */}
         <div>
-          <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '8px' }}>
+          <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '8px' }}>
             Nombre de la empresa
           </label>
           <input
@@ -37,14 +38,14 @@ export default function TechStep1Tools() {
             onChange={e => setCompanyName(e.target.value)}
             placeholder="Nombre comercial de la empresa"
             className="input-field"
-            style={{ fontSize: '13px' }}
+            style={{ fontSize: 'var(--fs-13)' }}
           />
         </div>
 
         {/* Excel */}
         <div>
-          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px', marginBottom: '12px' }}>
-            <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Utiliza Excel?</span>
+          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)', marginBottom: '12px' }}>
+            <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Utiliza Excel?</span>
             <button
               onClick={() => update({ usaExcel: !tools.usaExcel, excelNivel: !tools.usaExcel ? tools.excelNivel : '' })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${tools.usaExcel ? 'bg-accent' : 'bg-border'}`}
@@ -55,7 +56,7 @@ export default function TechStep1Tools() {
 
           {tools.usaExcel && (
             <div style={{ marginLeft: '8px' }}>
-              <p className="text-muted font-medium" style={{ fontSize: '11px', marginBottom: '8px' }}>Nivel de uso de Excel</p>
+              <p className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)', marginBottom: '8px' }}>Nivel de uso de Excel</p>
               <div className="grid grid-cols-3" style={{ gap: '10px' }}>
                 {EXCEL_NIVELES.map(opt => (
                   <button
@@ -66,9 +67,9 @@ export default function TechStep1Tools() {
                     }`}
                     style={{ padding: '16px 12px' }}
                   >
-                    <span style={{ fontSize: '20px' }}>{opt.icon}</span>
-                    <p className="font-semibold text-ink" style={{ fontSize: '12px', marginTop: '6px' }}>{opt.label}</p>
-                    <p className="text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>{opt.desc}</p>
+                    <opt.icon className="mx-auto text-accent" style={{ width: 'var(--fs-20)', height: 'var(--fs-20)' }} />
+                    <p className="font-semibold text-ink" style={{ fontSize: 'var(--fs-12)', marginTop: '6px' }}>{opt.label}</p>
+                    <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '2px' }}>{opt.desc}</p>
                   </button>
                 ))}
               </div>
@@ -78,8 +79,8 @@ export default function TechStep1Tools() {
 
         {/* ERP */}
         <div>
-          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px', marginBottom: '12px' }}>
-            <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Cuenta con ERP?</span>
+          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)', marginBottom: '12px' }}>
+            <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Cuenta con ERP?</span>
             <button
               onClick={() => update({ tieneERP: !tools.tieneERP, erpNombre: !tools.tieneERP ? tools.erpNombre : '' })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${tools.tieneERP ? 'bg-accent' : 'bg-border'}`}
@@ -90,14 +91,14 @@ export default function TechStep1Tools() {
 
           {tools.tieneERP && (
             <div style={{ marginLeft: '8px' }}>
-              <label className="block text-muted font-medium" style={{ fontSize: '11px', marginBottom: '6px' }}>
+              <label className="block text-muted font-medium" style={{ fontSize: 'var(--fs-11)', marginBottom: '6px' }}>
                 ¿Cuál ERP utiliza?
               </label>
               <select
                 value={tools.erpNombre}
                 onChange={e => update({ erpNombre: e.target.value })}
                 className="input-field"
-                style={{ fontSize: '13px', maxWidth: '280px' }}
+                style={{ fontSize: 'var(--fs-13)', maxWidth: '280px' }}
               >
                 <option value="">Seleccione una opción</option>
                 {ERP_OPTIONS.map(opt => (
@@ -110,8 +111,8 @@ export default function TechStep1Tools() {
 
         {/* CRM */}
         <div>
-          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px', marginBottom: '12px' }}>
-            <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Cuenta con CRM?</span>
+          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)', marginBottom: '12px' }}>
+            <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Cuenta con CRM?</span>
             <button
               onClick={() => update({ tieneCRM: !tools.tieneCRM, crmNombre: !tools.tieneCRM ? tools.crmNombre : '' })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${tools.tieneCRM ? 'bg-accent' : 'bg-border'}`}
@@ -122,14 +123,14 @@ export default function TechStep1Tools() {
 
           {tools.tieneCRM && (
             <div style={{ marginLeft: '8px' }}>
-              <label className="block text-muted font-medium" style={{ fontSize: '11px', marginBottom: '6px' }}>
+              <label className="block text-muted font-medium" style={{ fontSize: 'var(--fs-11)', marginBottom: '6px' }}>
                 ¿Cuál CRM utiliza?
               </label>
               <select
                 value={tools.crmNombre}
                 onChange={e => update({ crmNombre: e.target.value })}
                 className="input-field"
-                style={{ fontSize: '13px', maxWidth: '280px' }}
+                style={{ fontSize: 'var(--fs-13)', maxWidth: '280px' }}
               >
                 <option value="">Seleccione una opción</option>
                 {CRM_OPTIONS.map(opt => (
@@ -142,8 +143,8 @@ export default function TechStep1Tools() {
 
         {/* MRP */}
         <div>
-          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: '14px 18px', marginBottom: '12px' }}>
-            <span className="text-ink font-medium" style={{ fontSize: '13px' }}>¿Cuenta con MRP?</span>
+          <div className="flex items-center justify-between bg-pale/50 rounded-xl border border-border/30" style={{ padding: 'var(--sp-btn-a)', marginBottom: '12px' }}>
+            <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>¿Cuenta con MRP?</span>
             <button
               onClick={() => update({ tieneMRP: !tools.tieneMRP, mrpNombre: !tools.tieneMRP ? tools.mrpNombre : '' })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${tools.tieneMRP ? 'bg-accent' : 'bg-border'}`}
@@ -154,14 +155,14 @@ export default function TechStep1Tools() {
 
           {tools.tieneMRP && (
             <div style={{ marginLeft: '8px' }}>
-              <label className="block text-muted font-medium" style={{ fontSize: '11px', marginBottom: '6px' }}>
+              <label className="block text-muted font-medium" style={{ fontSize: 'var(--fs-11)', marginBottom: '6px' }}>
                 ¿Cuál MRP utiliza?
               </label>
               <select
                 value={tools.mrpNombre}
                 onChange={e => update({ mrpNombre: e.target.value })}
                 className="input-field"
-                style={{ fontSize: '13px', maxWidth: '280px' }}
+                style={{ fontSize: 'var(--fs-13)', maxWidth: '280px' }}
               >
                 <option value="">Seleccione una opción</option>
                 {MRP_OPTIONS.map(opt => (
@@ -174,10 +175,10 @@ export default function TechStep1Tools() {
 
         {/* Otras herramientas */}
         <div>
-          <label className="block font-medium text-ink" style={{ fontSize: '12px', marginBottom: '8px' }}>
+          <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '8px' }}>
             Otras herramientas tecnológicas
           </label>
-          <p className="text-muted" style={{ fontSize: '11px', marginBottom: '8px' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '8px' }}>
             Mencione cualquier otro software o herramienta que utilice (opcional)
           </p>
           <textarea
@@ -186,7 +187,7 @@ export default function TechStep1Tools() {
             placeholder="Ej: Slack, Trello, QuickBooks, Google Workspace..."
             className="input-field"
             rows={3}
-            style={{ fontSize: '13px', resize: 'vertical' }}
+            style={{ fontSize: 'var(--fs-13)', resize: 'vertical' }}
           />
         </div>
       </div>

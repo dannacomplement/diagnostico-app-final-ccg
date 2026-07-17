@@ -39,21 +39,21 @@ export default function Step7AnalisisFamiliar() {
 
   return (
     <div className="card">
-      <h2 className="font-serif text-navy" style={{ fontSize: '17px', marginBottom: '8px' }}>Análisis Familiar</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: '13px', marginBottom: '40px' }}>
+      <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Análisis Familiar</h2>
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '40px' }}>
         Esta sección evalúa aspectos clave de la relación entre familia y empresa. Responda con el mayor detalle posible.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
         {fields.map(field => (
           <div key={field.key}>
-            <label className="block font-semibold text-ink" style={{ fontSize: '12px', marginBottom: '10px' }}>{field.label}</label>
+            <label className="block font-semibold text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>{field.label}</label>
             <textarea
               value={analysis[field.key]}
               onChange={e => update({ [field.key]: e.target.value })}
               placeholder={field.placeholder}
               className="w-full border border-border bg-pale focus:bg-white focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none resize-none transition-all leading-relaxed"
-              style={{ padding: '14px 18px', fontSize: '13px', borderRadius: '12px' }}
+              style={{ padding: 'var(--sp-btn-a)', fontSize: 'var(--fs-13)', borderRadius: '12px' }}
               rows={4}
             />
           </div>
