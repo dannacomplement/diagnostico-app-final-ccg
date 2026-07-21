@@ -194,7 +194,7 @@ export default function LoginPage() {
             src={companyLogo || '/logo-complement.svg'}
             alt="Complement Consulting Group"
             className="mx-auto object-contain"
-            style={{ height: '80px', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))', border: '3px solid red', borderRadius: '8px' }}
+            style={{ height: '80px', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
           />
         </div>
 
