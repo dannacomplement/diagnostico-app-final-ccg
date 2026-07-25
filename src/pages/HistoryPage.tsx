@@ -19,6 +19,7 @@ import { exportOrgSurveyToPdf } from '../lib/exportOrgPdf';
 import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
 import { exportToPptx } from '../lib/exportPptx';
 import { SECTOR_OPTIONS } from '../config/constants';
+import { getServiceArea } from '../config/serviceAreas';
 import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, TechMaturityLevel } from '../lib/types';
 import HistoricalComparison from '../components/ui/HistoricalComparison';
 
@@ -864,15 +865,19 @@ function DiagEjecutivoCard({ diag, onExtenso }: { diag: SavedDiagnostic; onExten
         <div style={{ marginTop: '4px' }}>
           <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Areas de oportunidad principales</p>
           <div className="flex flex-wrap" style={{ gap: '6px' }}>
-            {d.opportunityAreas.slice(0, 4).map(a => (
-              <span key={a.serviceArea.id} className={`border font-medium ${
-                a.priority === 'alta' ? 'border-error/30 bg-error/5 text-error' :
-                a.priority === 'media' ? 'border-warn/30 bg-warn/5 text-warn' :
-                'border-mid/30 bg-mid/5 text-mid'
-              }`} style={{ fontSize: 'var(--fs-10)', padding: '3px 10px', borderRadius: '6px' }}>
-                <a.serviceArea.icon style={{ display: 'inline', width: 'var(--fs-13)', height: 'var(--fs-13)', verticalAlign: '-2px', marginRight: '4px' }} /> {a.serviceArea.name}
-              </span>
-            ))}
+            {d.opportunityAreas.slice(0, 4).map(a => {
+              const area = getServiceArea(a.serviceArea.id);
+              if (!area) return null;
+              return (
+                <span key={area.id} className={`border font-medium ${
+                  a.priority === 'alta' ? 'border-error/30 bg-error/5 text-error' :
+                  a.priority === 'media' ? 'border-warn/30 bg-warn/5 text-warn' :
+                  'border-mid/30 bg-mid/5 text-mid'
+                }`} style={{ fontSize: 'var(--fs-10)', padding: '3px 10px', borderRadius: '6px' }}>
+                  <area.icon style={{ display: 'inline', width: 'var(--fs-13)', height: 'var(--fs-13)', verticalAlign: '-2px', marginRight: '4px' }} /> {area.name}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
