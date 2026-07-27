@@ -120,27 +120,25 @@ export function calculateUrgency(selection: UrgencySelection): UrgencyLevel {
   }
 }
 
-function evaluateSingleMargin(value: number | null, benchmark: number, tolerancia: number, criticoUmbral: number): MarginLevel {
+function evaluateSingleMargin(value: number | null, benchmark: number): MarginLevel {
   if (value === null) return 'en_rango';
-  if (value > benchmark + tolerancia) return 'arriba_industria';
-  if (value >= benchmark - tolerancia) return 'en_rango';
-  if (value < benchmark - criticoUmbral || (value < 0 && benchmark > 0)) return 'critico';
-  return 'debajo_industria';
+  if (value >= benchmark) return 'en_rango';
+  return 'critico';
 }
 
 export function evaluateMargins(marginData: MarginData, benchmark: IndustryBenchmark): MarginEvaluation {
   return {
     margenBruto: {
       value: marginData.margenBruto,
-      level: evaluateSingleMargin(marginData.margenBruto, benchmark.margenBruto, benchmark.tolerancia, benchmark.criticoUmbral),
+      level: evaluateSingleMargin(marginData.margenBruto, benchmark.margenBruto),
     },
     margenOperativo: {
       value: marginData.margenOperativo,
-      level: evaluateSingleMargin(marginData.margenOperativo, benchmark.margenOperativo, benchmark.tolerancia, benchmark.criticoUmbral),
+      level: evaluateSingleMargin(marginData.margenOperativo, benchmark.margenOperativo),
     },
     margenNeto: {
       value: marginData.margenNeto,
-      level: evaluateSingleMargin(marginData.margenNeto, benchmark.margenNeto, benchmark.tolerancia, benchmark.criticoUmbral),
+      level: evaluateSingleMargin(marginData.margenNeto, benchmark.margenNeto),
     },
   };
 }

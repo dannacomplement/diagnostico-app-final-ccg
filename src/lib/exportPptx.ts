@@ -1048,12 +1048,6 @@ function addFinancialsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: st
         slide.addShape('roundRect', { x: barCenter - barWidth, y: barY + 0.03, w: barWidth, h: 0.19, rectRadius: 0.03, fill: { color: ERROR + '60' } });
       }
     }
-
-    // Tolerance info
-    slide.addText(`Tolerancia: ±${bench.tolerancia}%  |  Crítico: -${bench.criticoUmbral}%`, {
-      x: x + 0.2, y: y + cardH - 0.35, w: cardW - 0.4, h: 0.2,
-      fontSize: 6.5, color: MUTED, fontFace: 'Arial', align: 'center',
-    });
   });
 
   // ── Financial health summary ──

@@ -168,8 +168,6 @@ export interface IndustryBenchmark {
   margenBruto: number;
   margenOperativo: number;
   margenNeto: number;
-  tolerancia: number;        // % above/below benchmark to be "en rango"
-  criticoUmbral: number;     // % below benchmark to be "critico"
 }
 
 export type IndustryBenchmarks = Record<Sector, IndustryBenchmark>;

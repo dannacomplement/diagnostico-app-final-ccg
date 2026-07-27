@@ -27,6 +27,8 @@ export const useBenchmarkStore = create<BenchmarkState>()(
     }),
     {
       name: 'ccg_industry_benchmarks',
+      version: 1,
+      migrate: () => ({ benchmarks: { ...DEFAULT_INDUSTRY_BENCHMARKS } as IndustryBenchmarks }),
     }
   )
 );
