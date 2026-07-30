@@ -2007,19 +2007,20 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
     if (permTech) permissions.push('prueba_tecnologia');
     // Auto-generate username from email
     const autoUsername = email.trim().split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || email.trim();
-    const result = await createClientAccount(
-      autoUsername,
-      password.trim(),
-      displayName.trim(),
-      permissions,
-      logoPreview ?? undefined,
-      email.trim(),
-    );
-    setSaving(false);
-    if (result) {
+    try {
+      await createClientAccount(
+        autoUsername,
+        password.trim(),
+        displayName.trim(),
+        permissions,
+        logoPreview ?? undefined,
+        email.trim(),
+      );
+      setSaving(false);
       onCreated();
-    } else {
-      setError('Error al crear la cuenta. Es posible que el usuario ya exista.');
+    } catch (err) {
+      setSaving(false);
+      setError(err instanceof Error ? err.message : 'Error al crear la cuenta.');
     }
   }
 
