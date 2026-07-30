@@ -1,179 +1,93 @@
 import type { LucideIcon } from 'lucide-react';
-import { Monitor, Globe, Settings, BarChart3, Bot, Lock, Brain } from 'lucide-react';
-import type {
-  TechToolsData,
-  TechDigitalPresence,
-  TechAutomation,
-  TechDataAnalytics,
-  TechAIAdoption,
-  TechSecurity,
-  TechCulture,
-  TechMaturityLevel,
-} from '../lib/types';
+import { Handshake, Truck, Users, Calculator, ShieldCheck } from 'lucide-react';
+import type { TechMaturityArea, TechMaturityAnswer, TechMaturityScore } from '../lib/types';
 
-/* ── Area Configuration ──────────────────────────────── */
+/* ── Escala de madurez (1-5), igual para todas las afirmaciones ── */
+
+export interface MaturityLevelInfo {
+  score: TechMaturityScore;
+  label: string;
+  description: string;
+}
+
+export const MATURITY_LEVELS: MaturityLevelInfo[] = [
+  { score: 1, label: 'Manual / Papel', description: 'El proceso se realiza en físico o sin un procedimiento formal estandarizado.' },
+  { score: 2, label: 'Informal / Hojas de Cálculo', description: 'Se utilizan archivos individuales no centralizados (Excel, Word, correo electrónico).' },
+  { score: 3, label: 'Básico / Parcial', description: 'Se utiliza un software o sistema, pero sus funciones son limitadas o trabaja de forma aislada.' },
+  { score: 4, label: 'Especializado', description: 'Se cuenta con un software dedicado al área, pero no está completamente integrado con otras áreas.' },
+  { score: 5, label: 'Integrado / Automatizado', description: 'Existe un sistema centralizado (ERP/CRM) totalmente integrado, con datos en tiempo real.' },
+];
+
+/* ── Áreas seleccionables (Sistemas y Seguridad NO se selecciona, aplica a todos) ── */
 
 export interface TechAreaConfig {
-  id: string;
+  id: TechMaturityArea;
   name: string;
   icon: LucideIcon;
   description: string;
-  weight: number; // contribution to maturity score (sum = 100)
 }
 
 export const TECH_AREAS: TechAreaConfig[] = [
-  { id: 'tools', name: 'Herramientas y Software', icon: Monitor, description: 'ERP, CRM, Excel y herramientas de gestión', weight: 15 },
-  { id: 'digital_presence', name: 'Presencia Digital', icon: Globe, description: 'Website, e-commerce y redes sociales', weight: 10 },
-  { id: 'automation', name: 'Automatización', icon: Settings, description: 'Automatización de procesos y operaciones', weight: 20 },
-  { id: 'data_analytics', name: 'Datos y Analítica', icon: BarChart3, description: 'Uso de datos, KPIs y business intelligence', weight: 20 },
-  { id: 'ai', name: 'Inteligencia Artificial', icon: Bot, description: 'Adopción de IA y tecnologías emergentes', weight: 15 },
-  { id: 'security', name: 'Ciberseguridad', icon: Lock, description: 'Seguridad, respaldos y nube', weight: 10 },
-  { id: 'culture', name: 'Cultura Digital', icon: Brain, description: 'Mindset digital, capacitación y equipo TI', weight: 10 },
+  { id: 'comercial', name: 'Comercial y Clientes', icon: Handshake, description: 'CRM, seguimiento de clientes, embudo de ventas' },
+  { id: 'operaciones', name: 'Operaciones y Logística', icon: Truck, description: 'Inventario, producción, órdenes de compra' },
+  { id: 'rrhh', name: 'Recursos Humanos', icon: Users, description: 'Expedientes, nómina, capacitación, reclutamiento' },
+  { id: 'admin', name: 'Administración y Finanzas', icon: Calculator, description: 'Facturación, cuentas por cobrar/pagar, conciliación' },
 ];
 
-/* ── Per-area scoring functions (each returns 0-100) ─── */
+export const GENERAL_AREA_LABEL = 'Sistemas y Seguridad';
+export const GENERAL_AREA_ICON: LucideIcon = ShieldCheck;
+export const GENERAL_AREA_DESCRIPTION = 'Integración entre áreas, reportes, respaldos y permisos';
 
-function scoreTools(t: TechToolsData): number {
-  // Max raw = 30 (Excel avanzado=5, ERP=10, CRM=10, MRP=5)
-  let raw = 0;
-  if (t.usaExcel) {
-    switch (t.excelNivel) {
-      case 'basico': raw += 1; break;
-      case 'intermedio': raw += 3; break;
-      case 'avanzado': raw += 5; break;
-    }
-  }
-  if (t.tieneERP) raw += 10;
-  if (t.tieneCRM) raw += 10;
-  if (t.tieneMRP) raw += 5;
-  // Normalize to 0-100
-  return Math.min(100, Math.round((raw / 30) * 100));
+/* ── Afirmaciones por área (del Cuestionario_Madurez_Digital de Alan) ── */
+
+export interface TechStatement {
+  id: string;
+  text: string;
 }
 
-function scoreDigitalPresence(d: TechDigitalPresence): number {
-  // website=20, actualizado=10, ecommerce=20, redes=20, marketing=30
-  let score = 0;
-  if (d.tieneWebsite) score += 20;
-  if (d.websiteActualizado) score += 10;
-  if (d.tieneEcommerce) score += 20;
-  if (d.usaRedesSociales && d.redesActivas.length > 0) score += 20;
-  if (d.marketingDigital) score += 30;
-  return Math.min(100, score);
-}
+export const AREA_STATEMENTS: Record<TechMaturityArea, TechStatement[]> = {
+  comercial: [
+    { id: 'COM-01', text: 'Centralizamos la información de clientes e interacciones en una herramienta digital accesible para el equipo (ej. CRM).' },
+    { id: 'COM-02', text: 'Clasificamos a los clientes según su valor, comportamiento o categoría para personalizar el seguimiento.' },
+    { id: 'COM-03', text: 'Contamos con recordatorios o comunicaciones automáticas programadas (cumpleaños, renovaciones, seguimiento).' },
+    { id: 'COM-04', text: 'El embudo de ventas (funnel) y sus etapas se gestionan y visualizan a través del sistema comercial.' },
+    { id: 'COM-05', text: 'El cierre de ventas se registra en tiempo real e impacta automáticamente a las demás áreas.' },
+  ],
+  operaciones: [
+    { id: 'OPE-01', text: 'La entrada y salida de existencias/inventarios se registran digitalmente en tiempo real.' },
+    { id: 'OPE-02', text: 'Cada venta efectuada descuenta de forma automática el stock disponible de inventario.' },
+    { id: 'OPE-03', text: 'La programación y planificación de actividades, producción o servicios se gestiona desde el sistema.' },
+    { id: 'OPE-04', text: 'Las órdenes de compra a proveedores se generan, aprueban y rastrean dentro del sistema.' },
+    { id: 'OPE-05', text: 'La documentación de entrega (despachos, guías, acuses) e incidencias se gestionan digitalmente.' },
+  ],
+  rrhh: [
+    { id: 'RRHH-01', text: 'La información del personal (expedientes, contratos, datos clave) está centralizada en un sistema.' },
+    { id: 'RRHH-02', text: 'El cálculo y procesamiento de la nómina se ejecuta mediante un software especializado de RRHH.' },
+    { id: 'RRHH-03', text: 'El plan de capacitación, formación y evaluación del desempeño se administra digitalmente.' },
+    { id: 'RRHH-04', text: 'Existen canales o plataformas digitales oficiales para comunicados institucionales y organizacionales.' },
+    { id: 'RRHH-05', text: 'Las vacantes, recepción de candidatos y etapas de reclutamiento/selección se gestionan en una plataforma.' },
+  ],
+  admin: [
+    { id: 'ADM-01', text: 'La emisión y recepción de facturas electrónicas se realiza directamente desde el sistema central.' },
+    { id: 'ADM-02', text: 'El seguimiento de cuentas por cobrar y por pagar está automatizado con alertas de vencimiento.' },
+    { id: 'ADM-03', text: 'Los movimientos bancarios se sincronizan con el sistema para realizar conciliaciones de forma rápida.' },
+    { id: 'ADM-04', text: 'La gestión de presupuestos y el registro de gastos operativos se llevan rigurosamente dentro del sistema.' },
+  ],
+};
 
-function scoreAutomation(a: TechAutomation): number {
-  // Base: ninguno=0, algunos=30, mayoria=70, todos=100
-  let score = 0;
-  switch (a.procesosAutomatizados) {
-    case 'ninguno': score = 0; break;
-    case 'algunos': score = 30; break;
-    case 'mayoria': score = 70; break;
-    case 'todos': score = 100; break;
-  }
-  // Bonuses (+5 each, max 20 bonus)
-  if (a.facturaElectronica) score += 5;
-  if (a.bancaDigital) score += 5;
-  if (a.firmaElectronica) score += 5;
-  if (a.gestionDocumentalDigital) score += 5;
-  return Math.min(100, score);
-}
+/** Afirmaciones de Sistemas y Seguridad — se le preguntan a TODOS los respondientes, sin importar su área. */
+export const GENERAL_STATEMENTS: TechStatement[] = [
+  { id: 'GEN-01', text: 'Los sistemas de las distintas áreas (ventas, finanzas, inventario) se comunican entre sí sin duplicar datos.' },
+  { id: 'GEN-02', text: 'El sistema genera reportes e indicadores (KPIs) automáticos y en tiempo real para la toma de decisiones.' },
+  { id: 'GEN-03', text: 'Es fácil extraer la información en formatos abiertos (Excel, CSV, PDF) para análisis adicionales.' },
+  { id: 'GEN-04', text: 'La información cuenta con respaldos automáticos en la nube o servidores seguros de forma periódica.' },
+  { id: 'GEN-05', text: 'Cada usuario tiene credenciales individuales y permisos delimitados según su rol dentro de la empresa.' },
+];
 
-function scoreDataAnalytics(d: TechDataAnalytics): number {
-  // Base: nunca=0, a_veces=25, frecuentemente=60, siempre=80
-  let score = 0;
-  switch (d.usaDatosParaDecisiones) {
-    case 'nunca': score = 0; break;
-    case 'a_veces': score = 25; break;
-    case 'frecuentemente': score = 60; break;
-    case 'siempre': score = 80; break;
-  }
-  if (d.tieneKPIs) score += 10;
-  if (d.dashboardsBI) score += 10;
-  return Math.min(100, score);
-}
+/* ── Scoring ───────────────────────────────────────────── */
 
-function scoreAI(ai: TechAIAdoption): number {
-  // conoceIA=20, usaIA=40, each caso uso=+10 (max 40 from cases)
-  let score = 0;
-  if (ai.conoceIA) score += 20;
-  if (ai.usaIAEnEmpresa) score += 40;
-  // Each caso de uso = +10, capped at 40
-  score += Math.min(40, ai.casosUsoIA.length * 10);
-  // Bonus for high interest (only if not already maxed)
-  if (ai.interesEnIA === 'alto') score += 5;
-  return Math.min(100, score);
-}
-
-function scoreSecurity(s: TechSecurity): number {
-  // antivirus=20, respaldos auto=30/manual=15, politicas=20, capacitacion=15, nube=15
-  let score = 0;
-  if (s.tieneAntivirus) score += 20;
-  switch (s.respaldosDatos) {
-    case 'automatico': score += 30; break;
-    case 'manual': score += 15; break;
-    case 'nunca': score += 0; break;
-  }
-  if (s.politicasSeguridad) score += 20;
-  if (s.capacitacionSeguridad) score += 15;
-  if (s.usaNube) score += 15;
-  return Math.min(100, score);
-}
-
-function scoreCulture(c: TechCulture): number {
-  // resistencia baja/ninguna=30, capacitacion=25, equipoTI=25, presupuesto=20
-  let score = 0;
-  switch (c.resistenciaAlCambio) {
-    case 'ninguna': score += 30; break;
-    case 'baja': score += 30; break;
-    case 'media': score += 15; break;
-    case 'alta': score += 0; break;
-  }
-  if (c.capacitacionTecnologica) score += 25;
-  if (c.equipoTI) score += 25;
-  if (c.presupuestoTech) score += 20;
-  return Math.min(100, score);
-}
-
-/* ── Maturity level classification ────────────────────── */
-
-function classifyMaturity(score: number): TechMaturityLevel {
-  if (score <= 25) return 'basico';
-  if (score <= 50) return 'intermedio';
-  if (score <= 75) return 'avanzado';
-  return 'lider_digital';
-}
-
-/* ── Main scoring function ────────────────────────────── */
-
-export function computeTechMaturityScore(survey: {
-  tools: TechToolsData;
-  digitalPresence: TechDigitalPresence;
-  automation: TechAutomation;
-  dataAnalytics: TechDataAnalytics;
-  aiAdoption: TechAIAdoption;
-  security: TechSecurity;
-  culture: TechCulture;
-}): { score: number; level: TechMaturityLevel; areaScores: Record<string, number> } {
-  const areaScores: Record<string, number> = {
-    tools: scoreTools(survey.tools),
-    digital_presence: scoreDigitalPresence(survey.digitalPresence),
-    automation: scoreAutomation(survey.automation),
-    data_analytics: scoreDataAnalytics(survey.dataAnalytics),
-    ai: scoreAI(survey.aiAdoption),
-    security: scoreSecurity(survey.security),
-    culture: scoreCulture(survey.culture),
-  };
-
-  // Weighted average
-  let weightedSum = 0;
-  for (const area of TECH_AREAS) {
-    weightedSum += (areaScores[area.id] ?? 0) * area.weight;
-  }
-  const score = Math.round(weightedSum / 100);
-
-  return {
-    score,
-    level: classifyMaturity(score),
-    areaScores,
-  };
+export function computeMaturityPercentage(answers: TechMaturityAnswer[]): number {
+  if (answers.length === 0) return 0;
+  const sum = answers.reduce((acc, a) => acc + a.score, 0);
+  return Math.round((sum / (answers.length * 5)) * 100);
 }

@@ -9,10 +9,10 @@ import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { getAllClientAccounts, getExpedienteDataForClients } from '../lib/storage';
 import type { AppUser, SavedDiagnostic, SavedOrgSurvey } from '../lib/types';
+import { AREA_STATEMENTS, GENERAL_STATEMENTS } from '../config/techQuestions';
 
 const DIAG_TOTAL_STEPS = 7;
 const ORG_TOTAL_STEPS = 3;
-const TECH_TOTAL_STEPS = 7;
 
 export default function HomePage() {
   const setView = useDiagnosticStore(s => s.setView);
@@ -30,6 +30,8 @@ export default function HomePage() {
   const orgDraftStep = useOrgSurveyStore(s => s.currentStep);
   const techDraftActive = useTechSurveyStore(s => s.draftActive);
   const techDraftStep = useTechSurveyStore(s => s.currentStep);
+  const techDraftArea = useTechSurveyStore(s => s.respondentArea);
+  const techTotalSteps = 1 + (techDraftArea ? AREA_STATEMENTS[techDraftArea].length : 0) + GENERAL_STATEMENTS.length;
 
   const [accounts, setAccounts] = useState<AppUser[]>([]);
   const [expedienteData, setExpedienteData] = useState<
@@ -145,7 +147,7 @@ export default function HomePage() {
               <HomeDraftBanner icon={Building2} label="Estructura Organizacional" step={orgDraftStep + 1} totalSteps={ORG_TOTAL_STEPS} onResume={handleResumeOrgDraft} onDiscard={handleDiscardOrgDraft} />
             )}
             {techDraftActive && (
-              <HomeDraftBanner icon={Monitor} label="Prueba de Tecnología" step={techDraftStep + 1} totalSteps={TECH_TOTAL_STEPS} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
+              <HomeDraftBanner icon={Monitor} label="Prueba de Tecnología" step={techDraftStep + 1} totalSteps={techTotalSteps} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
             )}
           </div>
         )}

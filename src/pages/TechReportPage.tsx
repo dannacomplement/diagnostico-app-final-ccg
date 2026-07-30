@@ -1,18 +1,10 @@
-import { Circle, Gem } from 'lucide-react';
 import { useTechSurveyStore } from '../store/techSurveyStore';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
-import { computeTechMaturityScore, TECH_AREAS } from '../config/techQuestions';
-import type { SavedTechSurvey, TechMaturityLevel } from '../lib/types';
-
-const LEVEL_CONFIG: Record<TechMaturityLevel, { label: string; icon: typeof Circle; iconClassName: string; className: string; barClass: string }> = {
-  basico: { label: 'Básico', icon: Circle, iconClassName: 'fill-error text-error', className: 'bg-error/10 border-error/20 text-error', barClass: 'bg-error' },
-  intermedio: { label: 'Intermedio', icon: Circle, iconClassName: 'fill-warn text-warn', className: 'bg-warn/10 border-warn/20 text-warn', barClass: 'bg-warn' },
-  avanzado: { label: 'Avanzado', icon: Circle, iconClassName: 'fill-success text-success', className: 'bg-success/10 border-success/20 text-success', barClass: 'bg-success' },
-  lider_digital: { label: 'Líder Digital', icon: Gem, iconClassName: 'text-accent', className: 'bg-accent/10 border-accent/20 text-accent', barClass: 'bg-accent' },
-};
+import { AREA_STATEMENTS, GENERAL_STATEMENTS, TECH_AREAS, GENERAL_AREA_LABEL, MATURITY_LEVELS, computeMaturityPercentage } from '../config/techQuestions';
+import type { SavedTechSurvey, TechMaturityScore } from '../lib/types';
 
 function getBarColor(score: number): string {
   if (score <= 25) return 'bg-error';
@@ -21,39 +13,41 @@ function getBarColor(score: number): string {
   return 'bg-accent';
 }
 
+function levelLabel(score: TechMaturityScore | undefined): string {
+  if (score === undefined) return '—';
+  return MATURITY_LEVELS.find(l => l.score === score)?.label ?? '—';
+}
+
 export default function TechReportPage() {
   const companyName = useTechSurveyStore(s => s.companyName);
-  const tools = useTechSurveyStore(s => s.tools);
-  const digitalPresence = useTechSurveyStore(s => s.digitalPresence);
-  const automation = useTechSurveyStore(s => s.automation);
-  const dataAnalytics = useTechSurveyStore(s => s.dataAnalytics);
-  const aiAdoption = useTechSurveyStore(s => s.aiAdoption);
-  const security = useTechSurveyStore(s => s.security);
-  const culture = useTechSurveyStore(s => s.culture);
+  const respondentArea = useTechSurveyStore(s => s.respondentArea);
+  const rolCargo = useTechSurveyStore(s => s.rolCargo);
+  const sistemasPrincipales = useTechSurveyStore(s => s.sistemasPrincipales);
+  const areaAnswersMap = useTechSurveyStore(s => s.areaAnswers);
+  const generalAnswersMap = useTechSurveyStore(s => s.generalAnswers);
   const setView = useDiagnosticStore(s => s.setView);
   const user = useAuthStore(s => s.user);
   const companyLogo = useSettingsStore(s => s.companyLogo);
 
-  const { score, level, areaScores } = computeTechMaturityScore({
-    tools, digitalPresence, automation, dataAnalytics, aiAdoption, security, culture,
-  });
-
-  const levelCfg = LEVEL_CONFIG[level];
+  const areaConfig = TECH_AREAS.find(a => a.id === respondentArea);
+  const areaStatements = respondentArea ? AREA_STATEMENTS[respondentArea] : [];
+  const areaAnswers = areaStatements.filter(st => areaAnswersMap[st.id] !== undefined).map(st => ({ id: st.id, score: areaAnswersMap[st.id] }));
+  const generalAnswers = GENERAL_STATEMENTS.filter(st => generalAnswersMap[st.id] !== undefined).map(st => ({ id: st.id, score: generalAnswersMap[st.id] }));
+  const areaScore = computeMaturityPercentage(areaAnswers);
+  const generalScore = computeMaturityPercentage(generalAnswers);
 
   function handleDownloadPdf() {
     const survey: SavedTechSurvey = {
       id: 'report-preview',
       savedAt: new Date().toISOString(),
       companyName,
-      tools: { ...tools },
-      digitalPresence: { ...digitalPresence },
-      automation: { ...automation },
-      dataAnalytics: { ...dataAnalytics },
-      aiAdoption: { ...aiAdoption },
-      security: { ...security },
-      culture: { ...culture },
-      maturityScore: score,
-      maturityLevel: level,
+      respondentArea: respondentArea ?? 'comercial',
+      rolCargo,
+      sistemasPrincipales,
+      areaAnswers,
+      generalAnswers,
+      areaScore,
+      generalScore,
     };
     exportTechSurveyToPdf(survey);
   }
@@ -66,34 +60,9 @@ export default function TechReportPage() {
     }
   }
 
-  // Key findings
-  const findings: string[] = [];
-  if (tools.tieneERP) findings.push('Cuenta con sistema ERP' + (tools.erpNombre ? ` (${tools.erpNombre})` : ''));
-  else findings.push('No cuenta con sistema ERP');
-  if (tools.tieneCRM) findings.push('Cuenta con CRM' + (tools.crmNombre ? ` (${tools.crmNombre})` : ''));
-  if (digitalPresence.tieneWebsite) findings.push('Tiene presencia web' + (digitalPresence.tieneEcommerce ? ' con e-commerce' : ''));
-  else findings.push('No tiene sitio web');
-  if (aiAdoption.usaIAEnEmpresa) findings.push('Ya utiliza IA en la operación');
-  else if (aiAdoption.conoceIA) findings.push('Conoce la IA pero aún no la implementa');
-  else findings.push('No ha explorado la IA');
-  if (security.usaNube) findings.push('Opera en la nube' + (security.proveedorNube ? ` (${security.proveedorNube})` : ''));
-  if (dataAnalytics.tieneKPIs) findings.push('Mide KPIs de desempeño');
-  if (culture.equipoTI) findings.push(`Tiene equipo de TI${culture.equipoTISize ? ` (${culture.equipoTISize} personas)` : ''}`);
-
-  // Recommendations based on weak areas
-  const recommendations: { priority: 'alta' | 'media' | 'baja'; text: string }[] = [];
-  if (areaScores.tools <= 30) recommendations.push({ priority: 'alta', text: 'Implementar un sistema ERP/CRM para profesionalizar la gestión empresarial.' });
-  if (areaScores.digital_presence <= 30) recommendations.push({ priority: 'alta', text: 'Desarrollar presencia digital con sitio web actualizado y estrategia de redes sociales.' });
-  if (areaScores.automation <= 30) recommendations.push({ priority: 'alta', text: 'Automatizar procesos clave como facturación electrónica y gestión documental.' });
-  else if (areaScores.automation <= 60) recommendations.push({ priority: 'media', text: 'Ampliar la automatización a más áreas de la operación.' });
-  if (areaScores.data_analytics <= 30) recommendations.push({ priority: 'alta', text: 'Establecer KPIs y dashboards para toma de decisiones basada en datos.' });
-  else if (areaScores.data_analytics <= 60) recommendations.push({ priority: 'media', text: 'Implementar herramientas de Business Intelligence para análisis avanzado.' });
-  if (areaScores.ai <= 30) recommendations.push({ priority: 'media', text: 'Explorar casos de uso de IA como chatbots, generación de contenido y análisis predictivo.' });
-  if (areaScores.security <= 40) recommendations.push({ priority: 'alta', text: 'Fortalecer la ciberseguridad: antivirus, respaldos automáticos y políticas formales.' });
-  else if (areaScores.security <= 70) recommendations.push({ priority: 'media', text: 'Completar la estrategia de seguridad con capacitación al personal y migración a la nube.' });
-  if (areaScores.culture <= 30) recommendations.push({ priority: 'alta', text: 'Invertir en cultura digital: capacitación tecnológica, equipo de TI y presupuesto asignado.' });
-  else if (areaScores.culture <= 60) recommendations.push({ priority: 'media', text: 'Reducir resistencia al cambio con programas de capacitación continua.' });
-  if (score >= 75) recommendations.push({ priority: 'baja', text: 'El nivel tecnológico es avanzado. Continuar con innovación y adopción de tecnologías emergentes.' });
+  const oportunidades = [...areaStatements, ...GENERAL_STATEMENTS]
+    .filter(st => (areaAnswersMap[st.id] ?? generalAnswersMap[st.id]) !== undefined && (areaAnswersMap[st.id] ?? generalAnswersMap[st.id])! <= 2)
+    .map(st => st.text);
 
   let sectionNum = 0;
   const nextNum = () => String(++sectionNum).padStart(2, '0');
@@ -101,56 +70,44 @@ export default function TechReportPage() {
   return (
     <div style={{ width: '100%', maxWidth: '930px', margin: '0 auto', padding: 'var(--sp-pagepad)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-      {/* Header */}
       <div className="text-center animate-fade-up" style={{ marginBottom: '36px' }}>
         <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '6px' }}>Reporte — Prueba de Tecnología</h1>
         <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
-          {companyName || 'Empresa'} — {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+          {companyName || 'Empresa'} — {areaConfig?.name} ({rolCargo || 'sin rol'})
         </p>
       </div>
 
-      {/* Resumen Ejecutivo */}
-      <Section title="Resumen Ejecutivo" number={nextNum()}>
-        <div className="flex items-center justify-center" style={{ gap: '24px', marginBottom: '24px' }}>
-          <div className="text-center">
-            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Madurez Tecnológica</p>
-            <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-42)', lineHeight: 1 }}>{score}</p>
-            <p className="text-muted" style={{ fontSize: 'var(--fs-10)' }}>de 100</p>
+      <Section title="Resumen" number={nextNum()}>
+        <div className="grid grid-cols-2" style={{ gap: '16px', marginBottom: '20px' }}>
+          <div className="rounded-xl border border-accent/30 bg-accent/5 text-center" style={{ padding: '20px 16px' }}>
+            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '8px' }}>{areaConfig?.name ?? 'Área'}</p>
+            <p className="font-bold text-accent" style={{ fontSize: 'var(--fs-32)', lineHeight: 1 }}>{areaScore}%</p>
           </div>
-          <div className={`rounded-xl border text-center ${levelCfg.className}`} style={{ padding: '16px 24px' }}>
-            <levelCfg.icon className={`mx-auto ${levelCfg.iconClassName}`} style={{ width: '24px', height: '24px' }} />
-            <p className="font-bold" style={{ fontSize: 'var(--fs-14)', marginTop: '4px' }}>{levelCfg.label}</p>
+          <div className="rounded-xl border border-border/60 bg-pale text-center" style={{ padding: '20px 16px' }}>
+            <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '8px' }}>{GENERAL_AREA_LABEL}</p>
+            <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-32)', lineHeight: 1 }}>{generalScore}%</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '14px' }}>
           <MetricBox label="Empresa" value={companyName || '—'} />
-          <MetricBox label="Score General" value={`${score}/100`} highlight />
-          <MetricBox label="Nivel" value={levelCfg.label} />
-          <MetricBox label="Áreas Evaluadas" value="7" />
+          <MetricBox label="Rol / Cargo" value={rolCargo || '—'} />
+          <MetricBox label="Sistemas usados" value={sistemasPrincipales || '—'} />
         </div>
       </Section>
 
-      {/* Score por Area */}
-      <Section title="Desglose por Área" number={nextNum()}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {TECH_AREAS.map(area => {
-            const areaScore = areaScores[area.id] ?? 0;
-            const barColor = getBarColor(areaScore);
+      <Section title={`Afirmaciones — ${areaConfig?.name ?? 'Área'}`} number={nextNum()}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {areaStatements.map(st => {
+            const score = areaAnswersMap[st.id];
+            const pct = score ? Math.round((score / 5) * 100) : 0;
             return (
-              <div key={area.id} className="rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-a)' }}>
-                <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
-                  <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)' }}>
-                    <area.icon style={{ display: 'inline', width: 'var(--fs-14)', height: 'var(--fs-14)', marginRight: '6px', verticalAlign: '-2px' }} />
-                    {area.name}
-                    <span className="text-muted" style={{ fontSize: 'var(--fs-10)', marginLeft: '6px' }}>({area.weight}%)</span>
-                  </span>
-                  <span className="font-bold text-ink" style={{ fontSize: 'var(--fs-13)' }}>{areaScore}/100</span>
+              <div key={st.id} className="rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-a)' }}>
+                <div className="flex items-center justify-between" style={{ marginBottom: '6px', gap: '12px' }}>
+                  <span className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{st.text}</span>
+                  <span className="font-bold text-ink shrink-0" style={{ fontSize: 'var(--fs-12)' }}>{levelLabel(score)}</span>
                 </div>
-                <div className="w-full rounded-full bg-border/40" style={{ height: '8px' }}>
-                  <div
-                    className={`rounded-full ${barColor} transition-all`}
-                    style={{ width: `${areaScore}%`, height: '8px' }}
-                  />
+                <div className="w-full rounded-full bg-border/40" style={{ height: '6px' }}>
+                  <div className={`rounded-full ${getBarColor(pct)}`} style={{ width: `${pct}%`, height: '6px' }} />
                 </div>
               </div>
             );
@@ -158,28 +115,38 @@ export default function TechReportPage() {
         </div>
       </Section>
 
-      {/* Hallazgos Clave */}
-      <Section title="Hallazgos Clave" number={nextNum()}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {findings.map((finding, i) => (
-            <div key={i} className="flex items-start rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-c)', gap: '8px' }}>
-              <span className="text-mid font-bold shrink-0" style={{ fontSize: 'var(--fs-11)' }}>•</span>
-              <span className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{finding}</span>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* Recomendaciones */}
-      <Section title="Recomendaciones" number={nextNum()}>
+      <Section title={`Afirmaciones — ${GENERAL_AREA_LABEL}`} number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {recommendations.map((rec, i) => (
-            <Recommendation key={i} priority={rec.priority} text={rec.text} />
-          ))}
+          {GENERAL_STATEMENTS.map(st => {
+            const score = generalAnswersMap[st.id];
+            const pct = score ? Math.round((score / 5) * 100) : 0;
+            return (
+              <div key={st.id} className="rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-a)' }}>
+                <div className="flex items-center justify-between" style={{ marginBottom: '6px', gap: '12px' }}>
+                  <span className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{st.text}</span>
+                  <span className="font-bold text-ink shrink-0" style={{ fontSize: 'var(--fs-12)' }}>{levelLabel(score)}</span>
+                </div>
+                <div className="w-full rounded-full bg-border/40" style={{ height: '6px' }}>
+                  <div className={`rounded-full ${getBarColor(pct)}`} style={{ width: `${pct}%`, height: '6px' }} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </Section>
 
-      {/* Footer */}
+      {oportunidades.length > 0 && (
+        <Section title="Áreas de oportunidad" number={nextNum()}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {oportunidades.map((text, i) => (
+              <div key={i} className="flex items-start rounded-lg bg-error/5 border-l-4 border-l-error" style={{ padding: 'var(--sp-btn-c)', gap: '8px' }}>
+                <span className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
       <div className="w-full bg-navy rounded-2xl text-center" style={{ padding: 'var(--sp-footer)', marginTop: '4px' }}>
         <img
           src={companyLogo || '/logo-complement.png'}
@@ -213,8 +180,6 @@ export default function TechReportPage() {
   );
 }
 
-/* ── Section ──────────────────────────────────────────── */
-
 function Section({ title, number, children }: { title: string; number: string; children: React.ReactNode }) {
   return (
     <div className="w-full bg-white rounded-2xl shadow-md border border-border/50 animate-fade-up" style={{ padding: '36px 32px', marginBottom: '24px' }}>
@@ -227,36 +192,11 @@ function Section({ title, number, children }: { title: string; number: string; c
   );
 }
 
-/* ── MetricBox ────────────────────────────────────────── */
-
-function MetricBox({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function MetricBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className={`rounded-xl text-center ${highlight ? 'bg-mid/10 border border-mid/20' : 'bg-pale border border-border/30'}`} style={{ padding: '18px 12px' }}>
+    <div className="rounded-xl text-center bg-pale border border-border/30" style={{ padding: '18px 12px' }}>
       <p className="text-muted font-medium uppercase tracking-wider" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{label}</p>
-      <p className={`font-semibold ${highlight ? 'text-mid' : 'text-ink'}`} style={{ fontSize: 'var(--fs-13)' }}>{value}</p>
-    </div>
-  );
-}
-
-/* ── Recommendation ───────────────────────────────────── */
-
-function Recommendation({ priority, text }: { priority: 'alta' | 'media' | 'baja'; text: string }) {
-  return (
-    <div className={`rounded-xl border-l-4
-      ${priority === 'alta' ? 'border-l-error bg-error/5' :
-        priority === 'media' ? 'border-l-warn bg-warn/5' :
-        'border-l-mid bg-mid/5'}
-    `} style={{ padding: 'var(--sp-btn-a)' }}>
-      <div className="flex items-start" style={{ gap: '8px' }}>
-        <span className={`font-semibold rounded-full shrink-0
-          ${priority === 'alta' ? 'bg-error/15 text-error' :
-            priority === 'media' ? 'bg-warn/15 text-warn' :
-            'bg-mid/15 text-mid'}
-        `} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
-          {priority === 'alta' ? 'Alta' : priority === 'media' ? 'Media' : 'Baja'}
-        </span>
-        <p className="text-ink" style={{ fontSize: 'var(--fs-11)' }}>{text}</p>
-      </div>
+      <p className="font-semibold text-ink" style={{ fontSize: 'var(--fs-13)' }}>{value}</p>
     </div>
   );
 }

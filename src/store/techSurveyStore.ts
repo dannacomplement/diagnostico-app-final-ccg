@@ -3,97 +3,8 @@ import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { saveTechSurvey as saveToStorage, updateTechSurvey as updateInStorage } from '../lib/storage';
 import { getCurrentUser } from '../lib/auth';
-import { computeTechMaturityScore } from '../config/techQuestions';
-import type {
-  TechToolsData,
-  TechDigitalPresence,
-  TechAutomation,
-  TechDataAnalytics,
-  TechAIAdoption,
-  TechSecurity,
-  TechCulture,
-  SavedTechSurvey,
-} from '../lib/types';
-
-/* ── Defaults ──────────────────────────────────────────── */
-
-function defaultTools(): TechToolsData {
-  return {
-    usaExcel: false,
-    excelNivel: '',
-    tieneERP: false,
-    erpNombre: '',
-    tieneCRM: false,
-    crmNombre: '',
-    tieneMRP: false,
-    mrpNombre: '',
-    otrasHerramientas: '',
-  };
-}
-
-function defaultDigitalPresence(): TechDigitalPresence {
-  return {
-    tieneWebsite: false,
-    websiteActualizado: false,
-    tieneEcommerce: false,
-    usaRedesSociales: false,
-    redesActivas: [],
-    marketingDigital: false,
-  };
-}
-
-function defaultAutomation(): TechAutomation {
-  return {
-    procesosAutomatizados: 'ninguno',
-    areasMasAutomatizadas: '',
-    facturaElectronica: false,
-    bancaDigital: false,
-    firmaElectronica: false,
-    gestionDocumentalDigital: false,
-  };
-}
-
-function defaultDataAnalytics(): TechDataAnalytics {
-  return {
-    usaDatosParaDecisiones: 'nunca',
-    tieneKPIs: false,
-    dashboardsBI: false,
-    herramientaBI: '',
-    analiticaAvanzada: false,
-  };
-}
-
-function defaultAIAdoption(): TechAIAdoption {
-  return {
-    conoceIA: false,
-    usaIAEnEmpresa: false,
-    casosUsoIA: [],
-    interesEnIA: 'ninguno',
-    inversionTechAnual: 'no_sabe',
-  };
-}
-
-function defaultSecurity(): TechSecurity {
-  return {
-    tieneAntivirus: false,
-    respaldosDatos: 'nunca',
-    politicasSeguridad: false,
-    capacitacionSeguridad: false,
-    usaNube: false,
-    proveedorNube: '',
-  };
-}
-
-function defaultCulture(): TechCulture {
-  return {
-    resistenciaAlCambio: 'alta',
-    capacitacionTecnologica: false,
-    equipoTI: false,
-    equipoTISize: null,
-    presupuestoTech: false,
-    retoPrincipalTech: '',
-  };
-}
+import { AREA_STATEMENTS, GENERAL_STATEMENTS, computeMaturityPercentage } from '../config/techQuestions';
+import type { TechMaturityArea, TechMaturityScore, SavedTechSurvey } from '../lib/types';
 
 /* ── Store Interface ───────────────────────────────────── */
 
@@ -101,13 +12,11 @@ interface TechSurveyState {
   testMode: boolean;
   currentStep: number;
   companyName: string;
-  tools: TechToolsData;
-  digitalPresence: TechDigitalPresence;
-  automation: TechAutomation;
-  dataAnalytics: TechDataAnalytics;
-  aiAdoption: TechAIAdoption;
-  security: TechSecurity;
-  culture: TechCulture;
+  respondentArea: TechMaturityArea | null;
+  rolCargo: string;
+  sistemasPrincipales: string;
+  areaAnswers: Record<string, TechMaturityScore>;
+  generalAnswers: Record<string, TechMaturityScore>;
   savedResultId: string | null;
   draftActive: boolean;
   editMode: boolean;
@@ -117,18 +26,29 @@ interface TechSurveyState {
   setDraftActive: (v: boolean) => void;
   setStep: (step: number) => void;
   setCompanyName: (name: string) => void;
-  updateTools: (partial: Partial<TechToolsData>) => void;
-  updateDigitalPresence: (partial: Partial<TechDigitalPresence>) => void;
-  updateAutomation: (partial: Partial<TechAutomation>) => void;
-  updateDataAnalytics: (partial: Partial<TechDataAnalytics>) => void;
-  updateAIAdoption: (partial: Partial<TechAIAdoption>) => void;
-  updateSecurity: (partial: Partial<TechSecurity>) => void;
-  updateCulture: (partial: Partial<TechCulture>) => void;
+  setRespondentArea: (area: TechMaturityArea) => void;
+  setRolCargo: (rol: string) => void;
+  setSistemasPrincipales: (sistemas: string) => void;
+  setAnswer: (id: string, score: TechMaturityScore, isGeneral: boolean) => void;
   saveTechSurvey: () => string;
   resetTechSurvey: () => void;
   loadTechSurveyForReport: (survey: SavedTechSurvey) => void;
   loadTechSurveyForEdit: (survey: SavedTechSurvey) => void;
 }
+
+const initialState = {
+  currentStep: 0,
+  companyName: '',
+  respondentArea: null as TechMaturityArea | null,
+  rolCargo: '',
+  sistemasPrincipales: '',
+  areaAnswers: {} as Record<string, TechMaturityScore>,
+  generalAnswers: {} as Record<string, TechMaturityScore>,
+  savedResultId: null as string | null,
+  draftActive: false,
+  editMode: false,
+  editSurveyId: null as string | null,
+};
 
 /* ── Store ─────────────────────────────────────────────── */
 
@@ -136,73 +56,44 @@ export const useTechSurveyStore = create<TechSurveyState>()(
   persist(
     (set, get) => ({
       testMode: false,
-      currentStep: 0,
-      companyName: '',
-      tools: defaultTools(),
-      digitalPresence: defaultDigitalPresence(),
-      automation: defaultAutomation(),
-      dataAnalytics: defaultDataAnalytics(),
-      aiAdoption: defaultAIAdoption(),
-      security: defaultSecurity(),
-      culture: defaultCulture(),
-      savedResultId: null,
-      draftActive: false,
-      editMode: false,
-      editSurveyId: null,
+      ...initialState,
 
       setTestMode: (v) => set({ testMode: v }),
       setDraftActive: (v) => set({ draftActive: v }),
       setStep: (step) => set({ currentStep: step }),
       setCompanyName: (name) => set({ companyName: name }),
+      setRespondentArea: (area) => set({ respondentArea: area }),
+      setRolCargo: (rol) => set({ rolCargo: rol }),
+      setSistemasPrincipales: (sistemas) => set({ sistemasPrincipales: sistemas }),
 
-      updateTools: (partial) =>
-        set(s => ({ tools: { ...s.tools, ...partial } })),
-
-      updateDigitalPresence: (partial) =>
-        set(s => ({ digitalPresence: { ...s.digitalPresence, ...partial } })),
-
-      updateAutomation: (partial) =>
-        set(s => ({ automation: { ...s.automation, ...partial } })),
-
-      updateDataAnalytics: (partial) =>
-        set(s => ({ dataAnalytics: { ...s.dataAnalytics, ...partial } })),
-
-      updateAIAdoption: (partial) =>
-        set(s => ({ aiAdoption: { ...s.aiAdoption, ...partial } })),
-
-      updateSecurity: (partial) =>
-        set(s => ({ security: { ...s.security, ...partial } })),
-
-      updateCulture: (partial) =>
-        set(s => ({ culture: { ...s.culture, ...partial } })),
+      setAnswer: (id, score, isGeneral) =>
+        set(s => isGeneral
+          ? { generalAnswers: { ...s.generalAnswers, [id]: score } }
+          : { areaAnswers: { ...s.areaAnswers, [id]: score } }),
 
       saveTechSurvey: () => {
         const state = get();
         const id = state.editMode && state.editSurveyId ? state.editSurveyId : uuidv4();
+        const area = state.respondentArea ?? 'comercial';
 
-        const { score, level } = computeTechMaturityScore({
-          tools: state.tools,
-          digitalPresence: state.digitalPresence,
-          automation: state.automation,
-          dataAnalytics: state.dataAnalytics,
-          aiAdoption: state.aiAdoption,
-          security: state.security,
-          culture: state.culture,
-        });
+        const areaAnswers = AREA_STATEMENTS[area]
+          .filter(st => state.areaAnswers[st.id] !== undefined)
+          .map(st => ({ id: st.id, score: state.areaAnswers[st.id] }));
+        const generalAnswers = GENERAL_STATEMENTS
+          .filter(st => state.generalAnswers[st.id] !== undefined)
+          .map(st => ({ id: st.id, score: state.generalAnswers[st.id] }));
 
         const survey: SavedTechSurvey = {
           id,
           savedAt: new Date().toISOString(),
           companyName: state.companyName,
-          tools: { ...state.tools },
-          digitalPresence: { ...state.digitalPresence },
-          automation: { ...state.automation },
-          dataAnalytics: { ...state.dataAnalytics },
-          aiAdoption: { ...state.aiAdoption },
-          security: { ...state.security },
-          culture: { ...state.culture },
-          maturityScore: score,
-          maturityLevel: level,
+          respondentArea: area,
+          rolCargo: state.rolCargo,
+          sistemasPrincipales: state.sistemasPrincipales,
+          areaAnswers,
+          generalAnswers,
+          areaScore: computeMaturityPercentage(areaAnswers),
+          generalScore: computeMaturityPercentage(generalAnswers),
         };
 
         // In testMode (master preview), skip persisting to Supabase
@@ -222,45 +113,26 @@ export const useTechSurveyStore = create<TechSurveyState>()(
         return id;
       },
 
-      resetTechSurvey: () =>
-        set({
-          currentStep: 0,
-          companyName: '',
-          tools: defaultTools(),
-          digitalPresence: defaultDigitalPresence(),
-          automation: defaultAutomation(),
-          dataAnalytics: defaultDataAnalytics(),
-          aiAdoption: defaultAIAdoption(),
-          security: defaultSecurity(),
-          culture: defaultCulture(),
-          savedResultId: null,
-          draftActive: false,
-          editMode: false,
-          editSurveyId: null,
-        }),
+      resetTechSurvey: () => set({ ...initialState }),
 
       loadTechSurveyForReport: (survey) =>
         set({
           companyName: survey.companyName,
-          tools: { ...survey.tools },
-          digitalPresence: { ...survey.digitalPresence },
-          automation: { ...survey.automation },
-          dataAnalytics: { ...survey.dataAnalytics },
-          aiAdoption: { ...survey.aiAdoption },
-          security: { ...survey.security },
-          culture: { ...survey.culture },
+          respondentArea: survey.respondentArea,
+          rolCargo: survey.rolCargo,
+          sistemasPrincipales: survey.sistemasPrincipales,
+          areaAnswers: Object.fromEntries(survey.areaAnswers.map(a => [a.id, a.score])),
+          generalAnswers: Object.fromEntries(survey.generalAnswers.map(a => [a.id, a.score])),
         }),
 
       loadTechSurveyForEdit: (survey) =>
         set({
           companyName: survey.companyName,
-          tools: { ...survey.tools },
-          digitalPresence: { ...survey.digitalPresence },
-          automation: { ...survey.automation },
-          dataAnalytics: { ...survey.dataAnalytics },
-          aiAdoption: { ...survey.aiAdoption },
-          security: { ...survey.security },
-          culture: { ...survey.culture },
+          respondentArea: survey.respondentArea,
+          rolCargo: survey.rolCargo,
+          sistemasPrincipales: survey.sistemasPrincipales,
+          areaAnswers: Object.fromEntries(survey.areaAnswers.map(a => [a.id, a.score])),
+          generalAnswers: Object.fromEntries(survey.generalAnswers.map(a => [a.id, a.score])),
           editMode: true,
           editSurveyId: survey.id,
           testMode: false,
@@ -271,18 +143,17 @@ export const useTechSurveyStore = create<TechSurveyState>()(
     }),
     {
       name: 'ccg_tech_survey_draft',
-      version: 1,
+      version: 2,
+      migrate: () => ({ ...initialState }),
       partialize: (state) => ({
         currentStep: state.currentStep,
         draftActive: state.draftActive,
         companyName: state.companyName,
-        tools: state.tools,
-        digitalPresence: state.digitalPresence,
-        automation: state.automation,
-        dataAnalytics: state.dataAnalytics,
-        aiAdoption: state.aiAdoption,
-        security: state.security,
-        culture: state.culture,
+        respondentArea: state.respondentArea,
+        rolCargo: state.rolCargo,
+        sistemasPrincipales: state.sistemasPrincipales,
+        areaAnswers: state.areaAnswers,
+        generalAnswers: state.generalAnswers,
       }),
     },
   ),

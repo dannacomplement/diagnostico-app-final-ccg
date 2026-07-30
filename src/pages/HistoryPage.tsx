@@ -20,8 +20,9 @@ import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
 import { exportToPptx } from '../lib/exportPptx';
 import { SECTOR_OPTIONS } from '../config/constants';
 import { getServiceArea } from '../config/serviceAreas';
-import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, TechMaturityLevel } from '../lib/types';
+import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel } from '../lib/types';
 import HistoricalComparison from '../components/ui/HistoricalComparison';
+import { TECH_AREAS } from '../config/techQuestions';
 
 function BoolMark({ value }: { value: boolean }) {
   return value
@@ -1242,27 +1243,15 @@ function StatusPill({ label, value, positive, warning }: { label: string; value:
 
 /* ── Tech Ejecutivo Card ───────────────────────────────── */
 
-const MATURITY_COLORS_EXP: Record<TechMaturityLevel, string> = {
-  basico: 'text-error',
-  intermedio: 'text-warn',
-  avanzado: 'text-success',
-  lider_digital: 'text-accent',
-};
-const MATURITY_LABELS_EXP: Record<TechMaturityLevel, string> = {
-  basico: 'Básico',
-  intermedio: 'Intermedio',
-  avanzado: 'Avanzado',
-  lider_digital: 'Líder Digital',
-};
-
 function TechEjecutivoCard({ survey, onExtenso }: { survey: SavedTechSurvey; onExtenso: (s: SavedTechSurvey) => void }) {
+  const areaConfig = TECH_AREAS.find(a => a.id === survey.respondentArea);
   return (
     <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: 'clamp(16px, 3vw, 24px) clamp(16px, 3vw, 28px)' }}>
       <div className="flex items-center" style={{ gap: '12px', marginBottom: '16px' }}>
         <div className="inline-flex items-center justify-center rounded-full bg-accent/10 shrink-0" style={{ width: '36px', height: '36px' }}>
           <Monitor className="text-accent" style={{ width: 'var(--fs-16)', height: 'var(--fs-16)' }} />
         </div>
-        <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)' }}>Prueba de Tecnología</h3>
+        <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)' }}>Prueba de Tecnología — {areaConfig?.name ?? 'Área'}</h3>
         <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
           {new Date(survey.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })}
         </span>
@@ -1270,22 +1259,16 @@ function TechEjecutivoCard({ survey, onExtenso }: { survey: SavedTechSurvey; onE
 
       <div className="flex flex-wrap" style={{ gap: '14px', marginBottom: '16px' }}>
         <div>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Score</p>
-          <p className={`font-bold ${MATURITY_COLORS_EXP[survey.maturityLevel]}`} style={{ fontSize: 'var(--fs-18)' }}>
-            {survey.maturityScore}<span className="text-muted font-normal" style={{ fontSize: 'var(--fs-11)' }}>/100</span>
-          </p>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>% Área</p>
+          <p className="font-bold text-accent" style={{ fontSize: 'var(--fs-18)' }}>{survey.areaScore}%</p>
         </div>
         <div>
-          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Nivel</p>
-          <p className={`font-bold ${MATURITY_COLORS_EXP[survey.maturityLevel]}`} style={{ fontSize: 'var(--fs-13)' }}>
-            {MATURITY_LABELS_EXP[survey.maturityLevel]}
-          </p>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>% General</p>
+          <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{survey.generalScore}%</p>
         </div>
-        <div className="flex flex-wrap" style={{ gap: '6px' }}>
-          <StatusPill label="ERP" value={survey.tools.tieneERP ? 'Sí' : 'No'} positive={survey.tools.tieneERP} />
-          <StatusPill label="CRM" value={survey.tools.tieneCRM ? 'Sí' : 'No'} positive={survey.tools.tieneCRM} />
-          <StatusPill label="IA" value={survey.aiAdoption.usaIAEnEmpresa ? 'Sí' : 'No'} positive={survey.aiAdoption.usaIAEnEmpresa} />
-          <StatusPill label="Nube" value={survey.security.usaNube ? 'Sí' : 'No'} positive={survey.security.usaNube} />
+        <div>
+          <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '2px' }}>Rol</p>
+          <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-13)' }}>{survey.rolCargo || '—'}</p>
         </div>
       </div>
 
@@ -1334,35 +1317,32 @@ function TecnologiaSection({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      {surveys.map((survey, i) => (
+      {surveys.map((survey) => (
         <div key={survey.id} className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px 28px' }}>
           <div className="flex items-start justify-between" style={{ marginBottom: '14px' }}>
             <div>
               <h4 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)', marginBottom: '4px' }}>
-                Prueba #{surveys.length - i}
+                {TECH_AREAS.find(a => a.id === survey.respondentArea)?.name ?? 'Área'}
                 <span className="text-muted font-normal" style={{ fontSize: 'var(--fs-11)', marginLeft: '8px' }}>
                   {new Date(survey.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
               </h4>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{survey.rolCargo || 'Sin rol especificado'}</p>
             </div>
-            <div className={`rounded-lg border text-center ${
-              survey.maturityLevel === 'basico' ? 'border-error/20 bg-error/5 text-error' :
-              survey.maturityLevel === 'intermedio' ? 'border-warn/20 bg-warn/5 text-warn' :
-              survey.maturityLevel === 'avanzado' ? 'border-success/20 bg-success/5 text-success' :
-              'border-accent/20 bg-accent/5 text-accent'
-            }`} style={{ padding: 'var(--sp-btn-d)' }}>
-              <p className="font-bold" style={{ fontSize: 'var(--fs-16)' }}>{survey.maturityScore}</p>
-              <p className="font-medium" style={{ fontSize: 'var(--fs-9)' }}>{MATURITY_LABELS_EXP[survey.maturityLevel]}</p>
+            <div className="flex" style={{ gap: '8px' }}>
+              <div className="rounded-lg border border-accent/20 bg-accent/5 text-center" style={{ padding: 'var(--sp-btn-d)' }}>
+                <p className="font-bold text-accent" style={{ fontSize: 'var(--fs-16)' }}>{survey.areaScore}%</p>
+                <p className="font-medium text-accent" style={{ fontSize: 'var(--fs-9)' }}>Área</p>
+              </div>
+              <div className="rounded-lg border border-border/40 bg-pale text-center" style={{ padding: 'var(--sp-btn-d)' }}>
+                <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-16)' }}>{survey.generalScore}%</p>
+                <p className="font-medium text-muted" style={{ fontSize: 'var(--fs-9)' }}>General</p>
+              </div>
             </div>
           </div>
 
           <div className="flex flex-wrap" style={{ gap: '6px', marginBottom: '14px' }}>
-            <StatusPill label="ERP" value={survey.tools.tieneERP ? 'Sí' : 'No'} positive={survey.tools.tieneERP} />
-            <StatusPill label="CRM" value={survey.tools.tieneCRM ? 'Sí' : 'No'} positive={survey.tools.tieneCRM} />
-            <StatusPill label="IA" value={survey.aiAdoption.usaIAEnEmpresa ? 'Sí' : 'No'} positive={survey.aiAdoption.usaIAEnEmpresa} />
-            <StatusPill label="KPIs" value={survey.dataAnalytics.tieneKPIs ? 'Sí' : 'No'} positive={survey.dataAnalytics.tieneKPIs} />
-            <StatusPill label="Nube" value={survey.security.usaNube ? 'Sí' : 'No'} positive={survey.security.usaNube} />
-            <StatusPill label="Equipo TI" value={survey.culture.equipoTI ? 'Sí' : 'No'} positive={survey.culture.equipoTI} />
+            <StatusPill label="Sistemas" value={survey.sistemasPrincipales || 'No especificado'} positive={!!survey.sistemasPrincipales} />
           </div>
 
           <div className="flex flex-wrap" style={{ gap: '8px' }}>

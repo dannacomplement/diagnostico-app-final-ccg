@@ -13,6 +13,7 @@ import { exportToPdf } from '../lib/exportPdf';
 import { exportOrgSurveyToPdf } from '../lib/exportOrgPdf';
 import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
 import { exportExpediente } from '../lib/exportExpediente';
+import { TECH_AREAS, AREA_STATEMENTS, GENERAL_STATEMENTS } from '../config/techQuestions';
 import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey } from '../lib/types';
 import AnimatedGauge from '../components/ui/AnimatedGauge';
 import RadarChart from '../components/ui/RadarChart';
@@ -38,22 +39,8 @@ function useTechReportNav() {
   };
 }
 
-const MATURITY_COLORS: Record<string, string> = {
-  basico: 'text-error',
-  intermedio: 'text-warn',
-  avanzado: 'text-success',
-  lider_digital: 'text-accent',
-};
-const MATURITY_LABELS: Record<string, string> = {
-  basico: 'Básico',
-  intermedio: 'Intermedio',
-  avanzado: 'Avanzado',
-  lider_digital: 'Líder Digital',
-};
-
 const DIAG_TOTAL_STEPS = 7;
 const ORG_TOTAL_STEPS = 3;
-const TECH_TOTAL_STEPS = 7;
 
 /* ── Urgency to score mapping for radar chart ── */
 function urgencyToScore(level: string): number {
@@ -88,6 +75,8 @@ export default function DashboardPage() {
   const orgDraftStep = useOrgSurveyStore(s => s.currentStep);
   const techDraftActive = useTechSurveyStore(s => s.draftActive);
   const techDraftStep = useTechSurveyStore(s => s.currentStep);
+  const techDraftArea = useTechSurveyStore(s => s.respondentArea);
+  const techTotalSteps = 1 + (techDraftArea ? AREA_STATEMENTS[techDraftArea].length : 0) + GENERAL_STATEMENTS.length;
 
   const [diagnostics, setDiagnostics] = useState<SavedDiagnostic[]>([]);
   const [orgSurveys, setOrgSurveys] = useState<SavedOrgSurvey[]>([]);
@@ -205,7 +194,7 @@ export default function DashboardPage() {
                 <DraftBanner icon={Building2} label="Estructura Organizacional" step={orgDraftStep + 1} totalSteps={ORG_TOTAL_STEPS} onResume={handleResumeOrgDraft} onDiscard={handleDiscardOrgDraft} />
               )}
               {techDraftActive && hasTechPerm && (
-                <DraftBanner icon={Monitor} label="Prueba de Tecnologia" step={techDraftStep + 1} totalSteps={TECH_TOTAL_STEPS} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
+                <DraftBanner icon={Monitor} label="Prueba de Tecnologia" step={techDraftStep + 1} totalSteps={techTotalSteps} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
               )}
             </div>
           )}
@@ -412,9 +401,9 @@ export default function DashboardPage() {
 
                     {latestTech && (
                       <div className="flex flex-wrap" style={{ gap: '12px', marginBottom: '12px' }}>
-                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Score</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: 'var(--fs-12)' }}>{latestTech.maturityScore}/100</p></div>
-                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Nivel</p><p className={`font-bold ${MATURITY_COLORS[latestTech.maturityLevel] || 'text-ink'}`} style={{ fontSize: 'var(--fs-12)' }}>{MATURITY_LABELS[latestTech.maturityLevel] || latestTech.maturityLevel}</p></div>
-                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>ERP</p><p className="text-ink font-semibold" style={{ fontSize: 'var(--fs-12)' }}>{latestTech.tools.tieneERP ? 'Sí' : 'No'}</p></div>
+                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>Área</p><p className="text-ink font-semibold" style={{ fontSize: 'var(--fs-12)' }}>{TECH_AREAS.find(a => a.id === latestTech.respondentArea)?.name ?? '—'}</p></div>
+                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>% Área</p><p className="font-bold text-accent" style={{ fontSize: 'var(--fs-12)' }}>{latestTech.areaScore}%</p></div>
+                        <div><p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-8)', marginBottom: '1px' }}>% General</p><p className="font-bold text-ink" style={{ fontSize: 'var(--fs-12)' }}>{latestTech.generalScore}%</p></div>
                       </div>
                     )}
 
@@ -799,13 +788,13 @@ function TechRow({ survey, isLatest }: { survey: SavedTechSurvey; isLatest: bool
           </p>
           <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
             <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
-              Score <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{survey.maturityScore}/100</span>
+              Área <span className="font-bold text-navy">{TECH_AREAS.find(a => a.id === survey.respondentArea)?.name ?? '—'}</span>
             </span>
             <span style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
-              Nivel <span className={`font-bold ${MATURITY_COLORS[survey.maturityLevel] || 'text-ink'}`}>{MATURITY_LABELS[survey.maturityLevel] || survey.maturityLevel}</span>
+              % Área <span className="font-bold text-accent">{survey.areaScore}%</span>
             </span>
             <span className="hidden sm:inline" style={{ fontSize: 'var(--fs-10)', color: '#6b7280' }}>
-              ERP <span className="font-bold text-navy">{survey.tools.tieneERP ? 'Sí' : 'No'}</span>
+              % General <span className="font-bold text-navy">{survey.generalScore}%</span>
             </span>
           </div>
           <div className="flex items-center flex-wrap" style={{ gap: '6px', marginTop: '8px' }}>
