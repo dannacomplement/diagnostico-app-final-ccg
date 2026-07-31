@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { SavedDiagnostic, SavedOrgSurvey } from './types';
+import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey } from './types';
 import { buildPdfDoc } from './exportPdf';
+import { AREA_STATEMENTS, GENERAL_STATEMENTS, TECH_AREAS, GENERAL_AREA_LABEL, MATURITY_LEVELS } from '../config/techQuestions';
 
 /* ── Color palette ── */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -249,6 +250,111 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
   });
 }
 
+/* ── Tech survey section ─────────────────────────────── */
+
+function levelInfo(score: number | undefined) {
+  return MATURITY_LEVELS.find(l => l.score === score);
+}
+
+function addTechSurveySection(doc: jsPDF, survey: SavedTechSurvey, margin: number) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const contentWidth = pageWidth - margin * 2;
+  let y = margin;
+
+  const areaConfig = TECH_AREAS.find(a => a.id === survey.respondentArea);
+  const areaAnswerMap = Object.fromEntries(survey.areaAnswers.map(a => [a.id, a.score]));
+  const generalAnswerMap = Object.fromEntries(survey.generalAnswers.map(a => [a.id, a.score]));
+
+  autoTable(doc, {
+    startY: y,
+    head: [['PRUEBA DE TECNOLOGÍA', '']],
+    body: [
+      ['Área evaluada', areaConfig?.name ?? '—'],
+      ['Rol / Cargo', survey.rolCargo || '—'],
+      ['Sistemas principales', survey.sistemasPrincipales || '—'],
+      ['% Área', `${survey.areaScore}%`],
+      [`% ${GENERAL_AREA_LABEL}`, `${survey.generalScore}%`],
+    ],
+    headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
+    bodyStyles: { fontSize: 9, textColor: INK },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 55, textColor: NAVY },
+      1: { cellWidth: contentWidth - 55 },
+    },
+    alternateRowStyles: { fillColor: PALE },
+    margin: { left: margin, right: margin },
+    theme: 'grid',
+    styles: { lineColor: BORDER, lineWidth: 0.2, cellPadding: 3 },
+  });
+
+  y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+
+  const areaBody = (survey.respondentArea ? AREA_STATEMENTS[survey.respondentArea] : []).map(st => {
+    const info = levelInfo(areaAnswerMap[st.id]);
+    return [st.text, info ? `Nivel ${info.score} — ${info.label}` : '—'];
+  });
+
+  autoTable(doc, {
+    startY: y,
+    head: [[`AFIRMACIONES — ${(areaConfig?.name ?? 'ÁREA').toUpperCase()}`, 'NIVEL']],
+    body: areaBody,
+    headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
+    bodyStyles: { fontSize: 8.5, textColor: INK },
+    columnStyles: { 0: { cellWidth: contentWidth - 55 }, 1: { cellWidth: 55, fontStyle: 'bold' } },
+    alternateRowStyles: { fillColor: PALE },
+    margin: { left: margin, right: margin },
+    theme: 'grid',
+    styles: { lineColor: BORDER, lineWidth: 0.2, cellPadding: 3 },
+  });
+
+  y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+
+  const generalBody = GENERAL_STATEMENTS.map(st => {
+    const info = levelInfo(generalAnswerMap[st.id]);
+    return [st.text, info ? `Nivel ${info.score} — ${info.label}` : '—'];
+  });
+
+  autoTable(doc, {
+    startY: y,
+    head: [[`AFIRMACIONES — ${GENERAL_AREA_LABEL.toUpperCase()}`, 'NIVEL']],
+    body: generalBody,
+    headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
+    bodyStyles: { fontSize: 8.5, textColor: INK },
+    columnStyles: { 0: { cellWidth: contentWidth - 55 }, 1: { cellWidth: 55, fontStyle: 'bold' } },
+    alternateRowStyles: { fillColor: PALE },
+    margin: { left: margin, right: margin },
+    theme: 'grid',
+    styles: { lineColor: BORDER, lineWidth: 0.2, cellPadding: 3 },
+  });
+}
+
+/* ── Generic section-separator page ──────────────────── */
+
+function addSeparatorPage(doc: jsPDF, titleLine1: string, titleLine2: string, companyName: string, dateStr: string) {
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  doc.addPage();
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, pw, ph, 'F');
+
+  doc.setFillColor(...BRAND_ORANGE);
+  doc.rect(pw / 2 - 30, ph / 2 - 30, 60, 2, 'F');
+
+  drawComplementIcon(doc, pw / 2, ph / 2 - 18, 8, 'white');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(...WHITE);
+  doc.text(titleLine1, pw / 2, ph / 2 + 5, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text(titleLine2, pw / 2, ph / 2 + 16, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(...BRAND_ORANGE);
+  doc.text(`${companyName} — ${dateStr}`, pw / 2, ph / 2 + 30, { align: 'center' });
+}
+
 /* ═══════════════════════════════════════════════════════════
    MAIN EXPORT
 
@@ -265,9 +371,10 @@ export function exportExpediente(
   companyName: string,
   diagnostic?: SavedDiagnostic,
   orgSurvey?: SavedOrgSurvey,
+  techSurvey?: SavedTechSurvey,
   mode: 'download' | 'view' = 'download',
 ): void {
-  if (!diagnostic && !orgSurvey) return;
+  if (!diagnostic && !orgSurvey && !techSurvey) return;
 
   const margin = 14;
 
@@ -279,34 +386,22 @@ export function exportExpediente(
 
     // If there's also an org survey, append it
     if (orgSurvey) {
-      // Section separator page
-      doc.addPage();
-      const ph = doc.internal.pageSize.getHeight();
-      doc.setFillColor(...NAVY);
-      doc.rect(0, 0, pw, ph, 'F');
-
-      doc.setFillColor(...BRAND_ORANGE);
-      doc.rect(pw / 2 - 30, ph / 2 - 30, 60, 2, 'F');
-
-      drawComplementIcon(doc, pw / 2, ph / 2 - 18, 8, 'white');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(22);
-      doc.setTextColor(...WHITE);
-      doc.text('ESTRUCTURA', pw / 2, ph / 2 + 5, { align: 'center' });
-      doc.setFontSize(16);
-      doc.text('ORGANIZACIONAL', pw / 2, ph / 2 + 16, { align: 'center' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(...BRAND_ORANGE);
       const orgDate = new Date(orgSurvey.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
-      doc.text(`${companyName} — ${orgDate}`, pw / 2, ph / 2 + 30, { align: 'center' });
+      addSeparatorPage(doc, 'ESTRUCTURA', 'ORGANIZACIONAL', companyName, orgDate);
 
-      // Org survey data pages
       doc.addPage();
       drawBrandedHeader(doc, 'ESTRUCTURA ORGANIZACIONAL', pw, margin);
       addOrgSurveySections(doc, orgSurvey, margin);
+    }
+
+    // If there's also a tech survey, append it
+    if (techSurvey) {
+      const techDate = new Date(techSurvey.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+      addSeparatorPage(doc, 'PRUEBA DE', 'TECNOLOGÍA', companyName, techDate);
+
+      doc.addPage();
+      drawBrandedHeader(doc, 'PRUEBA DE TECNOLOGÍA', pw, margin);
+      addTechSurveySection(doc, techSurvey, margin);
     }
 
     // Update footers on ALL pages (override the diagnostic PDF's footers)
@@ -352,10 +447,13 @@ export function exportExpediente(
     return;
   }
 
-  /* ─── Case 3: Only org survey (no diagnostic) ─── */
+  /* ─── Case 3: No diagnostic (org and/or tech survey) ─── */
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();
+
+  const coverTitleLine1 = orgSurvey && techSurvey ? 'EXPEDIENTE' : orgSurvey ? 'ESTRUCTURA' : 'PRUEBA DE';
+  const coverTitleLine2 = orgSurvey && techSurvey ? 'CONSOLIDADO' : orgSurvey ? 'ORGANIZACIONAL' : 'TECNOLOGÍA';
 
   // Branded cover page
   doc.setFillColor(...NAVY);
@@ -385,9 +483,9 @@ export function exportExpediente(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(24);
   doc.setTextColor(...WHITE);
-  doc.text('ESTRUCTURA', pw / 2, 132, { align: 'center' });
+  doc.text(coverTitleLine1, pw / 2, 132, { align: 'center' });
   doc.setFontSize(16);
-  doc.text('ORGANIZACIONAL', pw / 2, 143, { align: 'center' });
+  doc.text(coverTitleLine2, pw / 2, 143, { align: 'center' });
 
   doc.setFontSize(14);
   doc.setTextColor(...BRAND_ORANGE);
@@ -416,9 +514,22 @@ export function exportExpediente(
   doc.text('Complement Consulting Group', pw / 2, ph - 12, { align: 'center' });
 
   // Org survey data pages
-  doc.addPage();
-  drawBrandedHeader(doc, 'ESTRUCTURA ORGANIZACIONAL', pw, margin);
-  addOrgSurveySections(doc, orgSurvey!, margin);
+  if (orgSurvey) {
+    doc.addPage();
+    drawBrandedHeader(doc, 'ESTRUCTURA ORGANIZACIONAL', pw, margin);
+    addOrgSurveySections(doc, orgSurvey, margin);
+  }
+
+  // Tech survey data pages (with its own separator if org came first)
+  if (techSurvey) {
+    if (orgSurvey) {
+      const techDate = new Date(techSurvey.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+      addSeparatorPage(doc, 'PRUEBA DE', 'TECNOLOGÍA', companyName, techDate);
+    }
+    doc.addPage();
+    drawBrandedHeader(doc, 'PRUEBA DE TECNOLOGÍA', pw, margin);
+    addTechSurveySection(doc, techSurvey, margin);
+  }
 
   // Branded footers
   const totalPages = doc.getNumberOfPages();

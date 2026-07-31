@@ -464,7 +464,7 @@ function ClientExpedienteDetail({
   const hasTechPerm = (account.surveyPermissions ?? ['diagnostico_empresarial']).includes('prueba_tecnologia');
 
   function handleViewExpedientePdf() {
-    exportExpediente(companyName, latestDiag, latestOrg, 'view');
+    exportExpediente(companyName, latestDiag, latestOrg, latestTech, 'view');
   }
 
   async function handleStartPrefill() {
@@ -514,7 +514,7 @@ function ClientExpedienteDetail({
         </div>
 
         {/* Export buttons */}
-        {(diagCount > 0 || orgCount > 0) && (
+        {(diagCount > 0 || orgCount > 0 || techCount > 0) && (
           <div className="flex flex-wrap items-center" style={{ gap: '10px', marginBottom: '14px' }}>
             <button
               onClick={handleViewExpedientePdf}
@@ -528,7 +528,7 @@ function ClientExpedienteDetail({
 
         {/* Pre-fill button */}
         {hasDiagPerm && (
-          <div style={{ marginTop: diagCount > 0 || orgCount > 0 ? '0' : '4px' }}>
+          <div style={{ marginTop: diagCount > 0 || orgCount > 0 || techCount > 0 ? '0' : '4px' }}>
             {hasDiagPrefill ? (
               /* ── Pre-llenado existe: mostrar tarjeta de estado ── */
               <div className="rounded-xl border-2 border-success/30 bg-success/5" style={{ padding: '16px 20px', marginTop: '10px' }}>

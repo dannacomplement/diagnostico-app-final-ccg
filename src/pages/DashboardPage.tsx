@@ -142,7 +142,7 @@ export default function DashboardPage() {
     const latestDiag = diagnostics.length > 0 ? diagnostics[0] : undefined;
     const latestOrg = orgSurveys.length > 0 ? orgSurveys[0] : undefined;
     const companyName = latestDiag?.datosGenerales.nombreComercial || latestOrg?.companyName || user?.displayName || 'Cliente';
-    exportExpediente(companyName, latestDiag, latestOrg, mode);
+    exportExpediente(companyName, latestDiag, latestOrg, latestTech ?? undefined, mode);
   }
 
   if (!user) return null;
