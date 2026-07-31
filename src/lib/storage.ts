@@ -4,6 +4,7 @@ import type {
   SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, AppUser, SurveyType,
   DatosGenerales, SituacionActual, CriterionAnswer, Gerencia,
   FamilyAnalysis, MarginData, UrgencySelection, LineaNegocio,
+  TechMaturityArea, TechMaturityAnswer,
 } from './types';
 
 /* ── Prefill data shape (raw wizard state) ─────────────── */
@@ -21,6 +22,12 @@ export interface PrefillData {
   tieneLiderInterno?: boolean | null;
   analisisFamiliar?: FamilyAnalysis;
   marginData?: MarginData;
+  // Prueba de Tecnología (survey_type: 'prueba_tecnologia')
+  techRespondentArea?: TechMaturityArea;
+  techRolCargo?: string;
+  techSistemasPrincipales?: string;
+  techAreaAnswers?: TechMaturityAnswer[];
+  techGeneralAnswers?: TechMaturityAnswer[];
 }
 
 function rowToDiagnostic(row: any): SavedDiagnostic {

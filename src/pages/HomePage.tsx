@@ -9,10 +9,10 @@ import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { getAllClientAccounts, getExpedienteDataForClients } from '../lib/storage';
 import type { AppUser, SavedDiagnostic, SavedOrgSurvey } from '../lib/types';
+import { AREA_STATEMENTS, GENERAL_STATEMENTS } from '../config/techQuestions';
 
 const DIAG_TOTAL_STEPS = 7;
 const ORG_TOTAL_STEPS = 3;
-const TECH_TOTAL_STEPS = 7;
 
 export default function HomePage() {
   const setView = useDiagnosticStore(s => s.setView);
@@ -20,6 +20,7 @@ export default function HomePage() {
   const setDiagTestMode = useDiagnosticStore(s => s.setTestMode);
   const resetOrgSurvey = useOrgSurveyStore(s => s.resetOrgSurvey);
   const resetTechSurvey = useTechSurveyStore(s => s.resetTechSurvey);
+  const setTechTestMode = useTechSurveyStore(s => s.setTestMode);
   const user = useAuthStore(s => s.user);
   const companyLogo = useSettingsStore(s => s.companyLogo);
 
@@ -30,6 +31,8 @@ export default function HomePage() {
   const orgDraftStep = useOrgSurveyStore(s => s.currentStep);
   const techDraftActive = useTechSurveyStore(s => s.draftActive);
   const techDraftStep = useTechSurveyStore(s => s.currentStep);
+  const techDraftArea = useTechSurveyStore(s => s.respondentArea);
+  const techTotalSteps = 1 + (techDraftArea ? AREA_STATEMENTS[techDraftArea].length : 0) + GENERAL_STATEMENTS.length;
 
   const [accounts, setAccounts] = useState<AppUser[]>([]);
   const [expedienteData, setExpedienteData] = useState<
@@ -59,6 +62,12 @@ export default function HomePage() {
     resetDiagnostic();
     setDiagTestMode(true);
     setView('wizard');
+  }
+
+  function handleTestTech() {
+    resetTechSurvey();
+    setTechTestMode(true);
+    setView('tech_wizard');
   }
 
 
@@ -145,7 +154,7 @@ export default function HomePage() {
               <HomeDraftBanner icon={Building2} label="Estructura Organizacional" step={orgDraftStep + 1} totalSteps={ORG_TOTAL_STEPS} onResume={handleResumeOrgDraft} onDiscard={handleDiscardOrgDraft} />
             )}
             {techDraftActive && (
-              <HomeDraftBanner icon={Monitor} label="Prueba de Tecnología" step={techDraftStep + 1} totalSteps={TECH_TOTAL_STEPS} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
+              <HomeDraftBanner icon={Monitor} label="Prueba de Tecnología" step={techDraftStep + 1} totalSteps={techTotalSteps} onResume={handleResumeTechDraft} onDiscard={handleDiscardTechDraft} />
             )}
           </div>
         )}
@@ -196,9 +205,10 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div
-              className="flex-1 w-full sm:w-auto bg-white rounded-2xl border border-border/40 shadow-sm text-center opacity-50"
-              style={{ padding: '24px 20px', maxWidth: '280px', position: 'relative' }}
+            <button
+              onClick={handleTestTech}
+              className="flex-1 w-full sm:w-auto bg-white rounded-2xl border border-border/40 shadow-sm hover:shadow-md text-center transition-all cursor-pointer"
+              style={{ padding: '24px 20px', maxWidth: '280px' }}
             >
               <div className="inline-flex items-center justify-center rounded-full bg-accent/10" style={{ width: '40px', height: '40px', marginBottom: '10px' }}>
                 <Monitor className="text-accent" style={{ width: 'var(--fs-18)', height: 'var(--fs-18)' }} />
@@ -207,12 +217,12 @@ export default function HomePage() {
                 Prueba de Tecnología
               </h3>
               <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '12px' }}>
-                Próximamente
+                Prueba completa como cliente
               </p>
-              <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)', padding: '4px 12px', borderRadius: '6px', background: '#f3f4f6' }}>
-                No disponible aún
+              <span className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)' }}>
+                Iniciar prueba →
               </span>
-            </div>
+            </button>
           </div>
         </div>
 

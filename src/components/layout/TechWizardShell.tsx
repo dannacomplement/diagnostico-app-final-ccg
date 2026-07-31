@@ -1,42 +1,62 @@
 import { useState } from 'react';
-import { X, Save } from 'lucide-react';
-import StepIndicator from './StepIndicator';
+import { X, Save, Sparkles } from 'lucide-react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { useTechSurveyStore } from '../../store/techSurveyStore';
-
-import TechStep1Tools from '../../pages/tech-steps/TechStep1Tools';
-import TechStep2Digital from '../../pages/tech-steps/TechStep2Digital';
-import TechStep3Automation from '../../pages/tech-steps/TechStep3Automation';
-import TechStep4Data from '../../pages/tech-steps/TechStep4Data';
-import TechStep5AI from '../../pages/tech-steps/TechStep5AI';
-import TechStep6Security from '../../pages/tech-steps/TechStep6Security';
-import TechStep7Culture from '../../pages/tech-steps/TechStep7Culture';
-
-const STEPS = [
-  { id: 'tools', label: 'Herramientas', component: TechStep1Tools },
-  { id: 'digital', label: 'Presencia Digital', component: TechStep2Digital },
-  { id: 'automation', label: 'Automatización', component: TechStep3Automation },
-  { id: 'data', label: 'Datos', component: TechStep4Data },
-  { id: 'ai', label: 'IA', component: TechStep5AI },
-  { id: 'security', label: 'Seguridad', component: TechStep6Security },
-  { id: 'culture', label: 'Cultura', component: TechStep7Culture },
-];
+import { AREA_STATEMENTS, GENERAL_STATEMENTS } from '../../config/techQuestions';
+import TechIntroStep from '../../pages/tech-steps/TechIntroStep';
+import TechQuestionStep from '../../pages/tech-steps/TechQuestionStep';
 
 export default function TechWizardShell() {
   const currentStep = useTechSurveyStore(s => s.currentStep);
   const setStep = useTechSurveyStore(s => s.setStep);
+  const respondentArea = useTechSurveyStore(s => s.respondentArea);
+  const areaAnswers = useTechSurveyStore(s => s.areaAnswers);
+  const generalAnswers = useTechSurveyStore(s => s.generalAnswers);
+  const setAnswer = useTechSurveyStore(s => s.setAnswer);
   const saveTechSurvey = useTechSurveyStore(s => s.saveTechSurvey);
   const resetTechSurvey = useTechSurveyStore(s => s.resetTechSurvey);
   const setDraftActive = useTechSurveyStore(s => s.setDraftActive);
+  const prefillMode = useTechSurveyStore(s => s.prefillMode);
+  const savePrefillData = useTechSurveyStore(s => s.savePrefillData);
   const setView = useDiagnosticStore(s => s.setView);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [savingPrefill, setSavingPrefill] = useState(false);
+  const [showPrefillSuccess, setShowPrefillSuccess] = useState(false);
 
-  const isLast = currentStep >= STEPS.length - 1;
-  const StepComponent = STEPS[currentStep]?.component;
+  const areaStatements = respondentArea ? AREA_STATEMENTS[respondentArea] : [];
+  // Questions after the intro step: area-specific statements first, then the general ones.
+  const questions = [
+    ...areaStatements.map(st => ({ ...st, isGeneral: false })),
+    ...GENERAL_STATEMENTS.map(st => ({ ...st, isGeneral: true })),
+  ];
+  const totalSteps = questions.length + 1;
+  const isIntro = currentStep === 0;
+  const isLast = currentStep === totalSteps - 1;
+  const currentQuestion = questions[currentStep - 1];
+  const currentAnswer = currentQuestion
+    ? (currentQuestion.isGeneral ? generalAnswers[currentQuestion.id] : areaAnswers[currentQuestion.id])
+    : undefined;
+
+  const canAdvance = isIntro ? !!respondentArea : currentAnswer !== undefined;
 
   function handleNext() {
+    if (!canAdvance) return;
     if (isLast) {
+      if (prefillMode) {
+        setSavingPrefill(true);
+        savePrefillData()
+          .then(() => {
+            setSavingPrefill(false);
+            setShowPrefillSuccess(true);
+          })
+          .catch(() => {
+            setSavingPrefill(false);
+            resetTechSurvey();
+            setView('history');
+          });
+        return;
+      }
       saveTechSurvey();
       setView('tech_result');
     } else {
@@ -52,29 +72,45 @@ export default function TechWizardShell() {
     }
   }
 
-  function handleStepClick(index: number) {
-    if (index <= currentStep) {
-      setStep(index);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
   function handleSaveAndExit() {
     setDraftActive(true);
     setShowExitConfirm(false);
-    setView('home');
+    setView(prefillMode ? 'history' : 'home');
   }
 
   function handleExit() {
     resetTechSurvey();
-    setView('home');
+    setView(prefillMode ? 'history' : 'home');
+  }
+
+  if (showPrefillSuccess) {
+    return (
+      <div style={{ width: '100%', maxWidth: '560px', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+        <div className="animate-fade-up bg-white rounded-2xl border border-border/40 shadow-lg" style={{ padding: '48px 36px' }}>
+          <div className="inline-flex items-center justify-center rounded-full bg-success/10" style={{ width: '56px', height: '56px', marginBottom: '20px' }}>
+            <Sparkles className="text-success" style={{ width: '24px', height: '24px' }} />
+          </div>
+          <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-20)', marginBottom: '8px' }}>Pre-llenado completo</h2>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-13)', lineHeight: 1.6, marginBottom: '28px' }}>
+            El cliente verá esta información pre-llenada cuando conteste su Prueba de Tecnología.
+          </p>
+          <button
+            onClick={() => { setShowPrefillSuccess(false); resetTechSurvey(); setView('history'); }}
+            className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
+            style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
+          >
+            Volver a expedientes
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="wizard-client-scale" style={{ width: '100%', maxWidth: '760px', margin: '0 auto', padding: '36px 24px' }}>
+    <div className="wizard-client-scale" style={{ width: '100%', maxWidth: '640px', margin: '0 auto', padding: '36px 24px' }}>
       <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
         <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
-          Paso {currentStep + 1} de {STEPS.length} — Prueba de Tecnología
+          {isIntro ? 'Datos del evaluado' : `Paso ${currentStep} de ${totalSteps - 1}`} — Prueba de Tecnología
         </span>
         <button
           onClick={() => setShowExitConfirm(true)}
@@ -85,16 +121,24 @@ export default function TechWizardShell() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-border/60" style={{ marginBottom: '32px', padding: '14px 20px' }}>
-        <StepIndicator
-          steps={STEPS}
-          currentStep={currentStep}
-          onStepClick={handleStepClick}
-        />
-      </div>
+      {prefillMode && (
+        <div className="w-full bg-accent/10 border border-accent/30 rounded-xl text-center" style={{ padding: '10px 20px', marginBottom: '12px' }}>
+          <p className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)' }}>
+            Modo pre-llenado — Los datos que ingrese aquí aparecerán cuando el cliente conteste la encuesta
+          </p>
+        </div>
+      )}
 
-      <div className="animate-fade-up" key={STEPS[currentStep]?.id}>
-        {StepComponent && <StepComponent />}
+      <div className="animate-fade-up" key={currentStep}>
+        {isIntro ? (
+          <TechIntroStep />
+        ) : currentQuestion ? (
+          <TechQuestionStep
+            statement={currentQuestion}
+            currentScore={currentAnswer}
+            onAnswer={score => setAnswer(currentQuestion.id, score, currentQuestion.isGeneral)}
+          />
+        ) : null}
       </div>
 
       <div className="flex items-center justify-between" style={{ marginTop: '48px', paddingBottom: '48px' }}>
@@ -108,10 +152,11 @@ export default function TechWizardShell() {
         </button>
         <button
           onClick={handleNext}
-          className="bg-accent text-white font-semibold hover:bg-mid transition-all shadow-sm cursor-pointer"
+          disabled={!canAdvance || savingPrefill}
+          className="bg-accent text-white font-semibold hover:bg-mid transition-all shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ padding: '12px 28px', borderRadius: '12px', fontSize: 'var(--fs-13)' }}
         >
-          {isLast ? 'Finalizar encuesta' : 'Siguiente →'}
+          {savingPrefill ? 'Guardando...' : isLast ? (prefillMode ? 'Guardar pre-llenado' : 'Finalizar encuesta') : 'Siguiente →'}
         </button>
       </div>
 
