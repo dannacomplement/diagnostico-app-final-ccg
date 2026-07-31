@@ -236,12 +236,14 @@ function ExpedientesPanel({
     const data = expedienteData.get(acc.id) ?? { diagnostics: [], orgSurveys: [], techSurveys: [] };
 
     const hasDiagPrefill = (clientPrefills.get(acc.id) ?? []).includes('diagnostico_empresarial');
+    const hasTechPrefill = (clientPrefills.get(acc.id) ?? []).includes('prueba_tecnologia');
 
     return (
       <ClientExpedienteDetail
         account={acc}
         data={data}
         hasDiagPrefill={hasDiagPrefill}
+        hasTechPrefill={hasTechPrefill}
         onBack={() => { setSelectedClientId(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         onDiagExtenso={(d) => { loadDiagnosticForReport(d); }}
         onOrgExtenso={(s) => { loadOrgSurveyForReport(s); setView('org_report'); }}
@@ -253,6 +255,7 @@ function ExpedientesPanel({
         onDeleteOrg={async (id) => { await deleteOrgSurvey(id); onRefresh(); }}
         onDeleteTech={async (id) => { await deleteTechSurvey(id); onRefresh(); }}
         onDeletePrefill={async () => { await deletePrefill(acc.id, 'diagnostico_empresarial'); onRefresh(); }}
+        onDeleteTechPrefill={async () => { await deletePrefill(acc.id, 'prueba_tecnologia'); onRefresh(); }}
       />
     );
   }
@@ -408,6 +411,7 @@ function ClientExpedienteDetail({
   account,
   data,
   hasDiagPrefill,
+  hasTechPrefill,
   onBack,
   onDiagExtenso,
   onOrgExtenso,
@@ -419,10 +423,12 @@ function ClientExpedienteDetail({
   onDeleteOrg,
   onDeleteTech,
   onDeletePrefill,
+  onDeleteTechPrefill,
 }: {
   account: AppUser;
   data: { diagnostics: SavedDiagnostic[]; orgSurveys: SavedOrgSurvey[]; techSurveys: SavedTechSurvey[] };
   hasDiagPrefill: boolean;
+  hasTechPrefill: boolean;
   onBack: () => void;
   onDiagExtenso: (d: SavedDiagnostic) => void;
   onOrgExtenso: (s: SavedOrgSurvey) => void;
@@ -434,12 +440,18 @@ function ClientExpedienteDetail({
   onDeleteOrg: (id: string) => Promise<void>;
   onDeleteTech: (id: string) => Promise<void>;
   onDeletePrefill: () => Promise<void>;
+  onDeleteTechPrefill: () => Promise<void>;
 }) {
   const [activeSection, setActiveSection] = useState<'resumen' | 'diagnosticos' | 'organizacional' | 'tecnologia'>('resumen');
   const [deletePrefillConfirm, setDeletePrefillConfirm] = useState(false);
   const [deletingPrefill, setDeletingPrefill] = useState(false);
+  const [deleteTechPrefillConfirm, setDeleteTechPrefillConfirm] = useState(false);
+  const [deletingTechPrefill, setDeletingTechPrefill] = useState(false);
   const startPrefillMode = useDiagnosticStore(s => s.startPrefillMode);
   const editPrefillMode = useDiagnosticStore(s => s.editPrefillMode);
+  const startTechPrefillMode = useTechSurveyStore(s => s.startPrefillMode);
+  const editTechPrefillMode = useTechSurveyStore(s => s.editPrefillMode);
+  const setView = useDiagnosticStore(s => s.setView);
   const diagCount = data.diagnostics.length;
   const orgCount = data.orgSurveys.length;
   const techCount = data.techSurveys.length;
@@ -449,6 +461,7 @@ function ClientExpedienteDetail({
   const companyName = latestDiag?.datosGenerales.nombreComercial || latestOrg?.companyName || account.displayName;
 
   const hasDiagPerm = (account.surveyPermissions ?? ['diagnostico_empresarial']).includes('diagnostico_empresarial');
+  const hasTechPerm = (account.surveyPermissions ?? ['diagnostico_empresarial']).includes('prueba_tecnologia');
 
   function handleViewExpedientePdf() {
     exportExpediente(companyName, latestDiag, latestOrg, 'view');
@@ -463,6 +476,19 @@ function ClientExpedienteDetail({
       }
     }
     startPrefillMode(account.id);
+  }
+
+  async function handleStartTechPrefill() {
+    if (hasTechPrefill) {
+      const existing = await getPrefillForUser(account.id, 'prueba_tecnologia');
+      if (existing) {
+        editTechPrefillMode(account.id, existing);
+        setView('tech_wizard');
+        return;
+      }
+    }
+    startTechPrefillMode(account.id);
+    setView('tech_wizard');
   }
 
   return (
@@ -567,6 +593,77 @@ function ClientExpedienteDetail({
                   style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px', gap: '5px' }}
                 >
                   <Sparkles style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Pre-llenar radiografía
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tech prefill button */}
+        {hasTechPerm && (
+          <div style={{ marginTop: '10px' }}>
+            {hasTechPrefill ? (
+              <div className="rounded-xl border-2 border-success/30 bg-success/5" style={{ padding: '16px 20px', marginTop: '10px' }}>
+                <div className="flex items-center" style={{ gap: '10px', marginBottom: '10px' }}>
+                  <div className="inline-flex items-center justify-center rounded-full bg-success/15 shrink-0" style={{ width: '32px', height: '32px' }}>
+                    <CircleCheck className="text-success" style={{ width: 'var(--fs-15)', height: 'var(--fs-15)' }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-13)' }}>Pre-llenado de Prueba de Tecnología completo</p>
+                    <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>El cliente verá los datos pre-llenados al contestar</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center" style={{ gap: '8px' }}>
+                  <button
+                    onClick={handleStartTechPrefill}
+                    className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center"
+                    style={{ fontSize: 'var(--fs-11)', padding: '7px 18px', borderRadius: '8px', gap: '5px' }}
+                  >
+                    <Pencil style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Editar pre-llenado
+                  </button>
+                  {deleteTechPrefillConfirm ? (
+                    <span className="flex items-center" style={{ gap: '6px' }}>
+                      <span className="text-error font-medium" style={{ fontSize: 'var(--fs-11)' }}>¿Borrar pre-llenado?</span>
+                      <button
+                        onClick={async () => {
+                          setDeletingTechPrefill(true);
+                          await onDeleteTechPrefill();
+                          setDeletingTechPrefill(false);
+                          setDeleteTechPrefillConfirm(false);
+                        }}
+                        disabled={deletingTechPrefill}
+                        className="bg-error text-white font-semibold hover:bg-error/80 transition-all cursor-pointer disabled:opacity-50"
+                        style={{ fontSize: 'var(--fs-10)', padding: '5px 12px', borderRadius: '6px' }}
+                      >
+                        {deletingTechPrefill ? 'Borrando...' : 'Si, borrar'}
+                      </button>
+                      <button
+                        onClick={() => setDeleteTechPrefillConfirm(false)}
+                        className="text-muted font-medium hover:text-ink transition-all cursor-pointer"
+                        style={{ fontSize: 'var(--fs-10)', padding: '5px 8px' }}
+                      >
+                        Cancelar
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteTechPrefillConfirm(true)}
+                      className="border border-error/30 text-error font-medium hover:bg-error/5 transition-all cursor-pointer inline-flex items-center"
+                      style={{ fontSize: 'var(--fs-11)', padding: '7px 16px', borderRadius: '8px', gap: '5px' }}
+                    >
+                      <Trash2 style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Borrar pre-llenado
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center" style={{ gap: '10px' }}>
+                <button
+                  onClick={handleStartTechPrefill}
+                  className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center"
+                  style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px', gap: '5px' }}
+                >
+                  <Sparkles style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Pre-llenar Prueba de Tecnología
                 </button>
               </div>
             )}
@@ -2180,6 +2277,7 @@ function DatosPruebaPanel({
     if (!acc) { setSelectedClientId(null); return null; }
     const data = expedienteData.get(acc.id) ?? { diagnostics: [], orgSurveys: [], techSurveys: [] };
     const hasDiagPrefill = (clientPrefills.get(acc.id) ?? []).includes('diagnostico_empresarial');
+    const hasTechPrefill = (clientPrefills.get(acc.id) ?? []).includes('prueba_tecnologia');
 
     return (
       <div>
@@ -2193,6 +2291,7 @@ function DatosPruebaPanel({
           account={acc}
           data={data}
           hasDiagPrefill={hasDiagPrefill}
+          hasTechPrefill={hasTechPrefill}
           onBack={() => { setSelectedClientId(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
           onDiagExtenso={(d) => { loadDiagnosticForReport(d); }}
           onOrgExtenso={(s) => { loadOrgSurveyForReport(s); setView('org_report'); }}
@@ -2204,6 +2303,7 @@ function DatosPruebaPanel({
           onDeleteOrg={async (id) => { await deleteOrgSurvey(id); onRefresh(); }}
           onDeleteTech={async (id) => { await deleteTechSurvey(id); onRefresh(); }}
           onDeletePrefill={async () => { await deletePrefill(acc.id, 'diagnostico_empresarial'); onRefresh(); }}
+          onDeleteTechPrefill={async () => { await deletePrefill(acc.id, 'prueba_tecnologia'); onRefresh(); }}
         />
       </div>
     );

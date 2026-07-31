@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Sparkles } from 'lucide-react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { useTechSurveyStore } from '../../store/techSurveyStore';
 import { AREA_STATEMENTS, GENERAL_STATEMENTS } from '../../config/techQuestions';
@@ -16,9 +16,13 @@ export default function TechWizardShell() {
   const saveTechSurvey = useTechSurveyStore(s => s.saveTechSurvey);
   const resetTechSurvey = useTechSurveyStore(s => s.resetTechSurvey);
   const setDraftActive = useTechSurveyStore(s => s.setDraftActive);
+  const prefillMode = useTechSurveyStore(s => s.prefillMode);
+  const savePrefillData = useTechSurveyStore(s => s.savePrefillData);
   const setView = useDiagnosticStore(s => s.setView);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [savingPrefill, setSavingPrefill] = useState(false);
+  const [showPrefillSuccess, setShowPrefillSuccess] = useState(false);
 
   const areaStatements = respondentArea ? AREA_STATEMENTS[respondentArea] : [];
   // Questions after the intro step: area-specific statements first, then the general ones.
@@ -39,6 +43,20 @@ export default function TechWizardShell() {
   function handleNext() {
     if (!canAdvance) return;
     if (isLast) {
+      if (prefillMode) {
+        setSavingPrefill(true);
+        savePrefillData()
+          .then(() => {
+            setSavingPrefill(false);
+            setShowPrefillSuccess(true);
+          })
+          .catch(() => {
+            setSavingPrefill(false);
+            resetTechSurvey();
+            setView('history');
+          });
+        return;
+      }
       saveTechSurvey();
       setView('tech_result');
     } else {
@@ -57,12 +75,35 @@ export default function TechWizardShell() {
   function handleSaveAndExit() {
     setDraftActive(true);
     setShowExitConfirm(false);
-    setView('home');
+    setView(prefillMode ? 'history' : 'home');
   }
 
   function handleExit() {
     resetTechSurvey();
-    setView('home');
+    setView(prefillMode ? 'history' : 'home');
+  }
+
+  if (showPrefillSuccess) {
+    return (
+      <div style={{ width: '100%', maxWidth: '560px', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+        <div className="animate-fade-up bg-white rounded-2xl border border-border/40 shadow-lg" style={{ padding: '48px 36px' }}>
+          <div className="inline-flex items-center justify-center rounded-full bg-success/10" style={{ width: '56px', height: '56px', marginBottom: '20px' }}>
+            <Sparkles className="text-success" style={{ width: '24px', height: '24px' }} />
+          </div>
+          <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-20)', marginBottom: '8px' }}>Pre-llenado completo</h2>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-13)', lineHeight: 1.6, marginBottom: '28px' }}>
+            El cliente verá esta información pre-llenada cuando conteste su Prueba de Tecnología.
+          </p>
+          <button
+            onClick={() => { setShowPrefillSuccess(false); resetTechSurvey(); setView('history'); }}
+            className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
+            style={{ fontSize: 'var(--fs-13)', padding: '12px 32px', borderRadius: '12px' }}
+          >
+            Volver a expedientes
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -79,6 +120,14 @@ export default function TechWizardShell() {
           <X style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} /> Salir
         </button>
       </div>
+
+      {prefillMode && (
+        <div className="w-full bg-accent/10 border border-accent/30 rounded-xl text-center" style={{ padding: '10px 20px', marginBottom: '12px' }}>
+          <p className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)' }}>
+            Modo pre-llenado — Los datos que ingrese aquí aparecerán cuando el cliente conteste la encuesta
+          </p>
+        </div>
+      )}
 
       <div className="animate-fade-up" key={currentStep}>
         {isIntro ? (
@@ -103,11 +152,11 @@ export default function TechWizardShell() {
         </button>
         <button
           onClick={handleNext}
-          disabled={!canAdvance}
+          disabled={!canAdvance || savingPrefill}
           className="bg-accent text-white font-semibold hover:bg-mid transition-all shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ padding: '12px 28px', borderRadius: '12px', fontSize: 'var(--fs-13)' }}
         >
-          {isLast ? 'Finalizar encuesta' : 'Siguiente →'}
+          {savingPrefill ? 'Guardando...' : isLast ? (prefillMode ? 'Guardar pre-llenado' : 'Finalizar encuesta') : 'Siguiente →'}
         </button>
       </div>
 

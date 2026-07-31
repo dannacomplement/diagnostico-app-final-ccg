@@ -66,6 +66,7 @@ export default function DashboardPage() {
   const loadPrefill = useDiagnosticStore(s => s.loadPrefill);
   const resetOrgSurvey = useOrgSurveyStore(s => s.resetOrgSurvey);
   const resetTechSurvey = useTechSurveyStore(s => s.resetTechSurvey);
+  const loadTechPrefill = useTechSurveyStore(s => s.loadPrefill);
   const companyLogo = useSettingsStore(s => s.companyLogo);
   const companyLogoIcon = useSettingsStore(s => s.companyLogoIcon);
 
@@ -82,6 +83,7 @@ export default function DashboardPage() {
   const [orgSurveys, setOrgSurveys] = useState<SavedOrgSurvey[]>([]);
   const [techSurveys, setTechSurveys] = useState<SavedTechSurvey[]>([]);
   const [diagPrefill, setDiagPrefill] = useState<PrefillData | null>(null);
+  const [techPrefill, setTechPrefill] = useState<PrefillData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const permissions = user?.surveyPermissions ?? ['diagnostico_empresarial'];
@@ -96,11 +98,13 @@ export default function DashboardPage() {
         hasOrgPerm ? getOrgSurveysByUser(user.id) : Promise.resolve([]),
         hasTechPerm ? getTechSurveysByUser(user.id) : Promise.resolve([]),
         hasDiagPerm ? getPrefillForUser(user.id, 'diagnostico_empresarial') : Promise.resolve(null),
-      ]).then(([diag, org, tech, prefill]) => {
+        hasTechPerm ? getPrefillForUser(user.id, 'prueba_tecnologia') : Promise.resolve(null),
+      ]).then(([diag, org, tech, prefill, techPrefillData]) => {
         setDiagnostics(diag);
         setOrgSurveys(org);
         setTechSurveys(tech);
         setDiagPrefill(prefill);
+        setTechPrefill(techPrefillData);
         setLoading(false);
       });
     }
@@ -123,7 +127,14 @@ export default function DashboardPage() {
   }
 
   function handleNewOrgSurvey() { resetOrgSurvey(); setView('org_wizard'); }
-  function handleNewTechSurvey() { resetTechSurvey(); setView('tech_wizard'); }
+  function handleNewTechSurvey() {
+    if (techPrefill) {
+      loadTechPrefill(techPrefill);
+    } else {
+      resetTechSurvey();
+    }
+    setView('tech_wizard');
+  }
 
   function handleViewReport(d: SavedDiagnostic) { loadDiagnosticForReport(d); }
 
@@ -415,7 +426,9 @@ export default function DashboardPage() {
                           <button onClick={handleNewTechSurvey} className="text-accent font-medium hover:underline cursor-pointer" style={{ fontSize: 'var(--fs-11)', background: 'none', padding: '0' }}>Repetir</button>
                         </>
                       ) : (
-                        <button onClick={handleNewTechSurvey} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '8px 22px', borderRadius: '8px' }}>Contestar</button>
+                        <button onClick={handleNewTechSurvey} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '8px 22px', borderRadius: '8px' }}>
+                          {techPrefill ? 'Contestar (Pre-llenado)' : 'Contestar'}
+                        </button>
                       )}
                     </div>
                   </div>

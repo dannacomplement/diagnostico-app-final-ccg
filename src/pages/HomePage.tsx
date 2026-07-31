@@ -20,6 +20,7 @@ export default function HomePage() {
   const setDiagTestMode = useDiagnosticStore(s => s.setTestMode);
   const resetOrgSurvey = useOrgSurveyStore(s => s.resetOrgSurvey);
   const resetTechSurvey = useTechSurveyStore(s => s.resetTechSurvey);
+  const setTechTestMode = useTechSurveyStore(s => s.setTestMode);
   const user = useAuthStore(s => s.user);
   const companyLogo = useSettingsStore(s => s.companyLogo);
 
@@ -61,6 +62,12 @@ export default function HomePage() {
     resetDiagnostic();
     setDiagTestMode(true);
     setView('wizard');
+  }
+
+  function handleTestTech() {
+    resetTechSurvey();
+    setTechTestMode(true);
+    setView('tech_wizard');
   }
 
 
@@ -198,9 +205,10 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div
-              className="flex-1 w-full sm:w-auto bg-white rounded-2xl border border-border/40 shadow-sm text-center opacity-50"
-              style={{ padding: '24px 20px', maxWidth: '280px', position: 'relative' }}
+            <button
+              onClick={handleTestTech}
+              className="flex-1 w-full sm:w-auto bg-white rounded-2xl border border-border/40 shadow-sm hover:shadow-md text-center transition-all cursor-pointer"
+              style={{ padding: '24px 20px', maxWidth: '280px' }}
             >
               <div className="inline-flex items-center justify-center rounded-full bg-accent/10" style={{ width: '40px', height: '40px', marginBottom: '10px' }}>
                 <Monitor className="text-accent" style={{ width: 'var(--fs-18)', height: 'var(--fs-18)' }} />
@@ -209,12 +217,12 @@ export default function HomePage() {
                 Prueba de Tecnología
               </h3>
               <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '12px' }}>
-                Próximamente
+                Prueba completa como cliente
               </p>
-              <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)', padding: '4px 12px', borderRadius: '6px', background: '#f3f4f6' }}>
-                No disponible aún
+              <span className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)' }}>
+                Iniciar prueba →
               </span>
-            </div>
+            </button>
           </div>
         </div>
 
