@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
-import { useAuthStore } from '../../store/authStore';
 import type { SocioDetail } from '../../lib/types';
 import { formatMonetaryValue, currencyUnitLabel, currencyPerEmployeeLabel } from '../../lib/money';
 
@@ -18,7 +17,7 @@ export default function Step2SituacionActual() {
   const getCompanySize = useDiagnosticStore(s => s.getCompanySize);
   const marginData = useDiagnosticStore(s => s.marginData);
   const updateMarginData = useDiagnosticStore(s => s.updateMarginData);
-  const currencyCode = useAuthStore(s => s.user?.currencyCode) ?? 'MXN';
+  const currencyCode = useDiagnosticStore(s => s.getEffectiveCurrency());
 
   const isFamily = isFamilyBusiness();
   const sizeResult = getCompanySize();
