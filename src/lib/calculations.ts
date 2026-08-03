@@ -16,6 +16,7 @@ import type {
 } from './types';
 import { classifyCompanySize } from '../config/companySize';
 import { SERVICE_AREAS } from '../config/serviceAreas';
+import { formatMonetaryValue } from './money';
 
 export function calculateCompanySize(
   sector: Sector,
@@ -145,10 +146,7 @@ export function evaluateMargins(marginData: MarginData, benchmark: IndustryBench
   };
 }
 
+/** @deprecated Use formatMonetaryValue() from './money' — kept for backward compat, MXN-only. */
 export function formatMDP(value: number): string {
-  if (value >= 1) {
-    return `$${value.toLocaleString('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MDP`;
-  }
-  const thousands = value * 1000;
-  return `$${thousands.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} mil`;
+  return formatMonetaryValue({ value, currencyCode: 'MXN' });
 }

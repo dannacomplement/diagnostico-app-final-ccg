@@ -1,8 +1,9 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import type { SavedDiagnostic, MarginLevel } from './types';
+import type { SavedDiagnostic, MarginLevel, CurrencyCode } from './types';
 import { ALL_CRITERIA } from '../config/questions';
 import { buildSoftwareLabel } from './formatters';
+import { formatMonetaryValue } from './money';
 
 /* ── Color palette ────────────────────────────────────────── */
 const NAVY    = '1B2A4A';
@@ -126,7 +127,7 @@ function addSpacer(ws: ExcelJS.Worksheet, row: number): number {
 
 /* ── Main Export ──────────────────────────────────────────── */
 
-export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> {
+export async function exportToExcel(diagnostic: SavedDiagnostic, currencyCode: CurrencyCode = 'MXN'): Promise<void> {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Complement Consulting Group';
   wb.created = new Date();
@@ -228,7 +229,7 @@ export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> 
      SITUACIÓN ACTUAL
      ═══════════════════════════════════════════════════════ */
   r = addSectionHeader(ws, r, '  SITUACIÓN ACTUAL', COLS);
-  r = addKeyValue(ws, r, 'Ventas Anuales', sa.ventasAnualesMDP !== null ? `$${sa.ventasAnualesMDP} MDP` : '—', COLS);
+  r = addKeyValue(ws, r, 'Ventas Anuales', formatMonetaryValue({ value: sa.ventasAnualesMDP, currencyCode }), COLS);
   r = addKeyValue(ws, r, 'Empleados Totales', sa.empleadosTotales ?? '—', COLS);
   if (sa.empleadosFamiliares !== null && sa.empleadosFamiliares !== undefined) {
     r = addKeyValue(ws, r, 'Empleados Familiares', sa.empleadosFamiliares, COLS);
@@ -261,7 +262,7 @@ export async function exportToExcel(diagnostic: SavedDiagnostic): Promise<void> 
   const sizeValues = [
     diagnostic.companySize.size,
     diagnostic.companySize.tmcScore.toString(),
-    `$${diagnostic.companySize.productivityIndex.toFixed(2)} MDP`,
+    `${currencyCode === 'USD' ? 'US$' : '$'}${diagnostic.companySize.productivityIndex.toFixed(2)} ${currencyCode === 'USD' ? 'M' : 'MDP'}`,
   ];
   const sizeColors = [ACCENT, NAVY, SUCCESS];
 

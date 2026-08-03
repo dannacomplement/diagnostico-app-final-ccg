@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
+import { useAuthStore } from '../../store/authStore';
 import type { SocioDetail } from '../../lib/types';
+import { formatMonetaryValue, currencyUnitLabel, currencyPerEmployeeLabel } from '../../lib/money';
 
 const SIZE_COLORS = {
   Micro: 'bg-blue/10 text-blue border-blue/20',
@@ -9,11 +11,6 @@ const SIZE_COLORS = {
   Grande: 'bg-success/10 text-success border-success/20',
 };
 
-function formatMDP(val: number | null): string {
-  if (val === null || val === 0) return '';
-  return `$${val.toLocaleString('es-MX', { maximumFractionDigits: 1 })} MDP`;
-}
-
 export default function Step2SituacionActual() {
   const situacion = useDiagnosticStore(s => s.situacionActual);
   const update = useDiagnosticStore(s => s.updateSituacionActual);
@@ -21,6 +18,7 @@ export default function Step2SituacionActual() {
   const getCompanySize = useDiagnosticStore(s => s.getCompanySize);
   const marginData = useDiagnosticStore(s => s.marginData);
   const updateMarginData = useDiagnosticStore(s => s.updateMarginData);
+  const currencyCode = useAuthStore(s => s.user?.currencyCode) ?? 'MXN';
 
   const isFamily = isFamilyBusiness();
   const sizeResult = getCompanySize();
@@ -34,7 +32,7 @@ export default function Step2SituacionActual() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
         <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '20px' }}>
-          <InlineField label="Ventas anuales" required suffix="MDP">
+          <InlineField label="Ventas anuales" required suffix={currencyUnitLabel(currencyCode)}>
             {ventasFocused ? (
               <input
                 type="number"
@@ -55,7 +53,9 @@ export default function Step2SituacionActual() {
                 style={{ maxWidth: '160px', minHeight: '38px', display: 'flex', alignItems: 'center' }}
               >
                 <span className={situacion.ventasAnualesMDP ? 'text-ink font-semibold' : 'text-muted'} style={{ fontSize: 'var(--fs-13)' }}>
-                  {situacion.ventasAnualesMDP ? formatMDP(situacion.ventasAnualesMDP) : '$0 MDP'}
+                  {situacion.ventasAnualesMDP
+                    ? formatMonetaryValue({ value: situacion.ventasAnualesMDP, currencyCode })
+                    : (currencyCode === 'USD' ? 'US$0 M' : '$0 MDP')}
                 </span>
               </div>
             )}
@@ -129,8 +129,8 @@ export default function Step2SituacionActual() {
               </div>
               <div className="rounded-xl border border-border text-center bg-pale" style={{ padding: '20px 16px' }}>
                 <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px' }}>Productividad per capita</p>
-                <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>${sizeResult.productivityIndex.toFixed(2)}</p>
-                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '6px' }}>MDP por empleado</p>
+                <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{currencyCode === 'USD' ? 'US$' : '$'}{sizeResult.productivityIndex.toFixed(2)}</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '6px' }}>{currencyPerEmployeeLabel(currencyCode)}</p>
               </div>
               <div className="rounded-xl border border-border text-center bg-pale" style={{ padding: '20px 16px' }}>
                 <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px' }}>Puntaje TMC</p>

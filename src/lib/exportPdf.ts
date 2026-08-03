@@ -1,10 +1,11 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { SavedDiagnostic, MarginLevel, Sector } from './types';
+import type { SavedDiagnostic, MarginLevel, Sector, CurrencyCode } from './types';
 import { ALL_CRITERIA } from '../config/questions';
 import { buildSoftwareLabel } from './formatters';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from './diagnosticAnalysis';
+import { formatMonetaryValue } from './money';
 
 /* -- Color palette (RGB arrays) -- */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -284,7 +285,7 @@ function drawBrandedHeader(doc: jsPDF, title: string, pageWidth: number, margin:
 
 /* -- Main Export -- */
 
-export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
+export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyCode = 'MXN'): jsPDF {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -544,7 +545,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
     { label: 'EMPRESA', value: dg.nombreComercial || '—' },
     { label: 'SECTOR', value: sectorLabel },
     { label: 'EMPLEADOS', value: sa.empleadosTotales?.toString() ?? '—' },
-    { label: 'VENTAS ANUALES', value: sa.ventasAnualesMDP ? `$${sa.ventasAnualesMDP} MDP` : '—' },
+    { label: 'VENTAS ANUALES', value: formatMonetaryValue({ value: sa.ventasAnualesMDP, currencyCode }) },
   ];
   infoItems.forEach((item, i) => {
     const ix = margin + i * (infoWidth + 3);
@@ -964,7 +965,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
 
   /* -- SITUACIÓN ACTUAL -- */
   const sitBody: string[][] = [
-    ['Ventas Anuales', sa.ventasAnualesMDP !== null ? `$${sa.ventasAnualesMDP} MDP` : '—'],
+    ['Ventas Anuales', formatMonetaryValue({ value: sa.ventasAnualesMDP, currencyCode })],
     ['Empleados Totales', sa.empleadosTotales?.toString() ?? '—'],
     ['Número de Socios', sa.socios || '—'],
   ];
@@ -1038,7 +1039,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(...NAVY);
-  doc.text(`$${diagnostic.companySize.productivityIndex.toFixed(2)} MDP`, margin + metricHalfW / 2, y + 13, { align: 'center' });
+  doc.text(`${currencyCode === 'USD' ? 'US$' : '$'}${diagnostic.companySize.productivityIndex.toFixed(2)} ${currencyCode === 'USD' ? 'M' : 'MDP'}`, margin + metricHalfW / 2, y + 13, { align: 'center' });
 
   const antX = margin + metricHalfW + 4;
   drawRoundedRect(doc, antX, y, metricHalfW, 18, 2, LIGHT_BLUE);
@@ -1428,8 +1429,8 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic): jsPDF {
   return doc;
 }
 
-export function exportToPdf(diagnostic: SavedDiagnostic): void {
-  const doc = buildPdfDoc(diagnostic);
+export function exportToPdf(diagnostic: SavedDiagnostic, currencyCode: CurrencyCode = 'MXN'): void {
+  const doc = buildPdfDoc(diagnostic, currencyCode);
   const safeName = (diagnostic.datosGenerales.nombreComercial || 'radiografia')
     .replace(/[^a-zA-Z0-9 ]/g, '')
     .trim()
@@ -1437,7 +1438,7 @@ export function exportToPdf(diagnostic: SavedDiagnostic): void {
   doc.save(`Reporte_${safeName}.pdf`);
 }
 
-export function getPdfBase64(diagnostic: SavedDiagnostic): string {
-  const doc = buildPdfDoc(diagnostic);
+export function getPdfBase64(diagnostic: SavedDiagnostic, currencyCode: CurrencyCode = 'MXN'): string {
+  const doc = buildPdfDoc(diagnostic, currencyCode);
   return doc.output('datauristring').split(',')[1];
 }

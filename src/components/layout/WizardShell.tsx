@@ -219,9 +219,10 @@ export default function WizardShell() {
         }
         setEmailStatus('sending');
 
+        const currencyCode = getCurrentUser()?.currencyCode ?? 'MXN';
         const emailPromises = Array.from(emails).map(email => {
           const diagCopy = { ...diagnostic, datosGenerales: { ...diagnostic.datosGenerales, email } };
-          return sendReportEmail(diagCopy);
+          return sendReportEmail(diagCopy, currencyCode);
         });
 
         Promise.all(emailPromises)

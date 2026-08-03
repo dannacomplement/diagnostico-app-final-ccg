@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(403).json({ error: 'Only master accounts can update users' });
   }
 
-  const { userId, password, email, displayName, username, permissions, logoUrl, status } = req.body;
+  const { userId, password, email, displayName, username, permissions, logoUrl, status, operationMode, currencyCode, corporateGroup } = req.body;
 
   if (!userId) {
     return res.status(400).json({ error: 'userId is required' });
@@ -61,6 +61,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (permissions !== undefined) profilePayload.survey_permissions = permissions;
   if (logoUrl !== undefined) profilePayload.logo_url = logoUrl;
   if (status !== undefined) profilePayload.status = status;
+  if (operationMode !== undefined) profilePayload.operation_mode = operationMode;
+  if (currencyCode !== undefined) profilePayload.currency_code = currencyCode;
+  if (corporateGroup !== undefined) profilePayload.corporate_group = corporateGroup || null;
 
   if (Object.keys(profilePayload).length > 0) {
     const { error: profileErr } = await adminClient

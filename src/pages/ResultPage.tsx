@@ -2,6 +2,7 @@ import { Check, FlaskConical } from 'lucide-react';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useAuthStore } from '../store/authStore';
 import { getCurrentUser } from '../lib/auth';
+import { formatMonetaryValue } from '../lib/money';
 import type { MarginLevel } from '../lib/types';
 
 const MARGIN_LEVEL_CONFIG: Record<MarginLevel, { label: string; className: string }> = {
@@ -21,6 +22,7 @@ export default function ResultPage() {
   const setView = useDiagnosticStore(s => s.setView);
   const testMode = useDiagnosticStore(s => s.testMode);
   const emailStatus = useDiagnosticStore(s => s.emailStatus);
+  const currencyCode = useDiagnosticStore(s => s.getEffectiveCurrency());
   const email = getCurrentUser()?.email || datosGenerales.email;
 
   const sizeResult = getCompanySize();
@@ -87,14 +89,14 @@ export default function ResultPage() {
           <MetricBox label="Tamaño" value={sizeResult?.size ?? '—'} highlight />
           <MetricBox
             label="Productividad per cápita"
-            value={sizeResult ? `$${sizeResult.productivityIndex.toFixed(2)} MDP` : '—'}
+            value={sizeResult ? `${currencyCode === 'USD' ? 'US$' : '$'}${sizeResult.productivityIndex.toFixed(2)} ${currencyCode === 'USD' ? 'M' : 'MDP'}` : '—'}
           />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '14px' }}>
           <MetricBox label="Empleados" value={situacionActual.empleadosTotales?.toString() ?? '—'} />
           <MetricBox
             label="Ventas Anuales"
-            value={situacionActual.ventasAnualesMDP ? `$${situacionActual.ventasAnualesMDP} MDP` : '—'}
+            value={formatMonetaryValue({ value: situacionActual.ventasAnualesMDP, currencyCode })}
           />
           <MetricBox label="Empresa Familiar" value={isFamily ? 'Sí' : 'No'} />
         </div>

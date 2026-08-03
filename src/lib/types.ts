@@ -180,6 +180,11 @@ export type UserRole = 'master' | 'client';
 export type SurveyType = 'diagnostico_empresarial' | 'estructura_organizacional' | 'prueba_tecnologia';
 export type ClientStatus = 'activo' | 'inactivo' | 'prospecto';
 
+/** STANDARD: una empresa = un expediente (comportamiento actual, default).
+ *  MULTI_BRANCH: expediente corporativo con sucursales independientes. */
+export type OperationMode = 'STANDARD' | 'MULTI_BRANCH';
+export type CurrencyCode = 'MXN' | 'USD';
+
 export interface AppUser {
   id: string;
   username: string;
@@ -189,6 +194,39 @@ export interface AppUser {
   surveyPermissions?: SurveyType[];
   logoUrl?: string;
   status?: ClientStatus;
+  createdAt?: string;
+  operationMode?: OperationMode;
+  currencyCode?: CurrencyCode;
+  /** Etiqueta libre para agrupar varios clientes bajo un mismo corporativo (ej. "CEMEX") en la lista del master. */
+  corporateGroup?: string;
+}
+
+export type BranchStatus = 'activa' | 'inactiva' | 'archivada';
+export type BranchDiagnosticStatus = 'pendiente' | 'en_proceso' | 'terminado';
+
+/** Una sucursal de un expediente MULTI_BRANCH. `branchProfileId` es el login
+ *  propio del responsable (nullable: se puede crear la sucursal antes de
+ *  asignar/crear su cuenta). No duplica ventas/empleados/avance — esos viven
+ *  en el SavedDiagnostic de esa sucursal una vez creado. */
+export interface Branch {
+  id: string;
+  corporateClientId: string;
+  branchProfileId: string | null;
+  name: string;
+  internalCode?: string;
+  country: string;
+  region?: string;
+  city?: string;
+  address?: string;
+  responsibleName?: string;
+  responsiblePosition?: string;
+  responsibleEmail?: string;
+  responsiblePhone?: string;
+  status: BranchStatus;
+  diagnosticStatus: BranchDiagnosticStatus;
+  adminNotes?: string;
+  startedAt?: string;
+  updatedAt?: string;
   createdAt?: string;
 }
 

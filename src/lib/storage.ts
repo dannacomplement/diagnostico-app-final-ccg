@@ -4,6 +4,7 @@ import type {
   SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, AppUser, SurveyType,
   DatosGenerales, SituacionActual, CriterionAnswer, Gerencia,
   FamilyAnalysis, MarginData, UrgencySelection, LineaNegocio,
+  OperationMode, CurrencyCode, Branch, BranchStatus, BranchDiagnosticStatus,
 } from './types';
 
 /* ── Prefill data shape (raw wizard state) ─────────────── */
@@ -313,6 +314,9 @@ export async function createClientAccount(
   permissions: SurveyType[] = ['diagnostico_empresarial'],
   logoUrl?: string,
   email?: string,
+  operationMode: OperationMode = 'STANDARD',
+  currencyCode: CurrencyCode = 'MXN',
+  corporateGroup?: string,
 ): Promise<AppUser | null> {
   if (!email) {
     console.error('createClientAccount: email is required for Supabase Auth');
@@ -328,7 +332,10 @@ export async function createClientAccount(
   const res = await fetch('/api/create-user', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ email, password, displayName: displayName || username, username, permissions, logoUrl }),
+    body: JSON.stringify({
+      email, password, displayName: displayName || username, username, permissions, logoUrl,
+      operationMode, currencyCode, corporateGroup,
+    }),
   });
 
   if (!res.ok) {
@@ -348,13 +355,16 @@ export async function createClientAccount(
     logoUrl: (profile.logo_url as string | null) ?? undefined,
     status: (profile.status as AppUser['status']) ?? 'activo',
     createdAt: (profile.created_at as string | null) ?? undefined,
+    operationMode: (profile.operation_mode as AppUser['operationMode']) ?? 'STANDARD',
+    currencyCode: (profile.currency_code as AppUser['currencyCode']) ?? 'MXN',
+    corporateGroup: (profile.corporate_group as string | null) ?? undefined,
   };
 }
 
 export async function getAllClientAccounts(): Promise<AppUser[]> {
   const { data: rows, error } = await supabase
     .from('profiles')
-    .select('id, username, role, display_name, email, created_at, survey_permissions, logo_url, status')
+    .select('id, username, role, display_name, email, created_at, survey_permissions, logo_url, status, operation_mode, currency_code, corporate_group')
     .eq('role', 'client')
     .order('created_at', { ascending: false });
 
@@ -373,6 +383,9 @@ export async function getAllClientAccounts(): Promise<AppUser[]> {
     logoUrl: (row.logo_url as string | null) ?? undefined,
     status: (row.status as AppUser['status']) ?? 'activo',
     createdAt: (row.created_at as string | null) ?? undefined,
+    operationMode: (row.operation_mode as AppUser['operationMode']) ?? 'STANDARD',
+    currencyCode: (row.currency_code as AppUser['currencyCode']) ?? 'MXN',
+    corporateGroup: (row.corporate_group as string | null) ?? undefined,
   }));
 }
 
@@ -389,7 +402,11 @@ export async function updateClientLogo(userId: string, logoUrl: string | null): 
 
 export async function updateClientProfile(
   userId: string,
-  updates: { displayName?: string; username?: string; password?: string; logoUrl?: string | null; email?: string; permissions?: SurveyType[]; status?: string },
+  updates: {
+    displayName?: string; username?: string; password?: string; logoUrl?: string | null; email?: string;
+    permissions?: SurveyType[]; status?: string; operationMode?: OperationMode; currencyCode?: CurrencyCode;
+    corporateGroup?: string | null;
+  },
 ): Promise<boolean> {
   // Password and email changes require the admin API (server-side)
   if (updates.password || updates.email) {
@@ -408,6 +425,9 @@ export async function updateClientProfile(
         permissions: updates.permissions,
         logoUrl: updates.logoUrl,
         status: updates.status,
+        operationMode: updates.operationMode,
+        currencyCode: updates.currencyCode,
+        corporateGroup: updates.corporateGroup,
       }),
     });
 
@@ -426,6 +446,9 @@ export async function updateClientProfile(
   if (updates.logoUrl !== undefined) payload.logo_url = updates.logoUrl;
   if (updates.permissions !== undefined) payload.survey_permissions = updates.permissions;
   if (updates.status !== undefined) payload.status = updates.status;
+  if (updates.operationMode !== undefined) payload.operation_mode = updates.operationMode;
+  if (updates.currencyCode !== undefined) payload.currency_code = updates.currencyCode;
+  if (updates.corporateGroup !== undefined) payload.corporate_group = updates.corporateGroup;
 
   if (Object.keys(payload).length === 0) return true;
 
@@ -574,4 +597,151 @@ export async function setTestClientIds(ids: string[]): Promise<boolean> {
     return false;
   }
   return true;
+}
+
+/* ── Branches (MULTI_BRANCH corporate expedientes) ─────── */
+
+function rowToBranch(row: any): Branch {
+  return {
+    id: row.id,
+    corporateClientId: row.corporate_client_id,
+    branchProfileId: row.branch_profile_id ?? null,
+    name: row.name,
+    internalCode: row.internal_code ?? undefined,
+    country: row.country,
+    region: row.region ?? undefined,
+    city: row.city ?? undefined,
+    address: row.address ?? undefined,
+    responsibleName: row.responsible_name ?? undefined,
+    responsiblePosition: row.responsible_position ?? undefined,
+    responsibleEmail: row.responsible_email ?? undefined,
+    responsiblePhone: row.responsible_phone ?? undefined,
+    status: row.status as BranchStatus,
+    diagnosticStatus: row.diagnostic_status as BranchDiagnosticStatus,
+    adminNotes: row.admin_notes ?? undefined,
+    startedAt: row.started_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
+    createdAt: row.created_at ?? undefined,
+  };
+}
+
+export async function getBranchesForCorporate(corporateClientId: string): Promise<Branch[]> {
+  const { data, error } = await supabase
+    .from('branches')
+    .select('*')
+    .eq('corporate_client_id', corporateClientId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Supabase getBranchesForCorporate error:', error);
+    return [];
+  }
+  return (data ?? []).map(rowToBranch);
+}
+
+export async function getBranchForProfile(profileId: string): Promise<Branch | undefined> {
+  const { data, error } = await supabase
+    .from('branches')
+    .select('*')
+    .eq('branch_profile_id', profileId)
+    .maybeSingle();
+
+  if (error || !data) return undefined;
+  return rowToBranch(data);
+}
+
+export async function createBranch(
+  corporateClientId: string,
+  fields: {
+    name: string;
+    internalCode?: string;
+    country: string;
+    region?: string;
+    city?: string;
+    address?: string;
+    responsibleName?: string;
+    responsiblePosition?: string;
+    responsibleEmail?: string;
+    responsiblePhone?: string;
+    adminNotes?: string;
+  },
+): Promise<Branch | null> {
+  const { data, error } = await supabase
+    .from('branches')
+    .insert({
+      corporate_client_id: corporateClientId,
+      name: fields.name,
+      internal_code: fields.internalCode || null,
+      country: fields.country,
+      region: fields.region || null,
+      city: fields.city || null,
+      address: fields.address || null,
+      responsible_name: fields.responsibleName || null,
+      responsible_position: fields.responsiblePosition || null,
+      responsible_email: fields.responsibleEmail || null,
+      responsible_phone: fields.responsiblePhone || null,
+      admin_notes: fields.adminNotes || null,
+    })
+    .select('*')
+    .single();
+
+  if (error || !data) {
+    console.error('Supabase createBranch error:', error);
+    return null;
+  }
+  return rowToBranch(data);
+}
+
+export async function updateBranch(
+  branchId: string,
+  updates: Partial<{
+    name: string; internalCode: string | null; country: string; region: string | null; city: string | null;
+    address: string | null; responsibleName: string | null; responsiblePosition: string | null;
+    responsibleEmail: string | null; responsiblePhone: string | null; status: BranchStatus;
+    diagnosticStatus: BranchDiagnosticStatus; adminNotes: string | null; branchProfileId: string | null;
+    startedAt: string | null;
+  }>,
+): Promise<boolean> {
+  const payload: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (updates.name !== undefined) payload.name = updates.name;
+  if (updates.internalCode !== undefined) payload.internal_code = updates.internalCode;
+  if (updates.country !== undefined) payload.country = updates.country;
+  if (updates.region !== undefined) payload.region = updates.region;
+  if (updates.city !== undefined) payload.city = updates.city;
+  if (updates.address !== undefined) payload.address = updates.address;
+  if (updates.responsibleName !== undefined) payload.responsible_name = updates.responsibleName;
+  if (updates.responsiblePosition !== undefined) payload.responsible_position = updates.responsiblePosition;
+  if (updates.responsibleEmail !== undefined) payload.responsible_email = updates.responsibleEmail;
+  if (updates.responsiblePhone !== undefined) payload.responsible_phone = updates.responsiblePhone;
+  if (updates.status !== undefined) payload.status = updates.status;
+  if (updates.diagnosticStatus !== undefined) payload.diagnostic_status = updates.diagnosticStatus;
+  if (updates.adminNotes !== undefined) payload.admin_notes = updates.adminNotes;
+  if (updates.branchProfileId !== undefined) payload.branch_profile_id = updates.branchProfileId;
+  if (updates.startedAt !== undefined) payload.started_at = updates.startedAt;
+
+  const { error } = await supabase
+    .from('branches')
+    .update(payload)
+    .eq('id', branchId);
+
+  if (error) {
+    console.error('Supabase updateBranch error:', error);
+    return false;
+  }
+  return true;
+}
+
+/** Branches of a corporate client, each paired with its latest diagnostic (if any). */
+export async function getCorporateBranchesWithDiagnostics(
+  corporateClientId: string,
+): Promise<{ branch: Branch; diagnostic?: SavedDiagnostic }[]> {
+  const branches = await getBranchesForCorporate(corporateClientId);
+  const results = await Promise.all(
+    branches.map(async branch => {
+      if (!branch.branchProfileId) return { branch, diagnostic: undefined };
+      const diags = await getDiagnosticsByUser(branch.branchProfileId);
+      return { branch, diagnostic: diags[0] };
+    }),
+  );
+  return results;
 }

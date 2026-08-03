@@ -18,6 +18,7 @@ import type {
   MarginEvaluation,
   SoftwareSelections,
   LineaNegocio,
+  CurrencyCode,
 } from '../lib/types';
 import { calculateCompanySize, calculateScore, mapOpportunityAreas, calculateUrgency, evaluateMargins } from '../lib/calculations';
 import { useBenchmarkStore } from './benchmarkStore';
@@ -157,6 +158,12 @@ interface DiagnosticState {
   /* ── Tracks whether the current diagnostic was loaded from prefill data ── */
   originatedFromPrefill: boolean;
 
+  /* ── Currency of the account whose diagnostic is loaded (master viewing a
+   *  client's report/edit); null when it's the logged-in user's own live
+   *  wizard, in which case getEffectiveCurrency() falls back to their own. */
+  viewedClientCurrency: CurrencyCode | null;
+  getEffectiveCurrency: () => CurrencyCode;
+
   setView: (view: AppView) => void;
   setTestMode: (v: boolean) => void;
   setDraftActive: (v: boolean) => void;
@@ -181,8 +188,8 @@ interface DiagnosticState {
   setEmailStatus: (status: 'idle' | 'sending' | 'sent' | 'error') => void;
   saveDiagnostic: () => SavedDiagnostic;
   resetDiagnostic: () => void;
-  loadDiagnosticForReport: (d: SavedDiagnostic) => void;
-  loadDiagnosticForEdit: (d: SavedDiagnostic) => void;
+  loadDiagnosticForReport: (d: SavedDiagnostic, currencyCode?: CurrencyCode) => void;
+  loadDiagnosticForEdit: (d: SavedDiagnostic, currencyCode?: CurrencyCode) => void;
   startPrefillMode: (userId: string) => void;
   editPrefillMode: (userId: string, data: PrefillData) => void;
   loadPrefill: (data: PrefillData) => void;
@@ -216,6 +223,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       editMode: false,
       editDiagnosticId: null,
       originatedFromPrefill: false,
+      viewedClientCurrency: null,
+      getEffectiveCurrency: () => get().viewedClientCurrency ?? getCurrentUser()?.currencyCode ?? 'MXN',
 
       setView: (view) => set({ view }),
       setTestMode: (v) => set({ testMode: v }),
@@ -392,9 +401,10 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           editMode: false,
           editDiagnosticId: null,
           originatedFromPrefill: false,
+          viewedClientCurrency: null,
         }),
 
-      loadDiagnosticForReport: (d) => {
+      loadDiagnosticForReport: (d, currencyCode) => {
         // Normalize old data that lacks softwareSelections
         const dg = { ...d.datosGenerales };
         if (!dg.softwareSelections) {
@@ -423,10 +433,11 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           analisisFamiliar: d.analisisFamiliar ? { ...d.analisisFamiliar } : defaultFamilyAnalysis(),
           marginData: d.marginData ? { ...d.marginData, conoceMargenBruto: d.marginData.conoceMargenBruto ?? false, conoceMargenOperativo: d.marginData.conoceMargenOperativo ?? false, conoceMargenNeto: d.marginData.conoceMargenNeto ?? false } : defaultMarginData(),
           view: 'report',
+          viewedClientCurrency: currencyCode ?? null,
         });
       },
 
-      loadDiagnosticForEdit: (d) => {
+      loadDiagnosticForEdit: (d, currencyCode) => {
         const dg = { ...d.datosGenerales };
         if (!dg.softwareSelections) {
           dg.softwareSelections = migrateSoftwareField(dg.software, dg.softwareDetalle);
@@ -462,6 +473,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           currentStep: 0,
           savedResultId: null,
           emailStatus: 'idle',
+          viewedClientCurrency: currencyCode ?? null,
           view: 'wizard',
         });
       },

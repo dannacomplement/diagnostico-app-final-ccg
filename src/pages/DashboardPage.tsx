@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { ClipboardList, Building2, Monitor, Check } from 'lucide-react';
+import { ClipboardList, Building2, Monitor, Check, MapPin } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useOrgSurveyStore } from '../store/orgSurveyStore';
 import { useTechSurveyStore } from '../store/techSurveyStore';
 import { useSettingsStore } from '../store/settingsStore';
-import { getDiagnosticsByUser, getOrgSurveysByUser, getTechSurveysByUser, getPrefillForUser } from '../lib/storage';
+import { getDiagnosticsByUser, getOrgSurveysByUser, getTechSurveysByUser, getPrefillForUser, getCorporateBranchesWithDiagnostics } from '../lib/storage';
 import type { PrefillData } from '../lib/storage';
 import { exportToExcel } from '../lib/export';
 import { exportToPdf } from '../lib/exportPdf';
 import { exportOrgSurveyToPdf } from '../lib/exportOrgPdf';
 import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
 import { exportExpediente } from '../lib/exportExpediente';
-import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey } from '../lib/types';
+import { consolidateCorporateBranches } from '../lib/corporateConsolidation';
+import type { CorporateConsolidation } from '../lib/corporateConsolidation';
+import { formatMonetaryValue } from '../lib/money';
+import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, AppUser, Branch } from '../lib/types';
 import AnimatedGauge from '../components/ui/AnimatedGauge';
 import RadarChart from '../components/ui/RadarChart';
 import HistoricalComparison from '../components/ui/HistoricalComparison';
@@ -136,16 +139,20 @@ export default function DashboardPage() {
   function handleNewOrgSurvey() { resetOrgSurvey(); setView('org_wizard'); }
   function handleNewTechSurvey() { resetTechSurvey(); setView('tech_wizard'); }
 
-  function handleViewReport(d: SavedDiagnostic) { loadDiagnosticForReport(d); }
+  function handleViewReport(d: SavedDiagnostic) { loadDiagnosticForReport(d, user?.currencyCode ?? 'MXN'); }
 
   function handleExpediente(mode: 'download' | 'view') {
     const latestDiag = diagnostics.length > 0 ? diagnostics[0] : undefined;
     const latestOrg = orgSurveys.length > 0 ? orgSurveys[0] : undefined;
     const companyName = latestDiag?.datosGenerales.nombreComercial || latestOrg?.companyName || user?.displayName || 'Cliente';
-    exportExpediente(companyName, latestDiag, latestOrg, mode);
+    exportExpediente(companyName, latestDiag, latestOrg, mode, user?.currencyCode ?? 'MXN');
   }
 
   if (!user) return null;
+
+  if (user.operationMode === 'MULTI_BRANCH') {
+    return <CorporateDashboardView user={user} />;
+  }
 
   const latestDiag = diagnostics.length > 0 ? diagnostics[0] : null;
   const latestOrg = orgSurveys.length > 0 ? orgSurveys[0] : null;
@@ -303,10 +310,10 @@ export default function DashboardPage() {
                           onMouseLeave={e => { e.currentTarget.style.background = '#d4922e'; }}>
                           Ver Reporte
                         </button>
-                        <button onClick={() => exportToPdf(latestDiag)} className="border border-navy text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '9px 20px', borderRadius: '8px' }}>
+                        <button onClick={() => exportToPdf(latestDiag, user?.currencyCode ?? 'MXN')} className="border border-navy text-navy font-semibold hover:bg-navy/5 transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '9px 20px', borderRadius: '8px' }}>
                           PDF
                         </button>
-                        <button onClick={() => exportToExcel(latestDiag)} className="border border-border text-muted font-medium hover:border-mid/50 hover:text-ink transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '9px 20px', borderRadius: '8px' }}>
+                        <button onClick={() => exportToExcel(latestDiag, user?.currencyCode ?? 'MXN')} className="border border-border text-muted font-medium hover:border-mid/50 hover:text-ink transition-all cursor-pointer" style={{ fontSize: 'var(--fs-12)', padding: '9px 20px', borderRadius: '8px' }}>
                           Excel
                         </button>
                         <span className="border-l border-border/40" style={{ height: '20px' }} />
@@ -858,6 +865,162 @@ function DraftBanner({ icon: Icon, label, step, totalSteps, onResume, onDiscard 
           <button onClick={onResume} className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm" style={{ fontSize: 'var(--fs-12)', padding: '8px 20px', borderRadius: '10px' }}>Continuar →</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   CORPORATE DASHBOARD VIEW — MULTI_BRANCH expedientes
+   ═══════════════════════════════════════════════ */
+
+function CorporateDashboardView({ user }: { user: AppUser }) {
+  const companyLogo = useSettingsStore(s => s.companyLogo);
+  const companyLogoIcon = useSettingsStore(s => s.companyLogoIcon);
+  const loadDiagnosticForReport = useDiagnosticStore(s => s.loadDiagnosticForReport);
+  const [items, setItems] = useState<{ branch: Branch; diagnostic?: SavedDiagnostic }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const currencyCode = user.currencyCode ?? 'MXN';
+
+  useEffect(() => {
+    getCorporateBranchesWithDiagnostics(user.id).then(data => {
+      setItems(data);
+      setLoading(false);
+    });
+  }, [user.id]);
+
+  const consolidation: CorporateConsolidation = consolidateCorporateBranches(items);
+
+  function handleViewBranchReport(d: SavedDiagnostic) {
+    loadDiagnosticForReport(d, currencyCode);
+  }
+
+  return (
+    <div style={{ width: '100%', maxWidth: '930px', margin: '0 auto', padding: '0 clamp(16px, 3vw, 24px) 60px' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ height: '3px', background: 'linear-gradient(90deg, #d4922e, #f59e0b, #d4922e)', borderRadius: '0 0 4px 4px', marginBottom: '24px' }} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center" style={{ gap: '16px' }}>
+            {user.logoUrl ? (
+              <img src={user.logoUrl} alt="Logo" className="rounded-xl object-cover shrink-0" style={{ width: '52px', height: '52px', border: '2px solid var(--color-border)' }} />
+            ) : (
+              <img src={companyLogoIcon || '/icon-complement.svg'} alt="Complement" className="shrink-0" style={{ height: '40px' }} />
+            )}
+            <div>
+              <h1 className="font-serif text-navy" style={{ fontSize: 'var(--fs-22)', marginBottom: '2px' }}>Panel Corporativo</h1>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>
+                Consolidado de <span className="font-semibold text-ink">{user.displayName}</span> — {consolidation.totalSucursales} sucursal{consolidation.totalSucursales !== 1 ? 'es' : ''}
+              </p>
+            </div>
+          </div>
+          <img src={companyLogo || '/logo-complement.svg'} alt="Complement" className="hidden sm:block" style={{ height: '28px', opacity: 0.5 }} />
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-center" style={{ padding: '40px 0' }}>
+          <p className="text-muted" style={{ fontSize: 'var(--fs-14)' }}>Cargando consolidado...</p>
+        </div>
+      ) : (
+        <>
+          <div className="rounded-xl bg-accent/5 border border-accent/20 flex items-start" style={{ padding: '14px 18px', marginBottom: '24px', gap: '10px' }}>
+            <MapPin className="text-accent shrink-0" style={{ width: 'var(--fs-16)', height: 'var(--fs-16)', marginTop: '1px' }} />
+            <p className="text-ink" style={{ fontSize: 'var(--fs-12)' }}>
+              Esta es una vista <strong>consolidada corporativa</strong> — combina los diagnósticos de todas las sucursales. No es el diagnóstico de una sola empresa.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '12px', marginBottom: '24px' }}>
+            <CorpStatCard label="Sucursales" value={consolidation.totalSucursales.toString()} />
+            <CorpStatCard label="Terminadas" value={consolidation.terminado.toString()} highlight />
+            <CorpStatCard label="En proceso" value={consolidation.enProceso.toString()} />
+            <CorpStatCard label="Pendientes" value={consolidation.pendiente.toString()} />
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '12px', marginBottom: '24px' }}>
+            <CorpStatCard label="Empleados totales" value={consolidation.totalEmpleados.toString()} />
+            <CorpStatCard label="Ventas consolidadas" value={formatMonetaryValue({ value: consolidation.ventasConsolidadas, currencyCode })} />
+            <CorpStatCard label="Avance general" value={`${consolidation.avanceGeneralPct}%`} />
+          </div>
+
+          {(consolidation.profesionalizacionPromedio !== null || consolidation.institucionalizacionPromedio !== null || consolidation.desempenoPromedio !== null) && (
+            <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px', marginBottom: '24px' }}>
+              <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-16)', marginBottom: '16px' }}>Resultados consolidados (promedio ponderado por empleados)</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '14px' }}>
+                <CorpStatCard label="Profesionalización" value={consolidation.profesionalizacionPromedio !== null ? `${consolidation.profesionalizacionPromedio.toFixed(0)}/100` : '—'} />
+                <CorpStatCard label="Institucionalización" value={consolidation.institucionalizacionPromedio !== null ? `${consolidation.institucionalizacionPromedio.toFixed(0)}/100` : '—'} />
+                <CorpStatCard label="Desempeño (madurez)" value={consolidation.desempenoPromedio !== null ? `${consolidation.desempenoPromedio.toFixed(0)}/100` : '—'} />
+              </div>
+            </div>
+          )}
+
+          {consolidation.ventasPorPais.length > 0 && (
+            <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px', marginBottom: '24px' }}>
+              <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-16)', marginBottom: '16px' }}>Ventas por país</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {consolidation.ventasPorPais.map(v => (
+                  <div key={v.pais} className="flex items-center justify-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}>
+                    <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>{v.pais}</span>
+                    <span className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)' }}>{formatMonetaryValue({ value: v.ventas, currencyCode })}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {consolidation.areasOportunidadRecurrentes.length > 0 && (
+            <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px', marginBottom: '24px' }}>
+              <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-16)', marginBottom: '6px' }}>Áreas de oportunidad recurrentes</h2>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '16px' }}>Por frecuencia entre sucursales (prioridad alta o media)</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {consolidation.areasOportunidadRecurrentes.map(a => (
+                  <div key={a.serviceAreaId} className="flex items-center justify-between flex-wrap" style={{ gap: '8px', padding: '10px 0', borderBottom: '1px solid var(--color-border)' }}>
+                    <span className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>{a.name}</span>
+                    <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{a.count} de {consolidation.totalSucursales} sucursales — {a.branches.join(', ')}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '24px' }}>
+            <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-16)', marginBottom: '16px' }}>Sucursales</h2>
+            {items.length === 0 ? (
+              <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>Aún no hay sucursales registradas. Contacta a tu consultor para configurarlas.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {items.map(({ branch, diagnostic }) => (
+                  <div key={branch.id} className="flex items-center justify-between flex-wrap rounded-xl border border-border/40" style={{ padding: '14px 16px', gap: '10px' }}>
+                    <div>
+                      <p className="font-semibold text-navy" style={{ fontSize: 'var(--fs-13)' }}>{branch.name}</p>
+                      <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{[branch.city, branch.country].filter(Boolean).join(', ')}</p>
+                    </div>
+                    {diagnostic ? (
+                      <button
+                        onClick={() => handleViewBranchReport(diagnostic)}
+                        className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer"
+                        style={{ fontSize: 'var(--fs-11)', padding: '6px 14px', borderRadius: '8px' }}
+                      >
+                        Ver reporte
+                      </button>
+                    ) : (
+                      <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>Sin diagnóstico aún</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CorpStatCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-xl border text-center ${highlight ? 'border-accent bg-accent/5' : 'border-border/40 bg-white'}`} style={{ padding: '16px 12px' }}>
+      <p className="text-muted uppercase tracking-wide font-medium" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>{label}</p>
+      <p className={`font-bold ${highlight ? 'text-accent' : 'text-navy'}`} style={{ fontSize: 'var(--fs-18)' }}>{value}</p>
     </div>
   );
 }

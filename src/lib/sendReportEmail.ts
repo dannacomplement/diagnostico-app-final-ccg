@@ -1,11 +1,11 @@
-import type { SavedDiagnostic } from './types';
+import type { SavedDiagnostic, CurrencyCode } from './types';
 import { getPdfBase64 } from './exportPdf';
 
-export async function sendReportEmail(diagnostic: SavedDiagnostic): Promise<void> {
+export async function sendReportEmail(diagnostic: SavedDiagnostic, currencyCode: CurrencyCode = 'MXN'): Promise<void> {
   const email = diagnostic.datosGenerales.email;
   if (!email) return;
 
-  const pdfBase64 = getPdfBase64(diagnostic);
+  const pdfBase64 = getPdfBase64(diagnostic, currencyCode);
 
   const res = await fetch('/api/send-report', {
     method: 'POST',

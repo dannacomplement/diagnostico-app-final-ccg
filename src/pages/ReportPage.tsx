@@ -7,6 +7,7 @@ import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { exportToPdf } from '../lib/exportPdf';
 import { buildSoftwareLabel } from '../lib/formatters';
 import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from '../lib/diagnosticAnalysis';
+import { formatMonetaryValue } from '../lib/money';
 import type { ScoreLevel, MarginLevel, SavedDiagnostic, Sector } from '../lib/types';
 
 const LEVEL_COLORS: Record<ScoreLevel, string> = {
@@ -61,6 +62,7 @@ export default function ReportPage() {
   const setView = useDiagnosticStore(s => s.setView);
   const user = useAuthStore(s => s.user);
   const companyLogo = useSettingsStore(s => s.companyLogo);
+  const currencyCode = useDiagnosticStore(s => s.getEffectiveCurrency());
 
   const isFamily = isFamilyBusiness();
   const sizeResult = getCompanySize();
@@ -97,7 +99,7 @@ export default function ReportPage() {
   const growth = useMemo(() => generateGrowthReadiness(diagnostic), [diagnostic]);
 
   function handleDownloadPdf() {
-    exportToPdf(diagnostic);
+    exportToPdf(diagnostic, currencyCode);
   }
 
   const gerenciasCubiertas = gerencias.filter(g => g.cubierto).length;
@@ -190,11 +192,11 @@ export default function ReportPage() {
           <MetricBox label="Empresa" value={datosGenerales.nombreComercial || '—'} />
           <MetricBox label="Sector" value={sectorLabel} />
           <MetricBox label="Tamaño" value={sizeResult?.size ?? '—'} highlight />
-          <MetricBox label="Productividad per capita" value={sizeResult ? `$${sizeResult.productivityIndex.toFixed(2)} MDP` : '—'} />
+          <MetricBox label="Productividad per capita" value={sizeResult ? `${currencyCode === 'USD' ? 'US$' : '$'}${sizeResult.productivityIndex.toFixed(2)} ${currencyCode === 'USD' ? 'M' : 'MDP'}` : '—'} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px' }}>
           <MetricBox label="Empleados" value={situacionActual.empleadosTotales?.toString() ?? '—'} />
-          <MetricBox label="Ventas Anuales" value={situacionActual.ventasAnualesMDP ? `$${situacionActual.ventasAnualesMDP} MDP` : '—'} />
+          <MetricBox label="Ventas Anuales" value={formatMonetaryValue({ value: situacionActual.ventasAnualesMDP, currencyCode })} />
           <MetricBox label="Empresa Familiar" value={isFamily ? 'Sí' : 'No'} />
           <MetricBox label="Urgencia" value={urgencyLevel ?? '—'} />
         </div>
@@ -582,7 +584,7 @@ export default function ReportPage() {
          ═══════════════════════════════════════════════ */}
       <Section title="Situación Actual" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-          <DetailRow label="Ventas Anuales" value={situacionActual.ventasAnualesMDP !== null ? `$${situacionActual.ventasAnualesMDP} MDP` : '—'} />
+          <DetailRow label="Ventas Anuales" value={formatMonetaryValue({ value: situacionActual.ventasAnualesMDP, currencyCode })} />
           <DetailRow label="Empleados Totales" value={situacionActual.empleadosTotales?.toString() ?? '—'} alt />
           {situacionActual.empleadosFamiliares !== null && situacionActual.empleadosFamiliares !== undefined && (
             <DetailRow label="Empleados Familiares" value={situacionActual.empleadosFamiliares.toString()} />
@@ -627,7 +629,7 @@ export default function ReportPage() {
           <div className="grid grid-cols-2" style={{ gap: '14px' }}>
             <div className="rounded-xl text-center bg-accent/5 border border-accent/10" style={{ padding: '18px 14px' }}>
               <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Productividad Per Capita</p>
-              <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-16)' }}>${sizeResult.productivityIndex.toFixed(2)} MDP</p>
+              <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-16)' }}>{currencyCode === 'USD' ? 'US$' : '$'}{sizeResult.productivityIndex.toFixed(2)} {currencyCode === 'USD' ? 'M' : 'MDP'}</p>
             </div>
             <div className="rounded-xl text-center bg-pale border border-border/30" style={{ padding: '18px 14px' }}>
               <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Antiguedad</p>

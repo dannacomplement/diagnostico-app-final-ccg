@@ -4,10 +4,11 @@
  * Slide canvas: LAYOUT_WIDE = 13.33" x 7.5"
  */
 import PptxGenJS from 'pptxgenjs';
-import type { SavedDiagnostic, MarginLevel, Sector } from './types';
+import type { SavedDiagnostic, MarginLevel, Sector, CurrencyCode } from './types';
 import { ALL_CRITERIA } from '../config/questions';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { buildSoftwareLabel } from './formatters';
+import { formatMonetaryValue } from './money';
 import {
   computeMaturityIndex,
   computeRiskProfile,
@@ -298,7 +299,7 @@ function addTitleSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string)
    SLIDE 2: Panorama Ejecutivo (dense overview)
    ══════════════════════════════════════════════════════ */
 
-function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
+function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string, currencyCode: CurrencyCode) {
   const slide = pptx.addSlide();
   const maturity = computeMaturityIndex(d);
   const narrative = generateDiagnosticNarrative(d, maturity);
@@ -319,13 +320,13 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
     { label: 'Tamaño', value: `${d.companySize.size} (TMC: ${d.companySize.tmcScore})` },
     { label: 'Empleados', value: d.situacionActual.empleadosTotales?.toString() ?? '—' },
     { label: 'Emp. Familiares', value: d.situacionActual.empleadosFamiliares?.toString() ?? '—' },
-    { label: 'Ventas Anuales', value: d.situacionActual.ventasAnualesMDP ? `$${d.situacionActual.ventasAnualesMDP} MDP` : '—' },
+    { label: 'Ventas Anuales', value: formatMonetaryValue({ value: d.situacionActual.ventasAnualesMDP, currencyCode }) },
     { label: 'Empresa Familiar', value: familiarLabel(d.datosGenerales.empresaFamiliar) },
     { label: 'Respondente', value: d.datosGenerales.respondente || '—' },
     { label: 'Puesto', value: d.datosGenerales.puestoEmpresa || '—' },
     { label: 'Socios', value: d.situacionActual.socios || '—' },
     { label: 'Software', value: buildSoftwareLabel(d.datosGenerales) || '—' },
-    { label: 'Productividad', value: d.companySize.productivityIndex ? `${d.companySize.productivityIndex.toFixed(1)} MDP/emp` : '—' },
+    { label: 'Productividad', value: d.companySize.productivityIndex ? `${d.companySize.productivityIndex.toFixed(1)} ${currencyCode === 'USD' ? 'US$M/emp' : 'MDP/emp'}` : '—' },
     { label: '% Ingreso Fiscal.', value: d.situacionActual.pctIngresoFiscalizado != null ? `${d.situacionActual.pctIngresoFiscalizado}%` : '—' },
     { label: '% Egreso Fiscal.', value: d.situacionActual.pctEgresoFiscalizado != null ? `${d.situacionActual.pctEgresoFiscalizado}%` : '—' },
   ];
@@ -1396,7 +1397,7 @@ function addClosingSlide(pptx: PptxGenJS, companyName: string) {
    Main export function
    ══════════════════════════════════════════════════════ */
 
-export async function exportToPptx(d: SavedDiagnostic): Promise<void> {
+export async function exportToPptx(d: SavedDiagnostic, currencyCode: CurrencyCode = 'MXN'): Promise<void> {
   const companyName = d.datosGenerales.nombreComercial || 'Cliente';
 
   const pptx = new PptxGenJS();
@@ -1408,7 +1409,7 @@ export async function exportToPptx(d: SavedDiagnostic): Promise<void> {
 
   // Build slides
   addTitleSlide(pptx, d, companyName);                      // 1
-  addPanoramaSlide(pptx, d, companyName);                   // 2
+  addPanoramaSlide(pptx, d, companyName, currencyCode);     // 2
   addResultsSlide(pptx, d, companyName);                    // 3
   addCombinedCriteriaSlide(pptx, d, companyName);           // 4
   addGerenciasSlide(pptx, d, companyName);                  // 5

@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { SavedDiagnostic, SavedOrgSurvey } from './types';
+import type { SavedDiagnostic, SavedOrgSurvey, CurrencyCode } from './types';
 import { buildPdfDoc } from './exportPdf';
+import { formatMonetaryValue } from './money';
 
 /* ── Color palette ── */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -97,7 +98,7 @@ function drawBrandedHeader(doc: jsPDF, title: string, pageWidth: number, margin:
 
 /* ── Org survey sections ─────────────────────────────── */
 
-function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number) {
+function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number, currencyCode: CurrencyCode) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const contentWidth = pageWidth - margin * 2;
   let y = margin;
@@ -116,7 +117,7 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
   estructuraBody.push(
     ['Descripciones de Puesto', descLabel],
     ['Tabulador de Sueldos', org.tieneTabulador ? 'Sí' : 'No'],
-    ['Nómina Mensual Total', org.nominaMensualTotal !== null ? `$${org.nominaMensualTotal.toLocaleString('es-MX')}` : '---'],
+    ['Nómina Mensual Total', org.nominaMensualTotal !== null ? formatMonetaryValue({ value: org.nominaMensualTotal, currencyCode, displayUnit: 'completo' }) : '---'],
   );
 
   autoTable(doc, {
@@ -149,10 +150,10 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
   const areaBody = survey.areaDetails.map(a => [
     a.nombre || '---',
     a.colaboradores !== null ? a.colaboradores.toString() : '---',
-    a.sueldoPromedio !== null ? `$${a.sueldoPromedio.toLocaleString('es-MX')}` : '---',
+    a.sueldoPromedio !== null ? formatMonetaryValue({ value: a.sueldoPromedio, currencyCode, displayUnit: 'completo' }) : '---',
     a.tieneLider ? 'Sí' : 'No',
     a.colaboradores !== null && a.sueldoPromedio !== null
-      ? `$${(a.colaboradores * a.sueldoPromedio).toLocaleString('es-MX')}`
+      ? formatMonetaryValue({ value: a.colaboradores * a.sueldoPromedio, currencyCode, displayUnit: 'completo' })
       : '---',
   ]);
 
@@ -193,7 +194,7 @@ function addOrgSurveySections(doc: jsPDF, survey: SavedOrgSurvey, margin: number
     head: [['TOTALES', '', '']],
     body: [[
       `Colaboradores: ${totalColab}`,
-      `Nómina Mensual: $${totalNomina.toLocaleString('es-MX')}`,
+      `Nómina Mensual: ${formatMonetaryValue({ value: totalNomina, currencyCode, displayUnit: 'completo' })}`,
       `Áreas con Líder: ${areasConLider} de ${survey.areaDetails.length}`,
     ]],
     headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
@@ -266,6 +267,7 @@ export function exportExpediente(
   diagnostic?: SavedDiagnostic,
   orgSurvey?: SavedOrgSurvey,
   mode: 'download' | 'view' = 'download',
+  currencyCode: CurrencyCode = 'MXN',
 ): void {
   if (!diagnostic && !orgSurvey) return;
 
@@ -274,7 +276,7 @@ export function exportExpediente(
   /* ─── Case 1 & 2: We have a diagnostic ─── */
   if (diagnostic) {
     // Start from the full branded diagnostic PDF (identical to what the client gets)
-    const doc = buildPdfDoc(diagnostic);
+    const doc = buildPdfDoc(diagnostic, currencyCode);
     const pw = doc.internal.pageSize.getWidth();
 
     // If there's also an org survey, append it
@@ -306,7 +308,7 @@ export function exportExpediente(
       // Org survey data pages
       doc.addPage();
       drawBrandedHeader(doc, 'ESTRUCTURA ORGANIZACIONAL', pw, margin);
-      addOrgSurveySections(doc, orgSurvey, margin);
+      addOrgSurveySections(doc, orgSurvey, margin, currencyCode);
     }
 
     // Update footers on ALL pages (override the diagnostic PDF's footers)
@@ -418,7 +420,7 @@ export function exportExpediente(
   // Org survey data pages
   doc.addPage();
   drawBrandedHeader(doc, 'ESTRUCTURA ORGANIZACIONAL', pw, margin);
-  addOrgSurveySections(doc, orgSurvey!, margin);
+  addOrgSurveySections(doc, orgSurvey!, margin, currencyCode);
 
   // Branded footers
   const totalPages = doc.getNumberOfPages();
