@@ -3,10 +3,10 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Folder, Users, FlaskConical, Settings, Sparkles, CircleCheck, Pencil, Trash2,
   BarChart3, ClipboardList, Building2, Monitor, TriangleAlert, Check, Circle,
-  Building, Eye, EyeOff, Palette, X, Info, MapPin, UserPlus, Archive,
+  Building, Eye, EyeOff, Palette, X, Info,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds, getBranchesForCorporate, createBranch, updateBranch, getDiagnosticsByUser } from '../lib/storage';
+import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds } from '../lib/storage';
 import { ALL_CRITERIA } from '../config/questions';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useOrgSurveyStore } from '../store/orgSurveyStore';
@@ -21,7 +21,7 @@ import { exportToPptx } from '../lib/exportPptx';
 import { SECTOR_OPTIONS } from '../config/constants';
 import { getServiceArea } from '../config/serviceAreas';
 import { formatMonetaryValue } from '../lib/money';
-import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, CurrencyCode, OperationMode, Branch } from '../lib/types';
+import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, CurrencyCode } from '../lib/types';
 import HistoricalComparison from '../components/ui/HistoricalComparison';
 import { TECH_AREAS } from '../config/techQuestions';
 
@@ -464,7 +464,7 @@ function ClientExpedienteDetail({
   onDeletePrefill: () => Promise<void>;
   onDeleteTechPrefill: () => Promise<void>;
 }) {
-  const [activeSection, setActiveSection] = useState<'resumen' | 'diagnosticos' | 'organizacional' | 'tecnologia' | 'sucursales'>('resumen');
+  const [activeSection, setActiveSection] = useState<'resumen' | 'diagnosticos' | 'organizacional' | 'tecnologia'>('resumen');
   const [deletePrefillConfirm, setDeletePrefillConfirm] = useState(false);
   const [deletingPrefill, setDeletingPrefill] = useState(false);
   const [deleteTechPrefillConfirm, setDeleteTechPrefillConfirm] = useState(false);
@@ -493,11 +493,11 @@ function ClientExpedienteDetail({
     if (hasDiagPrefill) {
       const existing = await getPrefillForUser(account.id, 'diagnostico_empresarial');
       if (existing) {
-        editPrefillMode(account.id, existing);
+        editPrefillMode(account.id, existing, account.currencyCode ?? 'MXN');
         return;
       }
     }
-    startPrefillMode(account.id);
+    startPrefillMode(account.id, account.currencyCode ?? 'MXN');
   }
 
   async function handleStartTechPrefill() {
@@ -697,7 +697,6 @@ function ClientExpedienteDetail({
       <div className="flex overflow-x-auto" style={{ gap: '4px', marginBottom: '20px', paddingBottom: '2px' }}>
         {([
           { key: 'resumen' as const, label: 'Resumen Ejecutivo', icon: BarChart3 },
-          ...(account.operationMode === 'MULTI_BRANCH' ? [{ key: 'sucursales' as const, label: 'Sucursales', icon: MapPin }] : []),
           ...(diagCount > 0 ? [{ key: 'diagnosticos' as const, label: `Radiografías (${diagCount})`, icon: ClipboardList }] : []),
           ...(orgCount > 0 ? [{ key: 'organizacional' as const, label: `Estructura Org. (${orgCount})`, icon: Building2 }] : []),
           ...(techCount > 0 ? [{ key: 'tecnologia' as const, label: `Tecnología (${techCount})`, icon: Monitor }] : []),
@@ -718,14 +717,6 @@ function ClientExpedienteDetail({
       </div>
 
       {/* Section content */}
-      {activeSection === 'sucursales' && (
-        <SucursalesSection
-          corporateClientId={account.id}
-          currencyCode={account.currencyCode ?? 'MXN'}
-          onViewReport={onDiagExtenso}
-        />
-      )}
-
       {activeSection === 'resumen' && (
         <ResumenEjecutivoSection
           latestDiag={latestDiag}
@@ -765,387 +756,6 @@ function ClientExpedienteDetail({
           onDelete={onDeleteTech}
         />
       )}
-    </div>
-  );
-}
-
-/* ── Sucursales Section (MULTI_BRANCH corporate expedientes) ── */
-
-const BRANCH_STATUS_LABEL: Record<string, string> = { activa: 'Activa', inactiva: 'Inactiva', archivada: 'Archivada' };
-const BRANCH_DIAG_STATUS_LABEL: Record<string, string> = { pendiente: 'Pendiente', en_proceso: 'En proceso', terminado: 'Terminado' };
-const BRANCH_DIAG_STATUS_STYLE: Record<string, string> = {
-  pendiente: 'bg-pale text-muted border-border',
-  en_proceso: 'bg-warn/10 text-warn border-warn/30',
-  terminado: 'bg-success/10 text-success border-success/30',
-};
-
-function SucursalesSection({
-  corporateClientId,
-  currencyCode,
-  onViewReport,
-}: {
-  corporateClientId: string;
-  currencyCode: CurrencyCode;
-  onViewReport: (d: SavedDiagnostic) => void;
-}) {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
-  const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
-  const [assigningBranch, setAssigningBranch] = useState<Branch | null>(null);
-  const [viewingReportId, setViewingReportId] = useState<string | null>(null);
-  const [noReportFor, setNoReportFor] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setBranches(await getBranchesForCorporate(corporateClientId));
-    setLoading(false);
-  }, [corporateClientId]);
-
-  useEffect(() => { refresh(); }, [refresh]);
-
-  async function handleToggleStatus(branch: Branch) {
-    const next = branch.status === 'activa' ? 'archivada' : 'activa';
-    await updateBranch(branch.id, { status: next });
-    refresh();
-  }
-
-  async function handleViewReport(branch: Branch) {
-    if (!branch.branchProfileId) return;
-    setViewingReportId(branch.id);
-    setNoReportFor(null);
-    const diags = await getDiagnosticsByUser(branch.branchProfileId);
-    setViewingReportId(null);
-    if (diags.length === 0) {
-      setNoReportFor(branch.id);
-      return;
-    }
-    onViewReport(diags[0]);
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div className="flex items-center justify-between flex-wrap" style={{ gap: '10px' }}>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
-          Cada sucursal es un diagnóstico independiente. La moneda ({currencyCode}) se hereda del corporativo — no es configurable por sucursal.
-        </p>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center shrink-0"
-          style={{ fontSize: 'var(--fs-12)', padding: '9px 18px', borderRadius: '8px', gap: '6px' }}
-        >
-          <MapPin style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} /> Nueva sucursal
-        </button>
-      </div>
-
-      {loading ? (
-        <p className="text-muted text-center" style={{ fontSize: 'var(--fs-13)', padding: '32px 0' }}>Cargando sucursales...</p>
-      ) : branches.length === 0 ? (
-        <div className="bg-white rounded-xl border border-border text-center" style={{ padding: '40px 24px' }}>
-          <p className="text-muted" style={{ fontSize: 'var(--fs-13)' }}>Aún no hay sucursales registradas.</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {branches.map(b => (
-            <div key={b.id} className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '18px 22px' }}>
-              <div className="flex items-center flex-wrap" style={{ gap: '10px', marginBottom: '8px' }}>
-                <span className="font-semibold text-navy" style={{ fontSize: 'var(--fs-14)' }}>{b.name}</span>
-                <span className={`font-semibold rounded-full border ${BRANCH_DIAG_STATUS_STYLE[b.diagnosticStatus]}`} style={{ fontSize: 'var(--fs-10)', padding: '2px 10px' }}>
-                  {BRANCH_DIAG_STATUS_LABEL[b.diagnosticStatus]}
-                </span>
-                {b.status !== 'activa' && (
-                  <span className="font-semibold rounded-full border border-border bg-pale text-muted" style={{ fontSize: 'var(--fs-10)', padding: '2px 10px' }}>
-                    {BRANCH_STATUS_LABEL[b.status]}
-                  </span>
-                )}
-                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
-                  {[b.city, b.region, b.country].filter(Boolean).join(', ')}
-                </span>
-              </div>
-              {b.responsibleName && (
-                <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>
-                  Responsable: {b.responsibleName}{b.responsiblePosition ? ` — ${b.responsiblePosition}` : ''}{b.responsibleEmail ? ` (${b.responsibleEmail})` : ''}
-                </p>
-              )}
-              {noReportFor === b.id && (
-                <p className="text-warn" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>Esta sucursal aún no ha completado su diagnóstico.</p>
-              )}
-              <div className="flex flex-wrap items-center" style={{ gap: '8px' }}>
-                <button
-                  onClick={() => setEditingBranch(b)}
-                  className="border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer inline-flex items-center"
-                  style={{ fontSize: 'var(--fs-11)', padding: '6px 14px', borderRadius: '8px', gap: '4px' }}
-                >
-                  <Pencil style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Editar
-                </button>
-                <button
-                  onClick={() => handleToggleStatus(b)}
-                  className="border border-border text-muted font-medium hover:text-ink transition-all cursor-pointer inline-flex items-center"
-                  style={{ fontSize: 'var(--fs-11)', padding: '6px 14px', borderRadius: '8px', gap: '4px' }}
-                >
-                  <Archive style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> {b.status === 'activa' ? 'Archivar' : 'Reactivar'}
-                </button>
-                {b.branchProfileId ? (
-                  <button
-                    onClick={() => handleViewReport(b)}
-                    disabled={viewingReportId === b.id}
-                    className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer disabled:opacity-50"
-                    style={{ fontSize: 'var(--fs-11)', padding: '6px 14px', borderRadius: '8px' }}
-                  >
-                    {viewingReportId === b.id ? 'Cargando...' : 'Ver reporte'}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setAssigningBranch(b)}
-                    className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer inline-flex items-center"
-                    style={{ fontSize: 'var(--fs-11)', padding: '6px 14px', borderRadius: '8px', gap: '4px' }}
-                  >
-                    <UserPlus style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> Asignar responsable
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showCreate && (
-        <BranchFormModal
-          corporateClientId={corporateClientId}
-          onClose={() => setShowCreate(false)}
-          onSaved={() => { setShowCreate(false); refresh(); }}
-        />
-      )}
-      {editingBranch && (
-        <BranchFormModal
-          corporateClientId={corporateClientId}
-          branch={editingBranch}
-          onClose={() => setEditingBranch(null)}
-          onSaved={() => { setEditingBranch(null); refresh(); }}
-        />
-      )}
-      {assigningBranch && (
-        <AssignResponsibleModal
-          branch={assigningBranch}
-          onClose={() => setAssigningBranch(null)}
-          onSaved={() => { setAssigningBranch(null); refresh(); }}
-        />
-      )}
-    </div>
-  );
-}
-
-function BranchFormModal({
-  corporateClientId,
-  branch,
-  onClose,
-  onSaved,
-}: {
-  corporateClientId: string;
-  branch?: Branch;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const [name, setName] = useState(branch?.name ?? '');
-  const [internalCode, setInternalCode] = useState(branch?.internalCode ?? '');
-  const [country, setCountry] = useState(branch?.country ?? '');
-  const [region, setRegion] = useState(branch?.region ?? '');
-  const [city, setCity] = useState(branch?.city ?? '');
-  const [address, setAddress] = useState(branch?.address ?? '');
-  const [responsibleName, setResponsibleName] = useState(branch?.responsibleName ?? '');
-  const [responsiblePosition, setResponsiblePosition] = useState(branch?.responsiblePosition ?? '');
-  const [responsibleEmail, setResponsibleEmail] = useState(branch?.responsibleEmail ?? '');
-  const [responsiblePhone, setResponsiblePhone] = useState(branch?.responsiblePhone ?? '');
-  const [adminNotes, setAdminNotes] = useState(branch?.adminNotes ?? '');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || !country.trim()) {
-      setError('Nombre y país son obligatorios.');
-      return;
-    }
-    setSaving(true);
-    setError('');
-    const fields = {
-      name: name.trim(),
-      internalCode: internalCode.trim() || undefined,
-      country: country.trim(),
-      region: region.trim() || undefined,
-      city: city.trim() || undefined,
-      address: address.trim() || undefined,
-      responsibleName: responsibleName.trim() || undefined,
-      responsiblePosition: responsiblePosition.trim() || undefined,
-      responsibleEmail: responsibleEmail.trim() || undefined,
-      responsiblePhone: responsiblePhone.trim() || undefined,
-      adminNotes: adminNotes.trim() || undefined,
-    };
-    const ok = branch
-      ? await updateBranch(branch.id, fields)
-      : await createBranch(corporateClientId, fields);
-    setSaving(false);
-    if (ok) {
-      onSaved();
-    } else {
-      setError('Error al guardar la sucursal.');
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md sm:max-w-lg lg:max-w-xl w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '20px' }}>{branch ? 'Editar Sucursal' : 'Nueva Sucursal'}</h3>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '14px' }}>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Nombre de la sucursal *</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} className="input-field" placeholder="Ej: México" style={{ fontSize: 'var(--fs-13)' }} autoFocus />
-            </div>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Código interno</label>
-              <input type="text" value={internalCode} onChange={e => setInternalCode(e.target.value)} className="input-field" placeholder="Ej: MX-01" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: '14px' }}>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>País *</label>
-              <input type="text" value={country} onChange={e => setCountry(e.target.value)} className="input-field" placeholder="Ej: México" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Estado/Región</label>
-              <input type="text" value={region} onChange={e => setRegion(e.target.value)} className="input-field" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Ciudad</label>
-              <input type="text" value={city} onChange={e => setCity(e.target.value)} className="input-field" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-          </div>
-          <div>
-            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Dirección</label>
-            <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="input-field" style={{ fontSize: 'var(--fs-13)' }} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '14px' }}>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Responsable</label>
-              <input type="text" value={responsibleName} onChange={e => setResponsibleName(e.target.value)} className="input-field" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Puesto</label>
-              <input type="text" value={responsiblePosition} onChange={e => setResponsiblePosition(e.target.value)} className="input-field" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '14px' }}>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Correo del responsable</label>
-              <input type="email" value={responsibleEmail} onChange={e => setResponsibleEmail(e.target.value)} className="input-field" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-            <div>
-              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Teléfono</label>
-              <input type="text" value={responsiblePhone} onChange={e => setResponsiblePhone(e.target.value)} className="input-field" style={{ fontSize: 'var(--fs-13)' }} />
-            </div>
-          </div>
-          <div>
-            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Observaciones administrativas</label>
-            <textarea value={adminNotes} onChange={e => setAdminNotes(e.target.value)} rows={2} className="input-field resize-none" style={{ fontSize: 'var(--fs-13)' }} />
-          </div>
-
-          {error && <p className="text-error text-center" style={{ fontSize: 'var(--fs-12)' }}>{error}</p>}
-
-          <div className="flex" style={{ gap: '12px', marginTop: '4px' }}>
-            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
-              Cancelar
-            </button>
-            <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
-              {saving ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function AssignResponsibleModal({
-  branch,
-  onClose,
-  onSaved,
-}: {
-  branch: Branch;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const [email, setEmail] = useState(branch.responsibleEmail ?? '');
-  const [password, setPassword] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError('Correo y contraseña son obligatorios.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('El formato del correo no es válido.');
-      return;
-    }
-    setSaving(true);
-    setError('');
-    const autoUsername = email.trim().split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || email.trim();
-    const profile = await createClientAccount(
-      autoUsername,
-      password.trim(),
-      branch.responsibleName || branch.name,
-      ['diagnostico_empresarial'],
-      undefined,
-      email.trim(),
-      'STANDARD',
-      'MXN',
-    );
-    if (!profile) {
-      setSaving(false);
-      setError('Error al crear la cuenta. Es posible que el correo ya exista.');
-      return;
-    }
-    const linked = await updateBranch(branch.id, { branchProfileId: profile.id, responsibleEmail: email.trim() });
-    setSaving(false);
-    if (linked) {
-      onSaved();
-    } else {
-      setError('La cuenta se creó pero no se pudo vincular a la sucursal.');
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px' }}>
-        <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '6px' }}>Asignar responsable — {branch.name}</h3>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '24px' }}>
-          Se creará una cuenta de acceso para que el responsable llene el diagnóstico de esta sucursal.
-        </p>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Correo electrónico *</label>
-            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} className="input-field" style={{ fontSize: 'var(--fs-13)' }} autoFocus />
-          </div>
-          <div>
-            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>Contraseña *</label>
-            <input type="text" value={password} onChange={e => { setPassword(e.target.value); setError(''); }} className="input-field" placeholder="Contraseña temporal" style={{ fontSize: 'var(--fs-13)' }} />
-          </div>
-
-          {error && <p className="text-error text-center" style={{ fontSize: 'var(--fs-12)' }}>{error}</p>}
-
-          <div className="flex" style={{ gap: '12px', marginTop: '4px' }}>
-            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
-              Cancelar
-            </button>
-            <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
-              {saving ? 'Creando...' : 'Crear y asignar'}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 }
@@ -2509,7 +2119,6 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
   const [permTech, setPermTech] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>('MXN');
-  const [operationMode, setOperationMode] = useState<OperationMode>('STANDARD');
   const [corporateGroup, setCorporateGroup] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -2563,7 +2172,6 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
       permissions,
       logoPreview ?? undefined,
       email.trim(),
-      operationMode,
       currencyCode,
       corporateGroup.trim() || undefined,
     );
@@ -2666,36 +2274,6 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
               ))}
             </div>
             <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>El cliente capturará sus cifras directamente en esta moneda. No se convierte automáticamente.</p>
-          </div>
-
-          {/* Operation mode */}
-          <div>
-            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>Tipo de expediente</label>
-            <div className="flex" style={{ gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => setOperationMode('STANDARD')}
-                className={`flex-1 border font-medium transition-all cursor-pointer ${
-                  operationMode === 'STANDARD' ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-pale text-muted'
-                }`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
-              >
-                Estándar (una empresa)
-              </button>
-              <button
-                type="button"
-                onClick={() => setOperationMode('MULTI_BRANCH')}
-                className={`flex-1 border font-medium transition-all cursor-pointer ${
-                  operationMode === 'MULTI_BRANCH' ? 'border-accent bg-accent/10 text-accent' : 'border-border bg-pale text-muted'
-                }`}
-                style={{ padding: '8px 16px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
-              >
-                Corporativo multisucursal
-              </button>
-            </div>
-            {operationMode === 'MULTI_BRANCH' && (
-              <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>Este expediente será el corporativo. Después de crearlo, agrega las sucursales desde su pestaña "Sucursales".</p>
-            )}
           </div>
 
           {/* Survey permissions */}

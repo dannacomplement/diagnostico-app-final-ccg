@@ -190,8 +190,8 @@ interface DiagnosticState {
   resetDiagnostic: () => void;
   loadDiagnosticForReport: (d: SavedDiagnostic, currencyCode?: CurrencyCode) => void;
   loadDiagnosticForEdit: (d: SavedDiagnostic, currencyCode?: CurrencyCode) => void;
-  startPrefillMode: (userId: string) => void;
-  editPrefillMode: (userId: string, data: PrefillData) => void;
+  startPrefillMode: (userId: string, currencyCode?: CurrencyCode) => void;
+  editPrefillMode: (userId: string, data: PrefillData, currencyCode?: CurrencyCode) => void;
   loadPrefill: (data: PrefillData) => void;
   savePrefillData: () => Promise<boolean>;
   setTieneLiderInterno: (v: boolean | null) => void;
@@ -480,7 +480,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
 
       /* ── Prefill mode ──────────────────────────────────── */
 
-      startPrefillMode: (userId: string) =>
+      startPrefillMode: (userId: string, currencyCode) =>
         set({
           view: 'wizard',
           currentStep: 0,
@@ -503,9 +503,10 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           prefillMode: true,
           prefillTargetUserId: userId,
           originatedFromPrefill: false,
+          viewedClientCurrency: currencyCode ?? null,
         }),
 
-      editPrefillMode: (userId: string, data: PrefillData) => {
+      editPrefillMode: (userId: string, data: PrefillData, currencyCode) => {
         const dg = { ...defaultDatosGenerales(), ...(data.datosGenerales ?? {}) };
         if (!dg.softwareSelections) dg.softwareSelections = defaultSoftwareSelections();
         dg.puestoEmpresa = dg.puestoEmpresa ?? '';
@@ -533,6 +534,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           prefillMode: true,
           prefillTargetUserId: userId,
           originatedFromPrefill: false,
+          viewedClientCurrency: currencyCode ?? null,
         });
       },
 
