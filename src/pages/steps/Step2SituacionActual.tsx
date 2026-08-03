@@ -1,7 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import type { SocioDetail } from '../../lib/types';
-import { formatMonetaryValue, currencyUnitLabel, currencyPerEmployeeLabel } from '../../lib/money';
+import { currencyUnitLabel, currencyPerEmployeeLabel } from '../../lib/money';
+import type { CurrencyCode } from '../../lib/types';
+
+/** Just the number, no currency prefix or unit — the unit is shown as a separate suffix label. */
+function formatPlainNumber(value: number | null, currencyCode: CurrencyCode): string {
+  if (!value) return '0';
+  const locale = currencyCode === 'USD' ? 'en-US' : 'es-MX';
+  if (value >= 1) {
+    return value.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  }
+  return `${(value * 1000).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} mil`;
+}
 
 const SIZE_COLORS = {
   Micro: 'bg-blue/10 text-blue border-blue/20',
@@ -52,9 +63,7 @@ export default function Step2SituacionActual() {
                 style={{ maxWidth: '160px', minHeight: '38px', display: 'flex', alignItems: 'center' }}
               >
                 <span className={situacion.ventasAnualesMDP ? 'text-ink font-semibold' : 'text-muted'} style={{ fontSize: 'var(--fs-13)' }}>
-                  {situacion.ventasAnualesMDP
-                    ? formatMonetaryValue({ value: situacion.ventasAnualesMDP, currencyCode })
-                    : (currencyCode === 'USD' ? 'US$0 M' : '$0 MDP')}
+                  {formatPlainNumber(situacion.ventasAnualesMDP, currencyCode)}
                 </span>
               </div>
             )}
