@@ -5,6 +5,7 @@ import type {
   DatosGenerales, SituacionActual, CriterionAnswer, Gerencia,
   FamilyAnalysis, MarginData, UrgencySelection, LineaNegocio,
   OperationMode, CurrencyCode, Branch, BranchStatus, BranchDiagnosticStatus,
+  TechMaturityArea, TechMaturityAnswer,
 } from './types';
 
 /* ── Prefill data shape (raw wizard state) ─────────────── */
@@ -22,6 +23,12 @@ export interface PrefillData {
   tieneLiderInterno?: boolean | null;
   analisisFamiliar?: FamilyAnalysis;
   marginData?: MarginData;
+  // Prueba de Tecnología (survey_type: 'prueba_tecnologia')
+  techRespondentArea?: TechMaturityArea;
+  techRolCargo?: string;
+  techSistemasPrincipales?: string;
+  techAreaAnswers?: TechMaturityAnswer[];
+  techGeneralAnswers?: TechMaturityAnswer[];
 }
 
 function rowToDiagnostic(row: any): SavedDiagnostic {

@@ -294,84 +294,28 @@ export interface SavedDiagnostic {
 }
 
 /* ── Prueba de Tecnología Survey ─────────────────────── */
+/* Multi-respondent: cada persona contesta las afirmaciones de SU área
+   (Comercial, Operaciones, RH o Admin) más las de Sistemas y Seguridad,
+   que son generales para todas las áreas. */
 
-export type TechMaturityLevel = 'basico' | 'intermedio' | 'avanzado' | 'lider_digital';
+export type TechMaturityArea = 'comercial' | 'operaciones' | 'rrhh' | 'admin';
 
-export interface TechToolsData {
-  usaExcel: boolean;
-  excelNivel: 'basico' | 'intermedio' | 'avanzado' | '';
-  tieneERP: boolean;
-  erpNombre: string;
-  tieneCRM: boolean;
-  crmNombre: string;
-  tieneMRP: boolean;
-  mrpNombre: string;
-  otrasHerramientas: string;
-}
+export type TechMaturityScore = 1 | 2 | 3 | 4 | 5;
 
-export interface TechDigitalPresence {
-  tieneWebsite: boolean;
-  websiteActualizado: boolean;
-  tieneEcommerce: boolean;
-  usaRedesSociales: boolean;
-  redesActivas: string[];       // e.g. ['facebook','instagram','linkedin','tiktok']
-  marketingDigital: boolean;
-}
-
-export interface TechAutomation {
-  procesosAutomatizados: 'ninguno' | 'algunos' | 'mayoria' | 'todos';
-  areasMasAutomatizadas: string;
-  facturaElectronica: boolean;
-  bancaDigital: boolean;
-  firmaElectronica: boolean;
-  gestionDocumentalDigital: boolean;
-}
-
-export interface TechDataAnalytics {
-  usaDatosParaDecisiones: 'nunca' | 'a_veces' | 'frecuentemente' | 'siempre';
-  tieneKPIs: boolean;
-  dashboardsBI: boolean;
-  herramientaBI: string;       // e.g. 'Power BI', 'Tableau', 'Ninguna'
-  analiticaAvanzada: boolean;
-}
-
-export interface TechAIAdoption {
-  conoceIA: boolean;
-  usaIAEnEmpresa: boolean;
-  casosUsoIA: string[];        // e.g. ['chatbots','generacion_contenido','analisis_datos','automatizacion']
-  interesEnIA: 'alto' | 'medio' | 'bajo' | 'ninguno';
-  inversionTechAnual: 'menos_50k' | '50k_200k' | '200k_500k' | 'mas_500k' | 'no_sabe';
-}
-
-export interface TechSecurity {
-  tieneAntivirus: boolean;
-  respaldosDatos: 'nunca' | 'manual' | 'automatico';
-  politicasSeguridad: boolean;
-  capacitacionSeguridad: boolean;
-  usaNube: boolean;
-  proveedorNube: string;       // e.g. 'AWS','Azure','Google Cloud','Otro','Ninguno'
-}
-
-export interface TechCulture {
-  resistenciaAlCambio: 'alta' | 'media' | 'baja' | 'ninguna';
-  capacitacionTecnologica: boolean;
-  equipoTI: boolean;
-  equipoTISize: number | null;
-  presupuestoTech: boolean;
-  retoPrincipalTech: string;
+export interface TechMaturityAnswer {
+  id: string;           // e.g. 'COM-01'
+  score: TechMaturityScore;
 }
 
 export interface SavedTechSurvey {
   id: string;
   savedAt: string;
   companyName: string;
-  tools: TechToolsData;
-  digitalPresence: TechDigitalPresence;
-  automation: TechAutomation;
-  dataAnalytics: TechDataAnalytics;
-  aiAdoption: TechAIAdoption;
-  security: TechSecurity;
-  culture: TechCulture;
-  maturityScore: number;       // 0-100 computed
-  maturityLevel: TechMaturityLevel;
+  respondentArea: TechMaturityArea;
+  rolCargo: string;
+  sistemasPrincipales: string;
+  areaAnswers: TechMaturityAnswer[];
+  generalAnswers: TechMaturityAnswer[];
+  areaScore: number;      // 0-100, promedio de las afirmaciones del área
+  generalScore: number;   // 0-100, promedio de las afirmaciones de Sistemas y Seguridad
 }
