@@ -18,7 +18,6 @@ function profileToAppUser(profile: any, email?: string): AppUser {
     logoUrl: (profile.logo_url as string | null) ?? undefined,
     status: (profile.status as AppUser['status']) ?? 'activo',
     createdAt: (profile.created_at as string | null) ?? undefined,
-    operationMode: (profile.operation_mode as AppUser['operationMode']) ?? 'STANDARD',
     currencyCode: (profile.currency_code as AppUser['currencyCode']) ?? 'MXN',
     corporateGroup: (profile.corporate_group as string | null) ?? undefined,
   };

@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(403).json({ error: 'Only master accounts can create users' });
   }
 
-  const { email, password, displayName, username, permissions, logoUrl, status, operationMode, currencyCode, corporateGroup } = req.body;
+  const { email, password, displayName, username, permissions, logoUrl, status, currencyCode, corporateGroup } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -67,7 +67,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       survey_permissions: permissions || ['diagnostico_empresarial'],
       logo_url: logoUrl || null,
       status: status || 'activo',
-      operation_mode: operationMode || 'STANDARD',
       currency_code: currencyCode || 'MXN',
       corporate_group: corporateGroup || null,
     });

@@ -18,6 +18,7 @@ import type {
   MarginEvaluation,
   SoftwareSelections,
   LineaNegocio,
+  Sucursal,
   CurrencyCode,
 } from '../lib/types';
 import { calculateCompanySize, calculateScore, mapOpportunityAreas, calculateUrgency, evaluateMargins } from '../lib/calculations';
@@ -133,6 +134,8 @@ interface DiagnosticState {
   situacionActual: SituacionActual;
   descripcionNegocio: string;
   lineasNegocio: LineaNegocio[];
+  tieneMultiplesSucursales: boolean | null;
+  sucursales: Sucursal[];
   profAnswers: CriterionAnswer[];
   instAnswers: CriterionAnswer[];
   gerencias: Gerencia[];
@@ -172,6 +175,8 @@ interface DiagnosticState {
   updateSituacionActual: (partial: Partial<SituacionActual>) => void;
   setDescripcionNegocio: (text: string) => void;
   setLineasNegocio: (lineas: LineaNegocio[]) => void;
+  setTieneMultiplesSucursales: (v: boolean | null) => void;
+  setSucursales: (sucursales: Sucursal[]) => void;
   setCriterionAnswer: (category: 'prof' | 'inst', id: string, answer: Partial<CriterionAnswer>) => void;
   setGerencia: (index: number, data: Partial<Gerencia>) => void;
   setReto: (index: number, text: string) => void;
@@ -207,6 +212,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       situacionActual: defaultSituacionActual(),
       descripcionNegocio: '',
       lineasNegocio: [],
+      tieneMultiplesSucursales: null,
+      sucursales: [],
       profAnswers: defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
       instAnswers: defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
       gerencias: defaultGerencias(),
@@ -240,6 +247,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
 
       setDescripcionNegocio: (text) => set({ descripcionNegocio: text }),
       setLineasNegocio: (lineas) => set({ lineasNegocio: lineas }),
+      setTieneMultiplesSucursales: (v) => set({ tieneMultiplesSucursales: v, sucursales: v ? get().sucursales : [] }),
+      setSucursales: (sucursales) => set({ sucursales }),
 
       setCriterionAnswer: (category, id, answer) =>
         set((state) => {
@@ -351,6 +360,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           gerencias: [...state.gerencias],
           descripcionNegocio: state.descripcionNegocio,
           lineasNegocio: state.lineasNegocio.length > 0 ? [...state.lineasNegocio] : undefined,
+          tieneMultiplesSucursales: state.tieneMultiplesSucursales ?? undefined,
+          sucursales: state.sucursales.length > 0 ? [...state.sucursales] : undefined,
           retos: [...state.retos],
           urgenciaSelection: state.urgencia ?? 'deseable',
           urgenciaLevel: urgencyLevel,
@@ -385,6 +396,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           situacionActual: defaultSituacionActual(),
           descripcionNegocio: '',
           lineasNegocio: [],
+          tieneMultiplesSucursales: null,
+          sucursales: [],
           profAnswers: defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
           instAnswers: defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
           gerencias: defaultGerencias(),
@@ -424,6 +437,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           situacionActual: { ...defaultSituacionActual(), ...d.situacionActual },
           descripcionNegocio: d.descripcionNegocio ?? '',
           lineasNegocio: d.lineasNegocio ?? [],
+          tieneMultiplesSucursales: d.tieneMultiplesSucursales ?? null,
+          sucursales: d.sucursales ?? [],
           profAnswers: d.profesionalizacion.answers.map(a => ({ ...a })),
           instAnswers: d.institucionalizacion.answers.map(a => ({ ...a })),
           gerencias: d.gerencias.map(g => ({ ...g, nombre: g.nombre ?? '' })),
@@ -455,6 +470,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           situacionActual: { ...defaultSituacionActual(), ...d.situacionActual },
           descripcionNegocio: d.descripcionNegocio ?? '',
           lineasNegocio: d.lineasNegocio ?? [],
+          tieneMultiplesSucursales: d.tieneMultiplesSucursales ?? null,
+          sucursales: d.sucursales ?? [],
           profAnswers: d.profesionalizacion.answers.map(a => ({ ...a })),
           instAnswers: d.institucionalizacion.answers.map(a => ({ ...a })),
           gerencias: d.gerencias.map(g => ({ ...g, nombre: g.nombre ?? '' })),
@@ -488,6 +505,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           situacionActual: defaultSituacionActual(),
           descripcionNegocio: '',
           lineasNegocio: [],
+          tieneMultiplesSucursales: null,
+          sucursales: [],
           profAnswers: defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
           instAnswers: defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
           gerencias: defaultGerencias(),
@@ -519,6 +538,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           situacionActual: { ...defaultSituacionActual(), ...(data.situacionActual ?? {}) },
           descripcionNegocio: data.descripcionNegocio ?? '',
           lineasNegocio: data.lineasNegocio ?? [],
+          tieneMultiplesSucursales: data.tieneMultiplesSucursales ?? null,
+          sucursales: data.sucursales ?? [],
           profAnswers: data.profAnswers ?? defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
           instAnswers: data.instAnswers ?? defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
           gerencias: data.gerencias ?? defaultGerencias(),
@@ -551,6 +572,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           situacionActual: { ...defaultSituacionActual(), ...(data.situacionActual ?? {}) },
           descripcionNegocio: data.descripcionNegocio ?? '',
           lineasNegocio: data.lineasNegocio ?? [],
+          tieneMultiplesSucursales: data.tieneMultiplesSucursales ?? null,
+          sucursales: data.sucursales ?? [],
           profAnswers: data.profAnswers ?? defaultCriterionAnswers(PROFESIONALIZACION_CRITERIA),
           instAnswers: data.instAnswers ?? defaultCriterionAnswers(INSTITUCIONALIZACION_CRITERIA),
           gerencias: data.gerencias ?? defaultGerencias(),
@@ -576,6 +599,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           situacionActual: { ...state.situacionActual },
           descripcionNegocio: state.descripcionNegocio,
           lineasNegocio: [...state.lineasNegocio],
+          tieneMultiplesSucursales: state.tieneMultiplesSucursales,
+          sucursales: [...state.sucursales],
           profAnswers: state.profAnswers.map(a => ({ ...a })),
           instAnswers: state.instAnswers.map(a => ({ ...a })),
           gerencias: state.gerencias.map(g => ({ ...g })),
