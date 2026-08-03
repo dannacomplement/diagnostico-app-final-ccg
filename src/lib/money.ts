@@ -39,10 +39,10 @@ export function formatMonetaryValue({ value, currencyCode, displayUnit = 'millon
 
 /** Unit label shown next to sales/productivity inputs (e.g. wizard suffix). */
 export function currencyUnitLabel(currencyCode: CurrencyCode): string {
-  return currencyCode === 'USD' ? 'US$M' : 'MDP';
+  return currencyCode === 'USD' ? 'M USD' : 'MDP';
 }
 
-/** "MDP por empleado" / "US$M por empleado" — productivity index suffix. */
+/** "MDP por empleado" / "M USD por empleado" — productivity index suffix. */
 export function currencyPerEmployeeLabel(currencyCode: CurrencyCode): string {
-  return currencyCode === 'USD' ? 'US$M por empleado' : 'MDP por empleado';
+  return currencyCode === 'USD' ? 'M USD por empleado' : 'MDP por empleado';
 }
