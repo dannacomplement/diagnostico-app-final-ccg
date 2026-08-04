@@ -1,55 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { useAuthStore } from '../../store/authStore';
 import { EMPRESA_FAMILIAR_OPTIONS, SECTOR_OPTIONS, SOFTWARE_OPTIONS, EXCEL_NIVEL_OPTIONS, PUESTO_EMPRESA_OPTIONS, PUESTO_FAMILIA_OPTIONS, ERP_OPTIONS, MRP_OPTIONS, CRM_OPTIONS, UBICACION_OPTIONS } from '../../config/constants';
-import type { SoftwareOption, SavedDiagnostic } from '../../lib/types';
-import { getDiagnosticsByUser } from '../../lib/storage';
+import { CEMEX_COUNTRIES, STATES_BY_COUNTRY, type CemexCountry } from '../../config/countryStates';
+import type { SoftwareOption } from '../../lib/types';
 import SearchableCombobox from '../../components/ui/SearchableCombobox';
 
 const EMPTY_SELECTIONS = { selected: [] as SoftwareOption[], erpDetalle: '', mrpDetalle: '', crmDetalle: '', excelNivel: '' as const };
 
+function parseCemexUbicacion(ubicacion: string): { pais: CemexCountry | ''; estado: string } {
+  if (!ubicacion) return { pais: '', estado: '' };
+  const parts = ubicacion.split(',').map(s => s.trim());
+  const maybePais = parts[parts.length - 1];
+  if ((CEMEX_COUNTRIES as readonly string[]).includes(maybePais)) {
+    return { pais: maybePais as CemexCountry, estado: parts.length > 1 ? parts[0] : '' };
+  }
+  return { pais: '', estado: '' };
+}
+
 export default function Step1DatosGenerales() {
   const datos = useDiagnosticStore(s => s.datosGenerales);
   const update = useDiagnosticStore(s => s.updateDatosGenerales);
-  const setDescripcion = useDiagnosticStore(s => s.setDescripcionNegocio);
   const isFamilyBusiness = useDiagnosticStore(s => s.isFamilyBusiness);
-  const testMode = useDiagnosticStore(s => s.testMode);
-  const editMode = useDiagnosticStore(s => s.editMode);
   const isFamily = isFamilyBusiness();
   const user = useAuthStore(s => s.user);
+  const isCemex = user?.corporateGroup === 'CEMEX';
 
-  const [prevDiag, setPrevDiag] = useState<SavedDiagnostic | null>(null);
-  const [dismissed, setDismissed] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const initialCemex = parseCemexUbicacion(datos.ubicacion);
+  const [cemexPais, setCemexPais] = useState<CemexCountry | ''>(initialCemex.pais);
+  const [cemexEstado, setCemexEstado] = useState(initialCemex.estado);
 
-  useEffect(() => {
-    if (!user || testMode || editMode) return;
-    getDiagnosticsByUser(user.id).then(diags => {
-      if (diags.length > 0) setPrevDiag(diags[0]);
-    });
-  }, [user, testMode, editMode]);
+  function handleCemexPaisChange(pais: CemexCountry | '') {
+    setCemexPais(pais);
+    setCemexEstado('');
+    update({ ubicacion: '' });
+  }
 
-  function handleLoadPrevious() {
-    if (!prevDiag) return;
-    const dg = prevDiag.datosGenerales;
-    update({
-      nombreComercial: dg.nombreComercial,
-      antiguedadConstituida: dg.antiguedadConstituida,
-      antiguedadOperativa: dg.antiguedadOperativa,
-      empresaFamiliar: dg.empresaFamiliar,
-      respondente: dg.respondente,
-      email: dg.email,
-      puestoEmpresa: dg.puestoEmpresa,
-      puestoFamilia: dg.puestoFamilia,
-      esSocio: dg.esSocio,
-      porcentajeAcciones: dg.porcentajeAcciones,
-      sector: dg.sector,
-      softwareSelections: dg.softwareSelections,
-    });
-    if (prevDiag.descripcionNegocio) {
-      setDescripcion(prevDiag.descripcionNegocio);
-    }
-    setLoaded(true);
+  function handleCemexEstadoChange(estado: string) {
+    setCemexEstado(estado);
+    update({ ubicacion: cemexPais ? `${estado}, ${cemexPais}` : estado });
   }
 
   // Defensive: handle old persisted data that may lack softwareSelections
@@ -58,61 +47,7 @@ export default function Step1DatosGenerales() {
   return (
     <div className="card">
       <h2 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)', marginBottom: '8px' }}>Datos Generales de la Empresa</h2>
-      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: prevDiag && !dismissed && !loaded ? '20px' : '40px' }}>Informaci&oacute;n general del cliente y su empresa.</p>
-
-      {prevDiag && !dismissed && !loaded && (
-        <div
-          className="rounded-xl border-2 border-accent/30 bg-accent/5 animate-fade-up"
-          style={{ padding: '16px 20px', marginBottom: '32px' }}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center" style={{ gap: '12px' }}>
-              <div className="inline-flex items-center justify-center rounded-full bg-accent/15 shrink-0" style={{ width: '36px', height: '36px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 'var(--fs-18)', height: 'var(--fs-18)', color: '#0047AB' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-13)', marginBottom: '2px' }}>
-                  Usar datos de la radiografía anterior
-                </p>
-                <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>
-                  {prevDiag.datosGenerales.nombreComercial} — {new Date(prevDiag.savedAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center shrink-0" style={{ gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => setDismissed(true)}
-                className="text-muted hover:text-ink font-medium transition-colors cursor-pointer"
-                style={{ fontSize: 'var(--fs-11)', padding: '6px 10px', background: 'none' }}
-              >
-                No, gracias
-              </button>
-              <button
-                type="button"
-                onClick={handleLoadPrevious}
-                className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer shadow-sm"
-                style={{ fontSize: 'var(--fs-12)', padding: '8px 18px', borderRadius: '8px' }}
-              >
-                Cargar datos
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {loaded && (
-        <div
-          className="rounded-xl bg-success/10 border border-success/30 animate-fade-up"
-          style={{ padding: 'var(--sp-btn-c)', marginBottom: '32px' }}
-        >
-          <p className="text-success font-medium" style={{ fontSize: 'var(--fs-12)' }}>
-            Datos cargados de la radiografía anterior. Revise y actualice lo que sea necesario.
-          </p>
-        </div>
-      )}
+      <p className="text-muted leading-relaxed" style={{ fontSize: 'var(--fs-13)', marginBottom: '40px' }}>Informaci&oacute;n general del cliente y su empresa.</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
         <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
@@ -126,16 +61,42 @@ export default function Step1DatosGenerales() {
             />
           </Field>
           <Field label="Ubicaci&oacute;n" required>
-            <select
-              value={datos.ubicacion}
-              onChange={e => update({ ubicacion: e.target.value })}
-              className="input-field"
-            >
-              <option value="">Seleccionar estado...</option>
-              {UBICACION_OPTIONS.map(ub => (
-                <option key={ub} value={ub}>{ub}</option>
-              ))}
-            </select>
+            {isCemex ? (
+              <div className="grid grid-cols-2" style={{ gap: '10px' }}>
+                <select
+                  value={cemexPais}
+                  onChange={e => handleCemexPaisChange(e.target.value as CemexCountry | '')}
+                  className="input-field"
+                >
+                  <option value="">País...</option>
+                  {CEMEX_COUNTRIES.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                <select
+                  value={cemexEstado}
+                  onChange={e => handleCemexEstadoChange(e.target.value)}
+                  className="input-field"
+                  disabled={!cemexPais}
+                >
+                  <option value="">{cemexPais ? 'Estado/Depto...' : 'Elija país primero'}</option>
+                  {cemexPais && STATES_BY_COUNTRY[cemexPais].map(estado => (
+                    <option key={estado} value={estado}>{estado}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <select
+                value={datos.ubicacion}
+                onChange={e => update({ ubicacion: e.target.value })}
+                className="input-field"
+              >
+                <option value="">Seleccionar estado...</option>
+                {UBICACION_OPTIONS.map(ub => (
+                  <option key={ub} value={ub}>{ub}</option>
+                ))}
+              </select>
+            )}
           </Field>
         </div>
 
