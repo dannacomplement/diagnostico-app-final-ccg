@@ -2665,6 +2665,8 @@ function LogoSettingsSubPanel() {
   const floatingLogo = useSettingsStore(s => s.floatingLogo);
   const setCompanyLogo = useSettingsStore(s => s.setCompanyLogo);
   const setFloatingLogo = useSettingsStore(s => s.setFloatingLogo);
+  const corporateGroupLogos = useSettingsStore(s => s.corporateGroupLogos);
+  const setCorporateGroupLogos = useSettingsStore(s => s.setCorporateGroupLogos);
 
   const [preview, setPreview] = useState<string | null>(null);
   const [previewIcon, setPreviewIcon] = useState<string | null>(null);
@@ -2675,6 +2677,58 @@ function LogoSettingsSubPanel() {
   const fileRef = useRef<HTMLInputElement>(null);
   const iconFileRef = useRef<HTMLInputElement>(null);
   const floatingFileRef = useRef<HTMLInputElement>(null);
+
+  // Logos por grupo corporativo (ej. CEMEX / Construrama)
+  const [groupName, setGroupName] = useState('');
+  const [groupLogos, setGroupLogos] = useState<string[]>([]);
+  const [groupSaving, setGroupSaving] = useState(false);
+  const [groupSuccess, setGroupSuccess] = useState(false);
+  const [groupError, setGroupError] = useState('');
+  const groupFileRef = useRef<HTMLInputElement>(null);
+  const existingGroups = Object.keys(corporateGroupLogos);
+
+  function loadGroupForEdit(name: string) {
+    setGroupName(name);
+    setGroupLogos(corporateGroupLogos[name] ?? []);
+    setGroupSuccess(false);
+  }
+
+  function handleGroupFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setGroupError('Seleccione un archivo de imagen (PNG, JPG, SVG).'); return; }
+    if (file.size > 2 * 1024 * 1024) { setGroupError('La imagen no debe exceder 2MB.'); return; }
+    setGroupError('');
+    const reader = new FileReader();
+    reader.onload = () => { setGroupLogos(prev => [...prev, reader.result as string]); };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  function removeGroupLogo(index: number) {
+    setGroupLogos(prev => prev.filter((_, i) => i !== index));
+  }
+
+  async function handleSaveGroupLogos() {
+    if (!groupName.trim()) { setGroupError('Ponga el nombre del grupo corporativo (ej. CEMEX).'); return; }
+    setGroupSaving(true);
+    setGroupError('');
+    const ok = await setCorporateGroupLogos(groupName.trim(), groupLogos);
+    setGroupSaving(false);
+    if (ok) {
+      setGroupSuccess(true);
+      setTimeout(() => setGroupSuccess(false), 3000);
+    } else {
+      setGroupError('Error al guardar los logos del grupo.');
+    }
+  }
+
+  async function handleDeleteGroup(name: string) {
+    setGroupSaving(true);
+    await setCorporateGroupLogos(name, []);
+    if (groupName === name) { setGroupName(''); setGroupLogos([]); }
+    setGroupSaving(false);
+  }
 
   const hasChanges = preview !== null || previewIcon !== null || previewFloating !== null;
 
@@ -2773,6 +2827,69 @@ function LogoSettingsSubPanel() {
           {(previewFloating ?? floatingLogo) && (
             <button onClick={async () => { setSaving(true); await setFloatingLogo(null); setPreviewFloating(null); setSaving(false); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }} disabled={saving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>Usar logo principal</button>
           )}
+        </div>
+      </div>
+
+      {/* Logos por grupo corporativo */}
+      <div className="bg-white rounded-2xl border border-border/40 shadow-sm" style={{ padding: '28px 32px' }}>
+        <h3 className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)', marginBottom: '4px' }}>Logos por grupo corporativo</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginBottom: '16px' }}>
+          Para clientes con "Grupo corporativo" configurado (ej. CEMEX), estos logos reemplazan el de Complement en la barra superior — se configuran una sola vez aquí, no por cada cliente.
+        </p>
+
+        {existingGroups.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            {existingGroups.map(name => (
+              <div key={name} className="flex items-center justify-between rounded-xl border border-border/40 bg-pale" style={{ padding: '10px 14px' }}>
+                <div className="flex items-center" style={{ gap: '10px' }}>
+                  <span className="font-semibold text-ink" style={{ fontSize: 'var(--fs-12)' }}>{name}</span>
+                  <div className="flex items-center" style={{ gap: '6px' }}>
+                    {corporateGroupLogos[name].map((logo, i) => (
+                      <img key={i} src={logo} alt={name} className="object-contain bg-white rounded" style={{ height: '24px', maxWidth: '60px', padding: '2px' }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center" style={{ gap: '6px' }}>
+                  <button onClick={() => loadGroupForEdit(name)} className="text-accent font-semibold hover:bg-accent/10 transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '5px 10px', borderRadius: '8px' }}>Editar</button>
+                  <button onClick={() => handleDeleteGroup(name)} disabled={groupSaving} className="text-error font-semibold hover:bg-error/10 transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '5px 10px', borderRadius: '8px' }}>Eliminar</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ borderTop: existingGroups.length > 0 ? '1px solid var(--color-border)' : 'none', paddingTop: existingGroups.length > 0 ? '16px' : '0' }}>
+          <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '8px' }}>Nombre del grupo corporativo</label>
+          <input
+            type="text"
+            value={groupName}
+            onChange={e => { setGroupName(e.target.value); setGroupSuccess(false); }}
+            placeholder="Ej: CEMEX"
+            className="input-field"
+            style={{ fontSize: 'var(--fs-13)', maxWidth: '260px', marginBottom: '14px' }}
+          />
+
+          {groupLogos.length > 0 && (
+            <div className="flex flex-wrap" style={{ gap: '10px', marginBottom: '14px' }}>
+              {groupLogos.map((logo, i) => (
+                <div key={i} className="relative flex items-center justify-center bg-pale rounded-xl border border-border/40" style={{ width: '90px', height: '54px' }}>
+                  <img src={logo} alt="" className="object-contain" style={{ maxWidth: '70px', maxHeight: '42px' }} />
+                  <button onClick={() => removeGroupLogo(i)} className="absolute text-white bg-error rounded-full flex items-center justify-center cursor-pointer" style={{ width: '18px', height: '18px', top: '-6px', right: '-6px', fontSize: '11px', lineHeight: 1 }}>×</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center" style={{ gap: '10px', marginBottom: '10px' }}>
+            <input ref={groupFileRef} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleGroupFileSelect} className="hidden" />
+            <button onClick={() => groupFileRef.current?.click()} className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-colors cursor-pointer" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>+ Agregar logo</button>
+            <button onClick={handleSaveGroupLogos} disabled={groupSaving} className="bg-accent text-white font-semibold hover:bg-mid transition-colors cursor-pointer disabled:opacity-50" style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}>
+              {groupSaving ? 'Guardando...' : 'Guardar grupo'}
+            </button>
+          </div>
+
+          {groupError && <p className="text-error font-medium" style={{ fontSize: 'var(--fs-11)' }}>{groupError}</p>}
+          {groupSuccess && <p className="text-success font-medium" style={{ fontSize: 'var(--fs-11)' }}>Logos del grupo guardados correctamente.</p>}
         </div>
       </div>
 
