@@ -493,11 +493,11 @@ function ClientExpedienteDetail({
     if (hasDiagPrefill) {
       const existing = await getPrefillForUser(account.id, 'diagnostico_empresarial');
       if (existing) {
-        editPrefillMode(account.id, existing, account.currencyCode ?? 'MXN');
+        editPrefillMode(account.id, existing, account.currencyCode);
         return;
       }
     }
-    startPrefillMode(account.id, account.currencyCode ?? 'MXN');
+    startPrefillMode(account.id, account.currencyCode);
   }
 
   async function handleStartTechPrefill() {

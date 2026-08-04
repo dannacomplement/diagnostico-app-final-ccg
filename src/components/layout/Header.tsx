@@ -8,6 +8,11 @@ export default function Header() {
   const user = useAuthStore(s => s.user);
   const logoutAuth = useAuthStore(s => s.logout);
   const companyLogoIcon = useSettingsStore(s => s.companyLogoIcon);
+  const corporateGroupLogos = useSettingsStore(s => s.corporateGroupLogos);
+  // Clientes de un grupo corporativo (ej. CEMEX-Construrama) ven los logos
+  // configurados para ese grupo en vez del de Complement. Esos logos se
+  // configuran una sola vez por grupo en Configuración, no por cliente.
+  const groupLogos = user?.corporateGroup ? corporateGroupLogos[user.corporateGroup] : undefined;
 
   function handleLogoClick() {
     if (view === 'wizard' || view === 'org_wizard' || view === 'tech_wizard') return;
@@ -42,11 +47,25 @@ export default function Header() {
           onClick={handleLogoClick}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <img
-            src={companyLogoIcon || '/icon-complement.svg'}
-            alt="Complement"
-            className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
-          />
+          {groupLogos && groupLogos.length > 0 ? (
+            <div className="flex items-center" style={{ gap: '14px' }}>
+              {groupLogos.map((logo, i) => (
+                <img
+                  key={i}
+                  src={logo}
+                  alt={user?.corporateGroup}
+                  className="h-8 sm:h-10 lg:h-11 w-auto object-contain"
+                  style={{ background: 'white', borderRadius: '6px', padding: '2px 6px' }}
+                />
+              ))}
+            </div>
+          ) : (
+            <img
+              src={companyLogoIcon || '/icon-complement.svg'}
+              alt="Complement"
+              className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
+            />
+          )}
         </button>
         <div className="flex items-center" style={{ gap: '12px' }}>
           {user && (

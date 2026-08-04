@@ -3,7 +3,7 @@ import { getAccessToken, ensureFreshSession } from './auth';
 import type {
   SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, AppUser, SurveyType,
   DatosGenerales, SituacionActual, CriterionAnswer, Gerencia,
-  FamilyAnalysis, MarginData, UrgencySelection, LineaNegocio,
+  FamilyAnalysis, MarginData, UrgencySelection, LineaNegocio, Sucursal,
   CurrencyCode,
   TechMaturityArea, TechMaturityAnswer,
 } from './types';
@@ -15,6 +15,8 @@ export interface PrefillData {
   situacionActual?: Partial<SituacionActual>;
   descripcionNegocio?: string;
   lineasNegocio?: LineaNegocio[];
+  tieneMultiplesSucursales?: boolean | null;
+  sucursales?: Sucursal[];
   profAnswers?: CriterionAnswer[];
   instAnswers?: CriterionAnswer[];
   gerencias?: Gerencia[];

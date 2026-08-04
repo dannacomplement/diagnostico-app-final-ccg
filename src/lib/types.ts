@@ -79,6 +79,11 @@ export interface LineaNegocio {
   porcentaje: string;
 }
 
+export interface Sucursal {
+  nombre: string;
+  porcentajeVentas: string;
+}
+
 export interface SituacionActual {
   ventasAnualesMDP: number | null;
   empleadosTotales: number | null;
@@ -248,6 +253,8 @@ export interface SavedDiagnostic {
   gerencias: Gerencia[];
   descripcionNegocio?: string;
   lineasNegocio?: LineaNegocio[];
+  tieneMultiplesSucursales?: boolean;
+  sucursales?: Sucursal[];
   retos: string[];
   urgenciaSelection: UrgencySelection;
   urgenciaLevel: UrgencyLevel;
