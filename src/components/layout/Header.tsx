@@ -8,6 +8,8 @@ export default function Header() {
   const user = useAuthStore(s => s.user);
   const logoutAuth = useAuthStore(s => s.logout);
   const companyLogoIcon = useSettingsStore(s => s.companyLogoIcon);
+  // Corporate clients (ej. CEMEX-Construrama) ven su propio logo en vez del de Complement.
+  const headerLogo = (user?.corporateGroup && user?.logoUrl) ? user.logoUrl : (companyLogoIcon || '/icon-complement.svg');
 
   function handleLogoClick() {
     if (view === 'wizard' || view === 'org_wizard' || view === 'tech_wizard') return;
@@ -43,8 +45,8 @@ export default function Header() {
           className="flex items-center gap-3 cursor-pointer"
         >
           <img
-            src={companyLogoIcon || '/icon-complement.svg'}
-            alt="Complement"
+            src={headerLogo}
+            alt={user?.corporateGroup || 'Complement'}
             className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
           />
         </button>
