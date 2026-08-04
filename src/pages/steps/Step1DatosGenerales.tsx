@@ -62,7 +62,7 @@ export default function Step1DatosGenerales() {
           </Field>
           <Field label="Ubicaci&oacute;n" required>
             {isCemex ? (
-              <div className="grid" style={{ gap: '10px', gridTemplateColumns: '0.8fr 1.2fr' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <select
                   value={cemexPais}
                   onChange={e => handleCemexPaisChange(e.target.value as CemexCountry | '')}
