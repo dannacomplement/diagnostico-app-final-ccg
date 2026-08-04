@@ -25,7 +25,6 @@ const VIEW_TO_ROUTE: Record<AppView, string> = {
   tech_wizard:  '/tecnologia',
   tech_result:  '/tecnologia/resultado',
   tech_report:  '/tecnologia/reporte',
-  settings:     '/configuracion',
 };
 
 const ROUTE_TO_VIEW: Record<string, AppView> = {};

@@ -124,7 +124,7 @@ function defaultFamilyAnalysis(): FamilyAnalysis {
   };
 }
 
-export type AppView = 'login' | 'home' | 'wizard' | 'result' | 'history' | 'report' | 'dashboard' | 'org_wizard' | 'org_result' | 'org_report' | 'tech_wizard' | 'tech_result' | 'tech_report' | 'settings';
+export type AppView = 'login' | 'home' | 'wizard' | 'result' | 'history' | 'report' | 'dashboard' | 'org_wizard' | 'org_result' | 'org_report' | 'tech_wizard' | 'tech_result' | 'tech_report';
 
 interface DiagnosticState {
   view: AppView;

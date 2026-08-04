@@ -16,7 +16,6 @@ const OrgResultPage = lazy(() => import('./pages/OrgResultPage'));
 const OrgReportPage = lazy(() => import('./pages/OrgReportPage'));
 const TechResultPage = lazy(() => import('./pages/TechResultPage'));
 const TechReportPage = lazy(() => import('./pages/TechReportPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 import { useDiagnosticStore } from './store/diagnosticStore';
 import { useAuthStore } from './store/authStore';
 import { useSettingsStore } from './store/settingsStore';
@@ -134,7 +133,6 @@ export default function App() {
           <Route path="/tecnologia" element={<AuthGuard><TechWizardShell /></AuthGuard>} />
           <Route path="/tecnologia/resultado" element={<AuthGuard><TechResultPage /></AuthGuard>} />
           <Route path="/tecnologia/reporte" element={<AuthGuard><TechReportPage /></AuthGuard>} />
-          <Route path="/configuracion" element={<AuthGuard><SettingsPage /></AuthGuard>} />
 
           {/* Catch-all → redirect to login or home */}
           <Route path="*" element={<Navigate to={user ? '/' : '/login'} replace />} />
