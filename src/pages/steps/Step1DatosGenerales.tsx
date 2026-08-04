@@ -62,13 +62,13 @@ export default function Step1DatosGenerales() {
           </Field>
           <Field label="Ubicaci&oacute;n" required>
             {isCemex ? (
-              <div className="grid grid-cols-2" style={{ gap: '10px' }}>
+              <div className="grid" style={{ gap: '10px', gridTemplateColumns: '0.8fr 1.2fr' }}>
                 <select
                   value={cemexPais}
                   onChange={e => handleCemexPaisChange(e.target.value as CemexCountry | '')}
                   className="input-field"
                 >
-                  <option value="">País...</option>
+                  <option value="">País</option>
                   {CEMEX_COUNTRIES.map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
@@ -79,7 +79,7 @@ export default function Step1DatosGenerales() {
                   className="input-field"
                   disabled={!cemexPais}
                 >
-                  <option value="">{cemexPais ? 'Estado/Depto...' : 'Elija país primero'}</option>
+                  <option value="">Estado/Depto</option>
                   {cemexPais && STATES_BY_COUNTRY[cemexPais].map(estado => (
                     <option key={estado} value={estado}>{estado}</option>
                   ))}
