@@ -121,6 +121,7 @@ export function generateSampleDiagnostic(): SavedDiagnostic {
     urgenciaSelection: 'muy_urgente',
     urgenciaLevel: urgencyLevel,
     tieneLiderInterno: true,
+    nombreLiderInterno: 'Juan Pérez Gómez',
     analisisFamiliar,
     priority: true,
     classification: 'seguimiento',

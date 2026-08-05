@@ -1337,6 +1337,9 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     retosBody.push(['Urgencia', diagnostic.urgenciaLevel]);
     if (diagnostic.tieneLiderInterno != null) {
       retosBody.push(['Líder Interno', diagnostic.tieneLiderInterno ? 'Sí' : 'No']);
+      if (diagnostic.tieneLiderInterno && diagnostic.nombreLiderInterno) {
+        retosBody.push(['Nombre del Líder Interno', diagnostic.nombreLiderInterno]);
+      }
     }
 
     autoTable(doc, {
