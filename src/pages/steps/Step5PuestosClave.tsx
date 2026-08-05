@@ -78,9 +78,10 @@ const AREA_ICONS: Record<string, LucideIcon> = {
   'Capital Humano': Users,
 };
 
-function DGEvaluationPanel({ evaluation, onChange }: {
+function DGEvaluationPanel({ evaluation, onChange, areaLabel }: {
   evaluation: DGEvaluation;
   onChange: (ev: DGEvaluation) => void;
+  areaLabel: string;
 }) {
   const score = calcDGScore(evaluation);
 
@@ -112,7 +113,7 @@ function DGEvaluationPanel({ evaluation, onChange }: {
     <div className="border-t border-accent/20" style={{ marginTop: '16px', paddingTop: '16px' }}>
       <div className="flex items-center" style={{ gap: '8px', marginBottom: '14px' }}>
         <ClipboardList className="text-navy" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} />
-        <h4 className="font-bold text-navy" style={{ fontSize: 'var(--fs-12)' }}>Evaluación del Director General</h4>
+        <h4 className="font-bold text-navy" style={{ fontSize: 'var(--fs-12)' }}>Evaluación de {areaLabel}</h4>
       </div>
 
       {renderSelect(
@@ -136,7 +137,7 @@ function DGEvaluationPanel({ evaluation, onChange }: {
 
       {score != null && (
         <div className="rounded-xl bg-pale border border-border/50 flex items-center justify-between" style={{ padding: 'var(--sp-btn-c)', marginTop: '4px' }}>
-          <span className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>Calificación Director General</span>
+          <span className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>Calificación de {areaLabel}</span>
           <div className="flex items-center" style={{ gap: '8px' }}>
             <span className={`font-bold ${dgScoreColor(score)}`} style={{ fontSize: 'var(--fs-18)' }}>
               {score.toFixed(1)}
@@ -321,13 +322,12 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
             </div>
           </div>
 
-          {/* DG Evaluation — only for Director General (index 0) */}
-          {i === 0 && (
-            <DGEvaluationPanel
-              evaluation={g.dgEvaluation ?? { nivelEstudios: null, experienciaLaboral: null, seguimientoResultados: null }}
-              onChange={ev => setGerencia(i, { dgEvaluation: ev })}
-            />
-          )}
+          {/* Evaluación (nivel de estudios, experiencia, seguimiento) — aplica a todos los puestos */}
+          <DGEvaluationPanel
+            evaluation={g.dgEvaluation ?? { nivelEstudios: null, experienciaLaboral: null, seguimientoResultados: null }}
+            onChange={ev => setGerencia(i, { dgEvaluation: ev })}
+            areaLabel={g.area}
+          />
         </div>
       )}
     </div>
@@ -500,6 +500,14 @@ export default function Step5Gerencias() {
                     {nodeSubtext(g)}
                   </p>
                 )}
+                {g.dgEvaluation && (() => {
+                  const s = calcDGScore(g.dgEvaluation);
+                  return s != null ? (
+                    <p className={`font-bold ${dgScoreColor(s)}`} style={{ fontSize: 'var(--fs-8)', marginTop: '2px' }}>
+                      Calif.: {s.toFixed(1)}/10
+                    </p>
+                  ) : null;
+                })()}
               </button>
             );
           })}
