@@ -877,57 +877,40 @@ function addGerenciasSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: str
     margin: [2, 5, 2, 5],
   });
 
-  // ── DG Evaluation score ──
-  const dg = d.gerencias[0];
-  const dgEv = dg?.dgEvaluation;
+  // ── Gerencia evaluation scores (compact chips, one per gerencia with data) ──
+  const evaluatedGerencias = d.gerencias
+    .map(g => {
+      const ev = g.dgEvaluation;
+      if (!ev || ev.nivelEstudios == null || ev.experienciaLaboral == null || ev.seguimientoResultados == null) return null;
+      const score = ev.nivelEstudios * 0.4 + ev.experienciaLaboral * 0.4 + ev.seguimientoResultados * 0.2;
+      return { area: g.area, score };
+    })
+    .filter((x): x is { area: string; score: number } => x !== null);
+
   const dgEvY = tableY + (d.gerencias.length + 1) * 0.4 + 0.15;
-  if (dgEv && dgEv.nivelEstudios != null && dgEv.experienciaLaboral != null && dgEv.seguimientoResultados != null) {
-    const dgScore = dgEv.nivelEstudios * 0.4 + dgEv.experienciaLaboral * 0.4 + dgEv.seguimientoResultados * 0.2;
-    const dgColor = dgScore >= 8 ? SUCCESS : dgScore >= 5 ? WARN : ERROR;
-    const dgLabel = dgScore >= 8 ? 'Excelente' : dgScore >= 6 ? 'Bueno' : dgScore >= 4 ? 'Regular' : 'Bajo';
-
-    slide.addShape('roundRect', {
-      x: MARGIN_L + 0.15, y: dgEvY, w: 6.5, h: 0.55,
-      rectRadius: 0.06, fill: { color: LIGHT_BG },
-      line: { color: dgColor + '60', width: 0.7 },
-    });
-    slide.addText('CALIFICACIÓN DIRECTOR GENERAL', {
-      x: MARGIN_L + 0.3, y: dgEvY + 0.04, w: 3, h: 0.18,
-      fontSize: 7, color: MUTED, fontFace: 'Arial', bold: true,
-    });
-    slide.addText(`${dgScore.toFixed(1)} / 10`, {
-      x: MARGIN_L + 0.3, y: dgEvY + 0.22, w: 1.5, h: 0.28,
-      fontSize: 16, color: dgColor, fontFace: 'Arial', bold: true,
-    });
-    slide.addShape('roundRect', {
-      x: MARGIN_L + 1.9, y: dgEvY + 0.25, w: 0.7, h: 0.22,
-      rectRadius: 0.11, fill: { color: dgColor + '20' },
-    });
-    slide.addText(dgLabel, {
-      x: MARGIN_L + 1.9, y: dgEvY + 0.25, w: 0.7, h: 0.22,
-      fontSize: 7.5, color: dgColor, fontFace: 'Arial', bold: true, align: 'center',
-    });
-
-    const dgDetails = [
-      { label: 'Estudios', value: dgEv.nivelEstudios, weight: '40%' },
-      { label: 'Experiencia', value: dgEv.experienciaLaboral, weight: '40%' },
-      { label: 'Seguimiento', value: dgEv.seguimientoResultados, weight: '20%' },
-    ];
-    dgDetails.forEach((dd, i) => {
-      const dx = MARGIN_L + 3.2 + i * 1.1;
-      slide.addText(`${dd.label} (${dd.weight})`, {
-        x: dx, y: dgEvY + 0.04, w: 1.0, h: 0.18,
-        fontSize: 6, color: MUTED, fontFace: 'Arial',
+  if (evaluatedGerencias.length > 0) {
+    const chipW = Math.min(2.05, (tableW - (evaluatedGerencias.length - 1) * 0.08) / evaluatedGerencias.length);
+    evaluatedGerencias.forEach((ge, i) => {
+      const chipColor = ge.score >= 8 ? SUCCESS : ge.score >= 5 ? WARN : ERROR;
+      const cx = MARGIN_L + 0.15 + i * (chipW + 0.08);
+      slide.addShape('roundRect', {
+        x: cx, y: dgEvY, w: chipW, h: 0.55,
+        rectRadius: 0.06, fill: { color: LIGHT_BG },
+        line: { color: chipColor + '60', width: 0.7 },
       });
-      slide.addText(`${dd.value}/10`, {
-        x: dx, y: dgEvY + 0.22, w: 1.0, h: 0.28,
-        fontSize: 10, color: INK, fontFace: 'Arial', bold: true,
+      slide.addText(ge.area.toUpperCase(), {
+        x: cx + 0.12, y: dgEvY + 0.04, w: chipW - 0.24, h: 0.18,
+        fontSize: 6, color: MUTED, fontFace: 'Arial', bold: true,
+      });
+      slide.addText(`${ge.score.toFixed(1)} / 10`, {
+        x: cx + 0.12, y: dgEvY + 0.24, w: chipW - 0.24, h: 0.26,
+        fontSize: 13, color: chipColor, fontFace: 'Arial', bold: true,
       });
     });
   }
 
   // ── Additional employee info below table ──
-  const empY = (dgEv && dgEv.nivelEstudios != null ? dgEvY + 0.7 : tableY + (d.gerencias.length + 1) * 0.4 + 0.2);
+  const empY = (evaluatedGerencias.length > 0 ? dgEvY + 0.7 : tableY + (d.gerencias.length + 1) * 0.4 + 0.2);
   if (empY < 6.5) {
     const empItems = [
       { label: 'Empleados Totales', value: d.situacionActual.empleadosTotales?.toString() ?? '—' },

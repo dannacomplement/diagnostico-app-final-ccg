@@ -50,6 +50,8 @@ export default function ReportPage() {
   const gerencias = useDiagnosticStore(s => s.gerencias);
   const retos = useDiagnosticStore(s => s.retos);
   const urgencia = useDiagnosticStore(s => s.urgencia);
+  const tieneLiderInterno = useDiagnosticStore(s => s.tieneLiderInterno);
+  const nombreLiderInterno = useDiagnosticStore(s => s.nombreLiderInterno);
   const analisisFamiliar = useDiagnosticStore(s => s.analisisFamiliar);
   const isFamilyBusiness = useDiagnosticStore(s => s.isFamilyBusiness);
   const getCompanySize = useDiagnosticStore(s => s.getCompanySize);
@@ -107,6 +109,13 @@ export default function ReportPage() {
   const ratingLabel = (r: number) => r <= 0 ? 'Bajo' : r <= 5 ? 'Medio' : 'Alto';
   const ratingColor = (r: number) => r <= 3 ? 'text-error' : r <= 6 ? 'text-warn' : 'text-success';
   const ratingBg = (r: number) => r <= 3 ? 'bg-error' : r <= 6 ? 'bg-warn' : 'bg-success';
+
+  function gerenciaEvalScore(g: typeof gerencias[number]) {
+    const ev = g.dgEvaluation;
+    if (!ev || ev.nivelEstudios == null || ev.experienciaLaboral == null || ev.seguimientoResultados == null) return null;
+    return ev.nivelEstudios * 0.4 + ev.experienciaLaboral * 0.4 + ev.seguimientoResultados * 0.2;
+  }
+  const evalScoreColor = (s: number) => s >= 8 ? 'text-success' : s >= 5 ? 'text-warn' : 'text-error';
 
   const sectorLabel = datosGenerales.sector === 'manufactura' ? 'Manufactura' : datosGenerales.sector === 'comercio' ? 'Comercio' : 'Servicios';
   const bench = DEFAULT_INDUSTRY_BENCHMARKS[datosGenerales.sector as Sector];
@@ -441,36 +450,46 @@ export default function ReportPage() {
          ═══════════════════════════════════════════════ */}
       <Section title="Gerencias / Puestos Clave" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
-          {gerencias.map(g => (
-            <div key={g.area} className="flex items-center rounded-lg bg-pale" style={{ gap: '10px', padding: 'var(--sp-btn-c)' }}>
-              <span className={`rounded-full shrink-0 ${g.cubierto ? (g.soyYo ? 'bg-accent' : g.calificado === 'si' ? 'bg-success' : g.calificado === 'no' ? 'bg-error' : 'bg-warn') : 'bg-error'}`} style={{ width: 'var(--fs-8)', height: 'var(--fs-8)' }} />
-              <span className="font-bold text-navy flex-1" style={{ fontSize: 'var(--fs-12)' }}>{g.area}</span>
-              {g.cubierto ? (
-                <>
-                  {g.soyYo ? (
-                    <span className="font-semibold rounded-full bg-accent/15 text-accent" style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
-                      Soy Yo
-                    </span>
-                  ) : (
-                    <span className={`font-semibold rounded-full
-                      ${g.calificado === 'si' ? 'bg-success/15 text-success' :
-                        g.calificado === 'no' ? 'bg-error/15 text-error' :
-                        'bg-warn/15 text-warn'}
-                    `} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
-                      {g.calificado === 'si' ? 'Calificado' : g.calificado === 'no' ? 'No calificado' : 'Por evaluar'}
-                    </span>
-                  )}
-                  <div className="flex items-center text-muted" style={{ gap: '8px', fontSize: 'var(--fs-10)' }}>
-                    {g.antiguedad && <span>{g.antiguedad} anos</span>}
-                    {(g as any).rangoSueldo && <span>{(g as any).rangoSueldo}</span>}
-                    {(g as any).esFamiliar === true && <span className="text-accent font-medium">Familiar</span>}
-                  </div>
-                </>
-              ) : (
-                <span className="text-error font-semibold" style={{ fontSize: 'var(--fs-11)' }}>No cubierto</span>
+          {gerencias.map(g => {
+            const evalScore = gerenciaEvalScore(g);
+            return (
+            <div key={g.area} className="rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-c)' }}>
+              <div className="flex items-center" style={{ gap: '10px' }}>
+                <span className={`rounded-full shrink-0 ${g.cubierto ? (g.soyYo ? 'bg-accent' : g.calificado === 'si' ? 'bg-success' : g.calificado === 'no' ? 'bg-error' : 'bg-warn') : 'bg-error'}`} style={{ width: 'var(--fs-8)', height: 'var(--fs-8)' }} />
+                <span className="font-bold text-navy flex-1" style={{ fontSize: 'var(--fs-12)' }}>{g.area}</span>
+                {g.cubierto ? (
+                  <>
+                    {g.soyYo ? (
+                      <span className="font-semibold rounded-full bg-accent/15 text-accent" style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
+                        Soy Yo
+                      </span>
+                    ) : (
+                      <span className={`font-semibold rounded-full
+                        ${g.calificado === 'si' ? 'bg-success/15 text-success' :
+                          g.calificado === 'no' ? 'bg-error/15 text-error' :
+                          'bg-warn/15 text-warn'}
+                      `} style={{ fontSize: 'var(--fs-10)', padding: '2px 8px' }}>
+                        {g.calificado === 'si' ? 'Calificado' : g.calificado === 'no' ? 'No calificado' : 'Por evaluar'}
+                      </span>
+                    )}
+                    <div className="flex items-center text-muted" style={{ gap: '8px', fontSize: 'var(--fs-10)' }}>
+                      {g.antiguedad && <span>{g.antiguedad} anos</span>}
+                      {(g as any).rangoSueldo && <span>{(g as any).rangoSueldo}</span>}
+                      {(g as any).esFamiliar === true && <span className="text-accent font-medium">Familiar</span>}
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-error font-semibold" style={{ fontSize: 'var(--fs-11)' }}>No cubierto</span>
+                )}
+              </div>
+              {evalScore != null && (
+                <p className={`font-semibold ${evalScoreColor(evalScore)}`} style={{ fontSize: 'var(--fs-11)', marginTop: '6px', marginLeft: '18px' }}>
+                  Evaluación (estudios/experiencia/seguimiento): {evalScore.toFixed(1)}/10
+                </p>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
         <p className="font-semibold text-navy" style={{ fontSize: 'var(--fs-12)' }}>
           {gerenciasCubiertas} de {gerencias.length} puestos cubiertos
@@ -559,6 +578,14 @@ export default function ReportPage() {
             {urgencia === 'deseable' && ' — Puede planificarse a mediano plazo.'}
           </p>
         </div>
+        {tieneLiderInterno != null && (
+          <div className="rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-a)', marginTop: '10px' }}>
+            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '4px' }}>Líder interno del proyecto</p>
+            <p className="text-ink font-medium" style={{ fontSize: 'var(--fs-12)' }}>
+              {tieneLiderInterno ? (nombreLiderInterno || 'Sí (nombre no capturado)') : 'No'}
+            </p>
+          </div>
+        )}
       </Section>
 
       {/* ═══════════════════════════════════════════════
@@ -567,15 +594,16 @@ export default function ReportPage() {
       <Section title="Datos Generales" number={nextNum()}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
           <DetailRow label="Sector" value={sectorLabel} />
-          <DetailRow label="Antiguedad Constituida" value={datosGenerales.antiguedadConstituida ? `${datosGenerales.antiguedadConstituida} anos` : '—'} alt />
-          <DetailRow label="Antiguedad Operativa" value={datosGenerales.antiguedadOperativa ? `${datosGenerales.antiguedadOperativa} anos` : '—'} />
-          <DetailRow label="Empresa Familiar" value={familiarLabel} alt />
-          <DetailRow label="Respondente" value={datosGenerales.respondente || '—'} />
-          <DetailRow label="Correo electronico" value={datosGenerales.email || '—'} alt />
-          <DetailRow label="Puesto en la Empresa" value={datosGenerales.puestoEmpresa || '—'} />
-          {isFamily && <DetailRow label="Puesto en la Familia" value={datosGenerales.puestoFamilia || '—'} alt />}
-          <DetailRow label="Es socio?" value={datosGenerales.esSocio === 'si' ? `Si${datosGenerales.porcentajeAcciones ? ` — ${datosGenerales.porcentajeAcciones}%` : ''}` : datosGenerales.esSocio === 'no' ? 'No' : '—'} />
-          <DetailRow label="Software de Gestión" value={softwareLabel} alt />
+          <DetailRow label="Ubicación" value={(datosGenerales as any).ubicacion || '—'} alt />
+          <DetailRow label="Antiguedad Constituida" value={datosGenerales.antiguedadConstituida ? `${datosGenerales.antiguedadConstituida} anos` : '—'} />
+          <DetailRow label="Antiguedad Operativa" value={datosGenerales.antiguedadOperativa ? `${datosGenerales.antiguedadOperativa} anos` : '—'} alt />
+          <DetailRow label="Empresa Familiar" value={familiarLabel} />
+          <DetailRow label="Respondente" value={datosGenerales.respondente || '—'} alt />
+          <DetailRow label="Correo electronico" value={datosGenerales.email || '—'} />
+          <DetailRow label="Puesto en la Empresa" value={datosGenerales.puestoEmpresa || '—'} alt />
+          {isFamily && <DetailRow label="Puesto en la Familia" value={datosGenerales.puestoFamilia || '—'} />}
+          <DetailRow label="Es socio?" value={datosGenerales.esSocio === 'si' ? `Si${datosGenerales.porcentajeAcciones ? ` — ${datosGenerales.porcentajeAcciones}%` : ''}` : datosGenerales.esSocio === 'no' ? 'No' : '—'} alt />
+          <DetailRow label="Software de Gestión" value={softwareLabel} />
         </div>
       </Section>
 

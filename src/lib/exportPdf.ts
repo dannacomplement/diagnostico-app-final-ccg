@@ -1278,43 +1278,44 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.text(`${coveredCount} de ${totalGerencias} puestos cubiertos`, margin + 5, y);
   y += 8;
 
-  // DG Evaluation
-  const dgGer = diagnostic.gerencias[0];
-  const dgEv = dgGer?.dgEvaluation;
-  if (dgEv && dgEv.nivelEstudios != null && dgEv.experienciaLaboral != null && dgEv.seguimientoResultados != null) {
+  // Gerencia evaluations (nivel de estudios / experiencia / seguimiento) — one block per gerencia that has it
+  diagnostic.gerencias.forEach(ger => {
+    const gerEv = ger.dgEvaluation;
+    if (!gerEv || gerEv.nivelEstudios == null || gerEv.experienciaLaboral == null || gerEv.seguimientoResultados == null) return;
+
     y = ensureSpace(doc, y, 24, margin);
-    const dgScore = dgEv.nivelEstudios * 0.4 + dgEv.experienciaLaboral * 0.4 + dgEv.seguimientoResultados * 0.2;
-    const dgColor: [number, number, number] = dgScore >= 8 ? SUCCESS : dgScore >= 5 ? WARN : ERROR;
-    const dgLabel = dgScore >= 8 ? 'Excelente' : dgScore >= 6 ? 'Bueno' : dgScore >= 4 ? 'Regular' : 'Bajo';
+    const gerScore = gerEv.nivelEstudios * 0.4 + gerEv.experienciaLaboral * 0.4 + gerEv.seguimientoResultados * 0.2;
+    const gerColor: [number, number, number] = gerScore >= 8 ? SUCCESS : gerScore >= 5 ? WARN : ERROR;
+    const gerLabel = gerScore >= 8 ? 'Excelente' : gerScore >= 6 ? 'Bueno' : gerScore >= 4 ? 'Regular' : 'Bajo';
 
     drawRoundedRect(doc, margin, y, contentWidth, 20, 2, PALE);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
     doc.setTextColor(...NAVY);
-    doc.text('CALIFICACIÓN DIRECTOR GENERAL', margin + 5, y + 5.5);
+    doc.text(`EVALUACIÓN — ${ger.area.toUpperCase()}`, margin + 5, y + 5.5);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.setTextColor(...dgColor);
-    doc.text(`${dgScore.toFixed(1)}`, margin + 5, y + 15);
+    doc.setTextColor(...gerColor);
+    doc.text(`${gerScore.toFixed(1)}`, margin + 5, y + 15);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(...MUTED);
     doc.text('/ 10', margin + 20, y + 15);
 
-    drawRoundedRect(doc, margin + 30, y + 9, 18, 7, 2, dgColor);
+    drawRoundedRect(doc, margin + 30, y + 9, 18, 7, 2, gerColor);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);
     doc.setTextColor(...WHITE);
-    doc.text(dgLabel, margin + 39, y + 14, { align: 'center' });
+    doc.text(gerLabel, margin + 39, y + 14, { align: 'center' });
 
-    const dgItems = [
-      { label: 'Estudios (40%)', value: dgEv.nivelEstudios },
-      { label: 'Experiencia (40%)', value: dgEv.experienciaLaboral },
-      { label: 'Seguimiento (20%)', value: dgEv.seguimientoResultados },
+    const gerItems = [
+      { label: 'Estudios (40%)', value: gerEv.nivelEstudios },
+      { label: 'Experiencia (40%)', value: gerEv.experienciaLaboral },
+      { label: 'Seguimiento (20%)', value: gerEv.seguimientoResultados },
     ];
-    dgItems.forEach((item, i) => {
+    gerItems.forEach((item, i) => {
       const dx = margin + 55 + i * 38;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(6);
@@ -1327,7 +1328,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
       doc.text(`${item.value}/10`, dx, y + 16);
     });
     y += 24;
-  }
+  });
 
   /* -- RETOS -- */
   const filteredRetos = diagnostic.retos.filter(r => r);
