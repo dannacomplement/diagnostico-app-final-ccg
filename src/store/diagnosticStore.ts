@@ -167,6 +167,12 @@ interface DiagnosticState {
   viewedClientCurrency: CurrencyCode | null;
   getEffectiveCurrency: () => CurrencyCode;
 
+  /* ── Same idea as viewedClientCurrency, but for "Grupo corporativo" (ej.
+   *  CEMEX) — needed so the master filling/pre-llenando a client's wizard
+   *  sees that CLIENT's group-specific fields, not their own. */
+  viewedClientCorporateGroup: string | null;
+  getEffectiveCorporateGroup: () => string | undefined;
+
   setView: (view: AppView) => void;
   setTestMode: (v: boolean) => void;
   setDraftActive: (v: boolean) => void;
@@ -193,10 +199,10 @@ interface DiagnosticState {
   setEmailStatus: (status: 'idle' | 'sending' | 'sent' | 'error') => void;
   saveDiagnostic: () => SavedDiagnostic;
   resetDiagnostic: () => void;
-  loadDiagnosticForReport: (d: SavedDiagnostic, currencyCode?: CurrencyCode) => void;
-  loadDiagnosticForEdit: (d: SavedDiagnostic, currencyCode?: CurrencyCode) => void;
-  startPrefillMode: (userId: string, currencyCode?: CurrencyCode) => void;
-  editPrefillMode: (userId: string, data: PrefillData, currencyCode?: CurrencyCode) => void;
+  loadDiagnosticForReport: (d: SavedDiagnostic, currencyCode?: CurrencyCode, corporateGroup?: string) => void;
+  loadDiagnosticForEdit: (d: SavedDiagnostic, currencyCode?: CurrencyCode, corporateGroup?: string) => void;
+  startPrefillMode: (userId: string, currencyCode?: CurrencyCode, corporateGroup?: string) => void;
+  editPrefillMode: (userId: string, data: PrefillData, currencyCode?: CurrencyCode, corporateGroup?: string) => void;
   loadPrefill: (data: PrefillData) => void;
   savePrefillData: () => Promise<boolean>;
   setTieneLiderInterno: (v: boolean | null) => void;
@@ -232,6 +238,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       originatedFromPrefill: false,
       viewedClientCurrency: null,
       getEffectiveCurrency: () => get().viewedClientCurrency ?? getCurrentUser()?.currencyCode ?? 'MXN',
+      viewedClientCorporateGroup: null,
+      getEffectiveCorporateGroup: () => get().viewedClientCorporateGroup ?? getCurrentUser()?.corporateGroup ?? undefined,
 
       setView: (view) => set({ view }),
       setTestMode: (v) => set({ testMode: v }),
@@ -415,9 +423,10 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           editDiagnosticId: null,
           originatedFromPrefill: false,
           viewedClientCurrency: null,
+          viewedClientCorporateGroup: null,
         }),
 
-      loadDiagnosticForReport: (d, currencyCode) => {
+      loadDiagnosticForReport: (d, currencyCode, corporateGroup) => {
         // Normalize old data that lacks softwareSelections
         const dg = { ...d.datosGenerales };
         if (!dg.softwareSelections) {
@@ -449,10 +458,11 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           marginData: d.marginData ? { ...d.marginData, conoceMargenBruto: d.marginData.conoceMargenBruto ?? false, conoceMargenOperativo: d.marginData.conoceMargenOperativo ?? false, conoceMargenNeto: d.marginData.conoceMargenNeto ?? false } : defaultMarginData(),
           view: 'report',
           viewedClientCurrency: currencyCode ?? null,
+          viewedClientCorporateGroup: corporateGroup ?? null,
         });
       },
 
-      loadDiagnosticForEdit: (d, currencyCode) => {
+      loadDiagnosticForEdit: (d, currencyCode, corporateGroup) => {
         const dg = { ...d.datosGenerales };
         if (!dg.softwareSelections) {
           dg.softwareSelections = migrateSoftwareField(dg.software, dg.softwareDetalle);
@@ -491,13 +501,14 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           savedResultId: null,
           emailStatus: 'idle',
           viewedClientCurrency: currencyCode ?? null,
+          viewedClientCorporateGroup: corporateGroup ?? null,
           view: 'wizard',
         });
       },
 
       /* ── Prefill mode ──────────────────────────────────── */
 
-      startPrefillMode: (userId: string, currencyCode?: CurrencyCode) =>
+      startPrefillMode: (userId, currencyCode, corporateGroup) =>
         set({
           view: 'wizard',
           currentStep: 0,
@@ -523,9 +534,10 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           prefillTargetUserId: userId,
           originatedFromPrefill: false,
           viewedClientCurrency: currencyCode ?? null,
+          viewedClientCorporateGroup: corporateGroup ?? null,
         }),
 
-      editPrefillMode: (userId: string, data: PrefillData, currencyCode?: CurrencyCode) => {
+      editPrefillMode: (userId, data, currencyCode, corporateGroup) => {
         const dg = { ...defaultDatosGenerales(), ...(data.datosGenerales ?? {}) };
         if (!dg.softwareSelections) dg.softwareSelections = defaultSoftwareSelections();
         dg.puestoEmpresa = dg.puestoEmpresa ?? '';
@@ -556,6 +568,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           prefillTargetUserId: userId,
           originatedFromPrefill: false,
           viewedClientCurrency: currencyCode ?? null,
+          viewedClientCorporateGroup: corporateGroup ?? null,
         });
       },
 

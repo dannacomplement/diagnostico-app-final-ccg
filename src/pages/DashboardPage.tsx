@@ -136,7 +136,7 @@ export default function DashboardPage() {
     setView('tech_wizard');
   }
 
-  function handleViewReport(d: SavedDiagnostic) { loadDiagnosticForReport(d, user?.currencyCode ?? 'MXN'); }
+  function handleViewReport(d: SavedDiagnostic) { loadDiagnosticForReport(d, user?.currencyCode ?? 'MXN', user?.corporateGroup); }
 
   function handleExpediente(mode: 'download' | 'view') {
     const latestDiag = diagnostics.length > 0 ? diagnostics[0] : undefined;

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
-import { useAuthStore } from '../../store/authStore';
 import { EMPRESA_FAMILIAR_OPTIONS, SECTOR_OPTIONS, SOFTWARE_OPTIONS, EXCEL_NIVEL_OPTIONS, PUESTO_EMPRESA_OPTIONS, PUESTO_FAMILIA_OPTIONS, ERP_OPTIONS, MRP_OPTIONS, CRM_OPTIONS, UBICACION_OPTIONS } from '../../config/constants';
 import { CEMEX_COUNTRIES, STATES_BY_COUNTRY, type CemexCountry } from '../../config/countryStates';
 import type { SoftwareOption } from '../../lib/types';
@@ -23,8 +22,8 @@ export default function Step1DatosGenerales() {
   const update = useDiagnosticStore(s => s.updateDatosGenerales);
   const isFamilyBusiness = useDiagnosticStore(s => s.isFamilyBusiness);
   const isFamily = isFamilyBusiness();
-  const user = useAuthStore(s => s.user);
-  const isCemex = user?.corporateGroup === 'CEMEX';
+  const effectiveCorporateGroup = useDiagnosticStore(s => s.getEffectiveCorporateGroup());
+  const isCemex = effectiveCorporateGroup === 'CEMEX';
 
   const initialCemex = parseCemexUbicacion(datos.ubicacion);
   const [cemexPais, setCemexPais] = useState<CemexCountry | ''>(initialCemex.pais);
