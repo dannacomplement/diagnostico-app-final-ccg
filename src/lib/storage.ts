@@ -23,6 +23,7 @@ export interface PrefillData {
   retos?: string[];
   urgencia?: UrgencySelection | null;
   tieneLiderInterno?: boolean | null;
+  nombreLiderInterno?: string;
   analisisFamiliar?: FamilyAnalysis;
   marginData?: MarginData;
   // Prueba de Tecnología (survey_type: 'prueba_tecnologia')

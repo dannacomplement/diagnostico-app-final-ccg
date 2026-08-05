@@ -259,6 +259,7 @@ export interface SavedDiagnostic {
   urgenciaSelection: UrgencySelection;
   urgenciaLevel: UrgencyLevel;
   tieneLiderInterno?: boolean | null;
+  nombreLiderInterno?: string;
   analisisFamiliar: FamilyAnalysis | null;
   marginData?: MarginData;
   marginEvaluation?: MarginEvaluation;

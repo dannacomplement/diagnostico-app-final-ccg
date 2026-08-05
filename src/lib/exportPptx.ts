@@ -369,7 +369,10 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
     fontSize: 8, color: INK, fontFace: 'Arial', wrap: true,
   });
   if (d.tieneLiderInterno != null) {
-    slide.addText(`Líder interno: ${d.tieneLiderInterno ? 'Sí' : 'No'}`, {
+    const liderText = d.tieneLiderInterno && d.nombreLiderInterno
+      ? `Líder interno: Sí — ${d.nombreLiderInterno}`
+      : `Líder interno: ${d.tieneLiderInterno ? 'Sí' : 'No'}`;
+    slide.addText(liderText, {
       x: rightX + 0.15, y: urgY + 0.95, w: rightW - 0.3, h: 0.2,
       fontSize: 7, color: d.tieneLiderInterno ? '16A34A' : MUTED, fontFace: 'Arial', bold: true,
     });
