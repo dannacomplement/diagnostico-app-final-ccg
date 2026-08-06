@@ -143,7 +143,7 @@ function DGEvaluationPanel({ evaluation, onChange, areaLabel }: {
         v => onChange({ ...evaluation, experienciaLaboral: v }),
       )}
       {renderSelect(
-        '3. Seguimiento de resultados',
+        '3. Nivel de Gestión',
         DG_SEGUIMIENTO,
         evaluation.seguimientoResultados,
         v => onChange({ ...evaluation, seguimientoResultados: v }),
