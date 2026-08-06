@@ -25,6 +25,20 @@ const SUELDO_RANGES = [
   '200+ mil',
 ];
 
+const SUELDO_RANGES_USD = [
+  '500-800',
+  '800-1,100',
+  '1,100-1,700',
+  '1,700-2,200',
+  '2,200-3,000',
+  '3,000-4,200',
+  '4,200-5,000',
+  '5,500-6,700',
+  '6,700-8,300',
+  '8,300-11,000',
+  '11,000+',
+];
+
 const DG_NIVEL_ESTUDIOS = [
   { label: 'Sin estudios profesionales', value: 0 },
   { label: 'Carrera técnica / trunca', value: 3 },
@@ -154,11 +168,12 @@ function DGEvaluationPanel({ evaluation, onChange, areaLabel }: {
 }
 
 /** Detail panel for a single gerencia — shown inline when its pyramid node is tapped */
-function GerenciaPanel({ g, i, setGerencia, onClose }: {
+function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges }: {
   g: ReturnType<typeof useDiagnosticStore.getState>['gerencias'][0];
   i: number;
   setGerencia: (index: number, data: any) => void;
   onClose: () => void;
+  sueldoRanges: string[];
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -269,7 +284,7 @@ function GerenciaPanel({ g, i, setGerencia, onClose }: {
               style={{ maxWidth: '160px', fontSize: 'var(--fs-11)' }}
             >
               <option value="">Seleccionar...</option>
-              {SUELDO_RANGES.map(r => (
+              {sueldoRanges.map(r => (
                 <option key={r} value={r}>${r}</option>
               ))}
             </select>
@@ -340,6 +355,8 @@ export default function Step5Gerencias() {
   const setGerencia = useDiagnosticStore(s => s.setGerencia);
   const situacion = useDiagnosticStore(s => s.situacionActual);
   const updateSituacion = useDiagnosticStore(s => s.updateSituacionActual);
+  const currencyCode = useDiagnosticStore(s => s.getEffectiveCurrency());
+  const sueldoRanges = currencyCode === 'USD' ? SUELDO_RANGES_USD : SUELDO_RANGES;
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -430,6 +447,7 @@ export default function Step5Gerencias() {
             i={0}
             setGerencia={setGerencia}
             onClose={() => setOpenIndex(null)}
+            sueldoRanges={sueldoRanges}
           />
         )}
 
@@ -520,6 +538,7 @@ export default function Step5Gerencias() {
             i={openIndex}
             setGerencia={setGerencia}
             onClose={() => setOpenIndex(null)}
+            sueldoRanges={sueldoRanges}
           />
         )}
       </div>
