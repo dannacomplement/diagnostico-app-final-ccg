@@ -1313,7 +1313,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     const gerItems = [
       { label: 'Estudios (40%)', value: gerEv.nivelEstudios },
       { label: 'Experiencia (40%)', value: gerEv.experienciaLaboral },
-      { label: 'Seguimiento (20%)', value: gerEv.seguimientoResultados },
+      { label: 'Nivel de Gestión (20%)', value: gerEv.seguimientoResultados },
     ];
     gerItems.forEach((item, i) => {
       const dx = margin + 55 + i * 38;
