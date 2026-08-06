@@ -168,12 +168,13 @@ function DGEvaluationPanel({ evaluation, onChange, areaLabel }: {
 }
 
 /** Detail panel for a single gerencia — shown inline when its pyramid node is tapped */
-function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges }: {
+function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges, isUsd }: {
   g: ReturnType<typeof useDiagnosticStore.getState>['gerencias'][0];
   i: number;
   setGerencia: (index: number, data: any) => void;
   onClose: () => void;
   sueldoRanges: string[];
+  isUsd: boolean;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -288,6 +289,9 @@ function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges }: {
                 <option key={r} value={r}>${r}</option>
               ))}
             </select>
+            {isUsd && g.rangoSueldo && (
+              <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)' }}>USD</span>
+            )}
           </div>
 
           {/* Es familiar? */}
@@ -356,7 +360,8 @@ export default function Step5Gerencias() {
   const situacion = useDiagnosticStore(s => s.situacionActual);
   const updateSituacion = useDiagnosticStore(s => s.updateSituacionActual);
   const currencyCode = useDiagnosticStore(s => s.getEffectiveCurrency());
-  const sueldoRanges = currencyCode === 'USD' ? SUELDO_RANGES_USD : SUELDO_RANGES;
+  const isUsd = currencyCode === 'USD';
+  const sueldoRanges = isUsd ? SUELDO_RANGES_USD : SUELDO_RANGES;
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -448,6 +453,7 @@ export default function Step5Gerencias() {
             setGerencia={setGerencia}
             onClose={() => setOpenIndex(null)}
             sueldoRanges={sueldoRanges}
+            isUsd={isUsd}
           />
         )}
 
@@ -539,6 +545,7 @@ export default function Step5Gerencias() {
             setGerencia={setGerencia}
             onClose={() => setOpenIndex(null)}
             sueldoRanges={sueldoRanges}
+            isUsd={isUsd}
           />
         )}
       </div>
