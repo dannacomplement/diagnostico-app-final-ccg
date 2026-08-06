@@ -49,6 +49,11 @@ export default function Header() {
         >
           {groupLogos && groupLogos.length > 0 ? (
             <div className="flex items-center" style={{ gap: '14px' }}>
+              <img
+                src={companyLogoIcon || '/icon-complement.svg'}
+                alt="Complement"
+                className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
+              />
               {groupLogos.map((logo, i) => (
                 <img
                   key={i}
