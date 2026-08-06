@@ -8,6 +8,8 @@ export default function Step6RetosUrgencia() {
   const setUrgencia = useDiagnosticStore(s => s.setUrgencia);
   const tieneLiderInterno = useDiagnosticStore(s => s.tieneLiderInterno);
   const setTieneLiderInterno = useDiagnosticStore(s => s.setTieneLiderInterno);
+  const nombreLiderInterno = useDiagnosticStore(s => s.nombreLiderInterno);
+  const setNombreLiderInterno = useDiagnosticStore(s => s.setNombreLiderInterno);
 
   return (
     <div className="card">
@@ -50,7 +52,7 @@ export default function Step6RetosUrgencia() {
           </button>
           <button
             type="button"
-            onClick={() => setTieneLiderInterno(false)}
+            onClick={() => { setTieneLiderInterno(false); setNombreLiderInterno(''); }}
             className={`font-semibold transition-all cursor-pointer rounded-xl border ${
               tieneLiderInterno === false
                 ? 'border-navy/50 bg-navy/10 text-navy shadow-sm'
@@ -61,6 +63,22 @@ export default function Step6RetosUrgencia() {
             No
           </button>
         </div>
+
+        {tieneLiderInterno === true && (
+          <div style={{ marginTop: '18px' }}>
+            <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '8px' }}>
+              Nombre completo del líder interno
+            </label>
+            <input
+              type="text"
+              value={nombreLiderInterno}
+              onChange={e => setNombreLiderInterno(e.target.value)}
+              placeholder="Nombre completo"
+              className="input-field"
+              style={{ maxWidth: '340px' }}
+            />
+          </div>
+        )}
       </div>
 
       <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>

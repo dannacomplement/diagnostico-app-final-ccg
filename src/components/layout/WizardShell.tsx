@@ -56,7 +56,7 @@ function validateStep(stepId: string, state: ReturnType<typeof useDiagnosticStor
       break;
     }
     case 'prof': {
-      const unanswered = state.profAnswers.filter(a => a.rating < 0);
+      const unanswered = state.profAnswers.filter(a => a.rating < 0 && a.rating !== -2);
       if (unanswered.length > 0) missing.push(`${unanswered.length} pregunta${unanswered.length > 1 ? 's' : ''} de profesionalizacion`);
       break;
     }
@@ -64,7 +64,7 @@ function validateStep(stepId: string, state: ReturnType<typeof useDiagnosticStor
       const isFamily = state.isFamilyBusiness();
       const unansweredInst = state.instAnswers.filter((a: any) => {
         const criterion = INSTITUCIONALIZACION_CRITERIA.find(c => c.id === a.criterionId);
-        return criterion && (!criterion.requiresFamilyBusiness || isFamily) && a.rating < 0;
+        return criterion && (!criterion.requiresFamilyBusiness || isFamily) && a.rating < 0 && a.rating !== -2;
       });
       if (unansweredInst.length > 0) missing.push(`${unansweredInst.length} pregunta${unansweredInst.length > 1 ? 's' : ''} de institucionalizacion`);
       break;

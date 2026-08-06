@@ -142,6 +142,7 @@ interface DiagnosticState {
   retos: string[];
   urgencia: UrgencySelection | null;
   tieneLiderInterno: boolean | null;
+  nombreLiderInterno: string;
   analisisFamiliar: FamilyAnalysis;
   marginData: MarginData;
   savedResultId: string | null;
@@ -206,6 +207,7 @@ interface DiagnosticState {
   loadPrefill: (data: PrefillData) => void;
   savePrefillData: () => Promise<boolean>;
   setTieneLiderInterno: (v: boolean | null) => void;
+  setNombreLiderInterno: (v: string) => void;
 }
 
 export const useDiagnosticStore = create<DiagnosticState>()(
@@ -226,6 +228,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       retos: ['', '', ''],
       urgencia: null,
       tieneLiderInterno: null,
+      nombreLiderInterno: '',
       analisisFamiliar: defaultFamilyAnalysis(),
       marginData: defaultMarginData(),
       savedResultId: null,
@@ -283,6 +286,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
 
       setUrgencia: (level) => set({ urgencia: level }),
       setTieneLiderInterno: (v) => set({ tieneLiderInterno: v }),
+      setNombreLiderInterno: (v) => set({ nombreLiderInterno: v }),
 
       updateAnalisisFamiliar: (partial) =>
         set((state) => ({ analisisFamiliar: { ...state.analisisFamiliar, ...partial } })),
@@ -374,6 +378,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           urgenciaSelection: state.urgencia ?? 'deseable',
           urgenciaLevel: urgencyLevel,
           tieneLiderInterno: state.tieneLiderInterno,
+          nombreLiderInterno: state.nombreLiderInterno || undefined,
           analisisFamiliar: state.isFamilyBusiness() ? { ...state.analisisFamiliar } : null,
           marginData: (state.marginData.conoceMargenBruto || state.marginData.conoceMargenOperativo || state.marginData.conoceMargenNeto) ? { ...state.marginData, tieneDatosFinancieros: true } : undefined,
           marginEvaluation: marginEval ?? undefined,
@@ -412,6 +417,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           retos: ['', '', ''],
           urgencia: null,
           tieneLiderInterno: null,
+          nombreLiderInterno: '',
           analisisFamiliar: defaultFamilyAnalysis(),
           marginData: defaultMarginData(),
           savedResultId: null,
@@ -454,6 +460,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           retos: [...d.retos],
           urgencia: d.urgenciaSelection,
           tieneLiderInterno: (d as any).tieneLiderInterno ?? null,
+          nombreLiderInterno: (d as any).nombreLiderInterno ?? '',
           analisisFamiliar: d.analisisFamiliar ? { ...d.analisisFamiliar } : defaultFamilyAnalysis(),
           marginData: d.marginData ? { ...d.marginData, conoceMargenBruto: d.marginData.conoceMargenBruto ?? false, conoceMargenOperativo: d.marginData.conoceMargenOperativo ?? false, conoceMargenNeto: d.marginData.conoceMargenNeto ?? false } : defaultMarginData(),
           view: 'report',
@@ -488,6 +495,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           retos: [...d.retos],
           urgencia: d.urgenciaSelection,
           tieneLiderInterno: (d as any).tieneLiderInterno ?? null,
+          nombreLiderInterno: (d as any).nombreLiderInterno ?? '',
           analisisFamiliar: d.analisisFamiliar ? { ...d.analisisFamiliar } : defaultFamilyAnalysis(),
           marginData: d.marginData ? { ...d.marginData, conoceMargenBruto: d.marginData.conoceMargenBruto ?? false, conoceMargenOperativo: d.marginData.conoceMargenOperativo ?? false, conoceMargenNeto: d.marginData.conoceMargenNeto ?? false } : defaultMarginData(),
           editMode: true,
@@ -524,6 +532,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           retos: ['', '', ''],
           urgencia: null,
           tieneLiderInterno: null,
+          nombreLiderInterno: '',
           analisisFamiliar: defaultFamilyAnalysis(),
           marginData: defaultMarginData(),
           savedResultId: null,
@@ -559,6 +568,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           retos: data.retos ?? ['', '', ''],
           urgencia: data.urgencia ?? null,
           tieneLiderInterno: data.tieneLiderInterno ?? null,
+          nombreLiderInterno: data.nombreLiderInterno ?? '',
           analisisFamiliar: data.analisisFamiliar ?? defaultFamilyAnalysis(),
           marginData: data.marginData ?? defaultMarginData(),
           savedResultId: null,
@@ -595,6 +605,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           retos: data.retos ?? ['', '', ''],
           urgencia: data.urgencia ?? null,
           tieneLiderInterno: data.tieneLiderInterno ?? null,
+          nombreLiderInterno: data.nombreLiderInterno ?? '',
           analisisFamiliar: data.analisisFamiliar ?? defaultFamilyAnalysis(),
           marginData: data.marginData ?? defaultMarginData(),
           savedResultId: null,
@@ -622,6 +633,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           retos: [...state.retos],
           urgencia: state.urgencia,
           tieneLiderInterno: state.tieneLiderInterno,
+          nombreLiderInterno: state.nombreLiderInterno,
           analisisFamiliar: { ...state.analisisFamiliar },
           marginData: { ...state.marginData },
         };
@@ -721,6 +733,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         retos: state.retos,
         urgencia: state.urgencia,
         tieneLiderInterno: state.tieneLiderInterno,
+        nombreLiderInterno: state.nombreLiderInterno,
         analisisFamiliar: state.analisisFamiliar,
         marginData: state.marginData,
       }),
