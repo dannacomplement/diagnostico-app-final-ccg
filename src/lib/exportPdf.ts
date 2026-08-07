@@ -26,11 +26,6 @@ const LIGHT_BLUE: [number, number, number] = [239, 246, 255];
 const BRAND_ORANGE: [number, number, number] = [212, 146, 46];
 /* BRAND_LIGHT_ORANGE available: [255, 247, 235] */
 
-const MARGIN_LEVEL_LABELS: Record<MarginLevel, string> = {
-  en_rango: 'Dentro de rango',
-  fuera_de_rango: 'Fuera de rango',
-};
-
 const MARGIN_LEVEL_COLORS: Record<MarginLevel, [number, number, number]> = {
   en_rango: SUCCESS,
   fuera_de_rango: ERROR,
@@ -138,22 +133,6 @@ function drawUrgencyBattery(doc: jsPDF, x: number, y: number, level: string) {
     doc.setFontSize(5);
     doc.setTextColor(...(isActive ? color : MUTED));
     doc.text(segLabels[i], sx + segW / 2, y + segH + 4, { align: 'center' });
-  }
-}
-
-function drawMarginGauge(doc: jsPDF, x: number, y: number, width: number, value: number | null, level: MarginLevel) {
-  const barH = 5;
-  const maxVal = 60;
-  const trackColor: [number, number, number] = [226, 232, 240];
-  const color = MARGIN_LEVEL_COLORS[level];
-
-  doc.setFillColor(...trackColor);
-  doc.roundedRect(x, y, width, barH, barH / 2, barH / 2, 'F');
-
-  if (value !== null && value > 0) {
-    const fillW = Math.max(4, Math.min(width, (value / maxVal) * width));
-    doc.setFillColor(...color);
-    doc.roundedRect(x, y, fillW, barH, barH / 2, barH / 2, 'F');
   }
 }
 
@@ -520,62 +499,8 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   });
   y += 20;
 
-  // --- MARGINS with benchmark comparison ---
   const pdfHasAnyMargin = diagnostic.marginData?.tieneDatosFinancieros ||
     diagnostic.marginData?.conoceMargenBruto || diagnostic.marginData?.conoceMargenOperativo || diagnostic.marginData?.conoceMargenNeto;
-  if (pdfHasAnyMargin && diagnostic.marginEvaluation) {
-    const bench = DEFAULT_INDUSTRY_BENCHMARKS[dg.sector as Sector];
-    drawRoundedRect(doc, margin, y, contentWidth, 34, 2, PALE);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...NAVY);
-    doc.text('MÁRGENES FINANCIEROS', margin + 6, y + 6);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.5);
-    doc.setTextColor(...MUTED);
-    doc.text(`Benchmark: ${sectorLabel}`, margin + contentWidth - 6, y + 6, { align: 'right' });
-
-    const marginItems = [
-      { label: 'M. Bruto', ...diagnostic.marginEvaluation.margenBruto, bench: bench.margenBruto },
-      { label: 'M. Operativo', ...diagnostic.marginEvaluation.margenOperativo, bench: bench.margenOperativo },
-      { label: 'M. Neto', ...diagnostic.marginEvaluation.margenNeto, bench: bench.margenNeto },
-    ];
-    const mw = contentWidth / 3;
-    marginItems.forEach((m, i) => {
-      const mx = margin + i * mw + 6;
-      const barW = mw - 16;
-      const barY = y + 14;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(6.5);
-      doc.setTextColor(...MUTED);
-      doc.text(m.label, mx, barY - 2);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(...MARGIN_LEVEL_COLORS[m.level]);
-      const valText = m.value !== null ? `${m.value}%` : '—';
-      doc.text(valText, mx + barW, barY - 2, { align: 'right' });
-
-      drawMarginGauge(doc, mx, barY + 1, barW, m.value, m.level);
-
-      // Benchmark marker line
-      const benchX = mx + (m.bench / 60) * barW;
-      doc.setDrawColor(...NAVY);
-      doc.setLineWidth(0.5);
-      doc.line(benchX, barY, benchX, barY + 6);
-
-      // Level + benchmark comparison text
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(5.5);
-      doc.setTextColor(...MARGIN_LEVEL_COLORS[m.level]);
-      doc.text(MARGIN_LEVEL_LABELS[m.level], mx, barY + 10);
-      doc.setTextColor(...MUTED);
-      doc.text(`Industria: ${m.bench}%`, mx + barW, barY + 10, { align: 'right' });
-    });
-    y += 40;
-  }
 
   // Strengths & Risks side by side
   y = ensureSpace(doc, y, 50, margin);
@@ -790,7 +715,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
       if (item.actual !== null) {
         const diff = item.actual - item.benchmark;
         const diffStr = diff >= 0 ? `+${diff.toFixed(1)}pp` : `${diff.toFixed(1)}pp`;
-        const diffColor = diff >= 0 ? SUCCESS : diff >= -5 ? WARN : ERROR;
+        const diffColor = diff >= 0 ? SUCCESS : ERROR;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
         doc.setTextColor(...diffColor);
