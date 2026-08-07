@@ -139,7 +139,7 @@ export default function ReportPage() {
         <div className="flex flex-col sm:flex-row items-center" style={{ gap: '20px' }}>
           {/* Complement Logo */}
           <img
-            src="/logo-complement.svg"
+            src="/logo-complement-full.png"
             alt="Complement Consulting Group"
             className="object-contain shrink-0"
             style={{ height: 'var(--sz-logo-report)' }}
