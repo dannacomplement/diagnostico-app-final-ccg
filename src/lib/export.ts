@@ -18,17 +18,13 @@ const MID     = '6366F1';
 const MUTED   = '64748B';
 
 const MARGIN_LEVEL_LABELS: Record<MarginLevel, string> = {
-  arriba_industria: 'Arriba de industria',
-  en_rango: 'En rango',
-  debajo_industria: 'Debajo de industria',
-  critico: 'Crítico',
+  en_rango: 'Dentro de rango',
+  fuera_de_rango: 'Fuera de rango',
 };
 
 const MARGIN_LEVEL_COLORS: Record<MarginLevel, string> = {
-  arriba_industria: SUCCESS,
-  en_rango: MID,
-  debajo_industria: WARN,
-  critico: ERROR,
+  en_rango: SUCCESS,
+  fuera_de_rango: ERROR,
 };
 
 /* ── Helpers ──────────────────────────────────────────────── */

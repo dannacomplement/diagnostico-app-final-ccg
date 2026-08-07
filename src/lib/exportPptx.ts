@@ -72,17 +72,13 @@ function urgencyBg(level: string): string {
 }
 
 const MARGIN_LABELS: Record<MarginLevel, string> = {
-  arriba_industria: 'Arriba de industria',
-  en_rango: 'En rango',
-  debajo_industria: 'Debajo',
-  critico: 'Crítico',
+  en_rango: 'Dentro de rango',
+  fuera_de_rango: 'Fuera de rango',
 };
 
 const MARGIN_COLORS: Record<MarginLevel, string> = {
-  arriba_industria: SUCCESS,
-  en_rango: MID,
-  debajo_industria: WARN,
-  critico: ERROR,
+  en_rango: SUCCESS,
+  fuera_de_rango: ERROR,
 };
 
 function sectorLabel(s: string): string {
@@ -1035,35 +1031,24 @@ function addFinancialsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: st
         slide.addShape('roundRect', { x: barCenter - barWidth, y: barY + 0.03, w: barWidth, h: 0.19, rectRadius: 0.03, fill: { color: ERROR + '60' } });
       }
     }
-
-    // Tolerance info
-    slide.addText(`Tolerancia: ±${bench.tolerancia}%  |  Crítico: -${bench.criticoUmbral}%`, {
-      x: x + 0.2, y: y + cardH - 0.35, w: cardW - 0.4, h: 0.2,
-      fontSize: 6.5, color: MUTED, fontFace: 'Arial', align: 'center',
-    });
   });
 
   // ── Financial health summary ──
   const summY = startY + cardH + 0.3;
-  const criticalCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
-    .filter(k => d.marginEvaluation![k].level === 'critico').length;
-  const aboveCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
-    .filter(k => d.marginEvaluation![k].level === 'arriba_industria').length;
+  const outOfRangeCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
+    .filter(k => d.marginEvaluation![k].level === 'fuera_de_rango').length;
 
   let healthText: string;
   let healthColor: string;
-  if (criticalCount >= 2) {
-    healthText = 'ALERTA: Múltiples márgenes en nivel crítico. Se requiere un análisis urgente de estructura de costos y estrategia de precios para asegurar la viabilidad del negocio.';
+  if (outOfRangeCount >= 2) {
+    healthText = 'ALERTA: Múltiples márgenes fuera de rango. Se requiere un análisis urgente de estructura de costos y estrategia de precios para asegurar la viabilidad del negocio.';
     healthColor = ERROR;
-  } else if (criticalCount === 1) {
-    healthText = 'ATENCIÓN: Un margen en nivel crítico. Es importante analizar la causa raíz y tomar acciones correctivas a corto plazo.';
+  } else if (outOfRangeCount === 1) {
+    healthText = 'ATENCIÓN: Un margen fuera de rango. Es importante analizar la causa raíz y tomar acciones correctivas a corto plazo.';
     healthColor = WARN;
-  } else if (aboveCount >= 2) {
-    healthText = 'POSITIVO: La mayoría de los márgenes están por encima del promedio de la industria. La empresa tiene una posición financiera saludable para invertir en crecimiento.';
-    healthColor = SUCCESS;
   } else {
     healthText = 'Los márgenes se encuentran dentro de los rangos esperados para la industria. Se recomienda monitorear continuamente y buscar optimizaciones incrementales.';
-    healthColor = MID;
+    healthColor = SUCCESS;
   }
 
   slide.addShape('roundRect', {

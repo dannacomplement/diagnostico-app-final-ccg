@@ -183,10 +183,8 @@ const LEVEL_COLORS_EXP: Record<string, string> = {
 };
 
 const MARGIN_LABELS: Record<MarginLevel, { label: string; color: string }> = {
-  arriba_industria: { label: 'Arriba', color: 'text-success' },
-  en_rango: { label: 'En rango', color: 'text-mid' },
-  debajo_industria: { label: 'Debajo', color: 'text-warn' },
-  critico: { label: 'Critico', color: 'text-error' },
+  en_rango: { label: 'Dentro de rango', color: 'text-success' },
+  fuera_de_rango: { label: 'Fuera de rango', color: 'text-error' },
 };
 
 function ExpedientesPanel({
@@ -2954,33 +2952,17 @@ function BenchmarkSettingsModal({ onClose }: { onClose: () => void }) {
             <BenchmarkField label="Margen Neto (%)" value={b.margenNeto} onChange={v => setBenchmark(activeSector, { margenNeto: v })} />
           </div>
 
-          <div className="border-t border-border/40" style={{ paddingTop: '20px' }}>
-            <p className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-10)', marginBottom: '14px' }}>Criterios de evaluación</p>
-            <div className="grid grid-cols-2" style={{ gap: '14px' }}>
-              <BenchmarkField label="Tolerancia (±%)" value={b.tolerancia} onChange={v => setBenchmark(activeSector, { tolerancia: v })} hint="Rango para 'En rango'" />
-              <BenchmarkField label="Umbral crítico (%)" value={b.criticoUmbral} onChange={v => setBenchmark(activeSector, { criticoUmbral: v })} hint="Debajo de benchmark" />
-            </div>
-          </div>
-
           {/* Visual explanation */}
           <div className="rounded-xl bg-pale border border-border/30" style={{ padding: '16px 20px' }}>
             <p className="font-medium text-navy" style={{ fontSize: 'var(--fs-11)', marginBottom: '10px' }}>Ejemplo: Margen Bruto ({b.margenBruto}%)</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-success/15 text-success font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Arriba</span>
-                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>&gt; {b.margenBruto + b.tolerancia}%</span>
+                <span className="rounded-full bg-success/15 text-success font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Dentro de rango</span>
+                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>&gt;= {b.margenBruto}%</span>
               </div>
               <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-mid/15 text-mid font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>En rango</span>
-                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{b.margenBruto - b.tolerancia}% — {b.margenBruto + b.tolerancia}%</span>
-              </div>
-              <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-warn/15 text-warn font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Debajo</span>
-                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>{b.margenBruto - b.criticoUmbral}% — {b.margenBruto - b.tolerancia}%</span>
-              </div>
-              <div className="flex items-center" style={{ gap: '8px' }}>
-                <span className="rounded-full bg-error/15 text-error font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Crítico</span>
-                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>&lt; {b.margenBruto - b.criticoUmbral}% o negativo</span>
+                <span className="rounded-full bg-error/15 text-error font-semibold" style={{ padding: '1px 8px', fontSize: 'var(--fs-10)' }}>Fuera de rango</span>
+                <span className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>&lt; {b.margenBruto}%</span>
               </div>
             </div>
           </div>

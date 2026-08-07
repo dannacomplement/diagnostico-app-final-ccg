@@ -289,22 +289,16 @@ export default function ReportPage() {
               const ev = marginEval[m.key];
               if (ev.value === null) return null;
               const levelLabels: Record<MarginLevel, string> = {
-                arriba_industria: 'Arriba de industria',
-                en_rango: 'En rango',
-                debajo_industria: 'Debajo de industria',
-                critico: 'Critico',
+                en_rango: 'Dentro de rango',
+                fuera_de_rango: 'Fuera de rango',
               };
               const levelColors: Record<MarginLevel, string> = {
-                arriba_industria: 'bg-success/10 border-success/20',
-                en_rango: 'bg-mid/10 border-mid/20',
-                debajo_industria: 'bg-warn/10 border-warn/20',
-                critico: 'bg-error/10 border-error/20',
+                en_rango: 'bg-success/10 border-success/20',
+                fuera_de_rango: 'bg-error/10 border-error/20',
               };
               const textColors: Record<MarginLevel, string> = {
-                arriba_industria: 'text-success',
-                en_rango: 'text-mid',
-                debajo_industria: 'text-warn',
-                critico: 'text-error',
+                en_rango: 'text-success',
+                fuera_de_rango: 'text-error',
               };
               return (
                 <div key={m.key} className={`rounded-xl text-center border ${levelColors[ev.level]}`} style={{ padding: '20px 14px' }}>
@@ -331,8 +325,8 @@ export default function ReportPage() {
                 if (ev.value === null) return null;
                 const diff = ev.value - item.benchmark;
                 const diffStr = diff >= 0 ? `+${diff.toFixed(1)}pp` : `${diff.toFixed(1)}pp`;
-                const diffColor = diff >= 0 ? 'text-success' : diff >= -5 ? 'text-warn' : 'text-error';
-                const barColor = diff >= 0 ? 'bg-success' : diff >= -5 ? 'bg-warn' : 'bg-error';
+                const diffColor = diff >= 0 ? 'text-success' : 'text-error';
+                const barColor = diff >= 0 ? 'bg-success' : 'bg-error';
                 const maxDisplay = Math.max(item.benchmark * 1.5, ev.value * 1.2, 30);
                 return (
                   <div key={item.key} className="rounded-lg bg-pale" style={{ padding: 'var(--sp-btn-c)' }}>

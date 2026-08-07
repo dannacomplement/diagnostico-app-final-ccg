@@ -27,17 +27,13 @@ const BRAND_ORANGE: [number, number, number] = [212, 146, 46];
 /* BRAND_LIGHT_ORANGE available: [255, 247, 235] */
 
 const MARGIN_LEVEL_LABELS: Record<MarginLevel, string> = {
-  arriba_industria: 'Arriba de industria',
-  en_rango: 'En rango',
-  debajo_industria: 'Debajo de industria',
-  critico: 'Crítico',
+  en_rango: 'Dentro de rango',
+  fuera_de_rango: 'Fuera de rango',
 };
 
 const MARGIN_LEVEL_COLORS: Record<MarginLevel, [number, number, number]> = {
-  arriba_industria: SUCCESS,
-  en_rango: MID,
-  debajo_industria: WARN,
-  critico: ERROR,
+  en_rango: SUCCESS,
+  fuera_de_rango: ERROR,
 };
 
 /* -- Helpers -- */
@@ -1022,38 +1018,6 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     doc.text(antOperStr, antX + metricHalfW / 2, y + 16, { align: 'center' });
   }
   y += 24;
-
-  /* -- MÁRGENES FINANCIEROS TABLE -- */
-  if (pdfHasAnyMargin && diagnostic.marginEvaluation) {
-    y = ensureSpace(doc, y, 30, margin);
-    const marginBody = (['margenBruto', 'margenOperativo', 'margenNeto'] as const).map(key => {
-      const ev = diagnostic.marginEvaluation![key];
-      const label = key === 'margenBruto' ? 'Margen Bruto' : key === 'margenOperativo' ? 'Margen Operativo' : 'Margen Neto';
-      return [label, ev.value !== null ? `${ev.value}%` : '—', MARGIN_LEVEL_LABELS[ev.level]];
-    });
-
-    autoTable(doc, {
-      startY: y,
-      head: [['MÁRGENES FINANCIEROS', 'Valor', 'Evaluación']],
-      body: marginBody,
-      headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
-      bodyStyles: { fontSize: 9, textColor: INK },
-      columnStyles: { 0: { fontStyle: 'bold', textColor: NAVY }, 1: { halign: 'center', fontStyle: 'bold' }, 2: { halign: 'center', fontStyle: 'bold' } },
-      didParseCell: (data) => {
-        if (data.section === 'body' && (data.column.index === 1 || data.column.index === 2)) {
-          const key = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)[data.row.index];
-          if (key && diagnostic.marginEvaluation) {
-            data.cell.styles.textColor = MARGIN_LEVEL_COLORS[diagnostic.marginEvaluation[key].level];
-          }
-        }
-      },
-      alternateRowStyles: { fillColor: PALE },
-      margin: { left: margin, right: margin },
-      theme: 'grid',
-      styles: { lineColor: BORDER, lineWidth: 0.2, cellPadding: 3 },
-    });
-    y = (doc as any).lastAutoTable.finalY + 6;
-  }
 
   /* -- PROFESIONALIZACIÓN with visual bars -- */
   y = ensureSpace(doc, y, 30, margin);
