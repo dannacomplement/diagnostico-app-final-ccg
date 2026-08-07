@@ -340,6 +340,35 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.addPage();
   let y = drawBrandedHeader(doc, 'RESUMEN EJECUTIVO', pageWidth, margin);
 
+  // Pre-measure the variable-height blocks so the fixed gaps between
+  // sections can be stretched evenly across the full page instead of
+  // bunching everything at the top and leaving the bottom empty.
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  const narrativeLines = doc.splitTextToSize(narrative, contentWidth - 8);
+  const itemLineH = 8;
+  const highCriteria = [...diagnostic.profesionalizacion.answers, ...diagnostic.institucionalizacion.answers]
+    .filter(a => a.rating >= 8)
+    .map(a => ALL_CRITERIA.find(c => c.id === a.criterionId)?.shortLabel)
+    .filter(Boolean)
+    .slice(0, 5);
+  const lowCriteria = [...diagnostic.profesionalizacion.answers, ...diagnostic.institucionalizacion.answers]
+    .filter(a => a.rating >= 0 && a.rating < 4)
+    .map(a => ALL_CRITERIA.find(c => c.id === a.criterionId)?.shortLabel)
+    .filter(Boolean)
+    .slice(0, 5);
+  const fortalezaBoxH = 6 + Math.max(highCriteria.length, 1) * itemLineH + 5;
+  const riskBoxH = 6 + Math.max(lowCriteria.length, 1) * itemLineH + 5;
+  const boxHeight = Math.max(fortalezaBoxH, riskBoxH);
+
+  const maturityBlockH = 38;
+  const indicatorsBlockH = 36;
+  const narrativeBlockH = 10 + narrativeLines.length * 4.3 + 6;
+  const infoRowBlockH = 20;
+  const naturalContentH = maturityBlockH + indicatorsBlockH + narrativeBlockH + infoRowBlockH + boxHeight;
+  const availableH = (pageHeight - 14 - 10) - y; // stop 10mm above the footer line
+  const extraGap = Math.max(0, (availableH - naturalContentH) / 4);
+
   // --- MATURITY INDEX (Hero metric) ---
   const maturityBoxW = contentWidth;
   drawRoundedRect(doc, margin, y, maturityBoxW, 34, 3, PALE);
@@ -390,7 +419,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     doc.text(`${pct}%`, cx + contribBarW - 3, breakdownY, { align: 'right' });
   });
 
-  y += 38;
+  y += maturityBlockH + extraGap;
 
   // --- KEY INDICATORS ---
   const indicatorWidth = (contentWidth - 6) / 3;
@@ -452,7 +481,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   const batteryTotalW = 4 * 12 + 3 * 2;
   drawUrgencyBattery(doc, urgX + (indicatorWidth - batteryTotalW) / 2, y + 20, urgLevel);
 
-  y += 36;
+  y += indicatorsBlockH + extraGap;
 
   // --- DIAGNOSTIC NARRATIVE ---
   drawRoundedRect(doc, margin, y, contentWidth, 8, 2, NAVY);
@@ -465,9 +494,8 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...INK);
-  const narrativeLines = doc.splitTextToSize(narrative, contentWidth - 8);
-  doc.text(narrativeLines, margin + 4, y);
-  y += narrativeLines.length * 3.8 + 4;
+  doc.text(narrativeLines, margin + 4, y, { lineHeightFactor: 1.5 });
+  y += narrativeLines.length * 4.3 + 6 + extraGap;
 
   // Company info row
   const infoWidth = (contentWidth - 9) / 4;
@@ -490,7 +518,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     const truncated = item.value.length > 20 ? item.value.substring(0, 18) + '...' : item.value;
     doc.text(truncated, ix + infoWidth / 2, y + 12, { align: 'center' });
   });
-  y += 20;
+  y += infoRowBlockH + extraGap;
 
   const pdfHasAnyMargin = diagnostic.marginData?.tieneDatosFinancieros ||
     diagnostic.marginData?.conoceMargenBruto || diagnostic.marginData?.conoceMargenOperativo || diagnostic.marginData?.conoceMargenNeto;
@@ -499,19 +527,6 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   y = ensureSpace(doc, y, 50, margin);
   const halfWidth = (contentWidth - 4) / 2;
 
-  const highCriteria = [...diagnostic.profesionalizacion.answers, ...diagnostic.institucionalizacion.answers]
-    .filter(a => a.rating >= 8)
-    .map(a => ALL_CRITERIA.find(c => c.id === a.criterionId)?.shortLabel)
-    .filter(Boolean)
-    .slice(0, 5);
-
-  const lowCriteria = [...diagnostic.profesionalizacion.answers, ...diagnostic.institucionalizacion.answers]
-    .filter(a => a.rating >= 0 && a.rating < 4)
-    .map(a => ALL_CRITERIA.find(c => c.id === a.criterionId)?.shortLabel)
-    .filter(Boolean)
-    .slice(0, 5);
-
-  const fortalezaBoxH = 6 + Math.max(highCriteria.length, 1) * 7 + 4;
   drawRoundedRect(doc, margin, y, halfWidth, fortalezaBoxH, 2, [240, 253, 244]);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -519,7 +534,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.text('PRINCIPALES FORTALEZAS', margin + 6, y + 5);
   if (highCriteria.length > 0) {
     highCriteria.forEach((c, i) => {
-      const iy = y + 11 + i * 7;
+      const iy = y + 12 + i * itemLineH;
       drawStatusDot(doc, margin + 6, iy - 2.5, 3.5, SUCCESS);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
@@ -534,7 +549,6 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   }
 
   const riskBoxX = margin + halfWidth + 4;
-  const riskBoxH = 6 + Math.max(lowCriteria.length, 1) * 7 + 4;
   drawRoundedRect(doc, riskBoxX, y, halfWidth, riskBoxH, 2, [254, 242, 242]);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -542,7 +556,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.text('FOCOS ROJOS / RIESGOS', riskBoxX + 6, y + 5);
   if (lowCriteria.length > 0) {
     lowCriteria.forEach((c, i) => {
-      const iy = y + 11 + i * 7;
+      const iy = y + 12 + i * itemLineH;
       drawStatusDot(doc, riskBoxX + 6, iy - 2.5, 3.5, ERROR);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
@@ -556,7 +570,6 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     doc.text('No se detectaron focos rojos', riskBoxX + 6, y + 12);
   }
 
-  const boxHeight = Math.max(fortalezaBoxH, riskBoxH);
   y += boxHeight + 6;
 
   /* ============================
