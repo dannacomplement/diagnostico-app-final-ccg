@@ -344,7 +344,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   // sections can be stretched evenly across the full page instead of
   // bunching everything at the top and leaving the bottom empty.
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
+  doc.setFontSize(11);
   const narrativeLines = doc.splitTextToSize(narrative, contentWidth - 8);
   const itemLineH = 8;
   const highCriteria = [...diagnostic.profesionalizacion.answers, ...diagnostic.institucionalizacion.answers]
@@ -363,7 +363,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
   const maturityBlockH = 38;
   const indicatorsBlockH = 36;
-  const narrativeBlockH = 16 + narrativeLines.length * 5 + 6;
+  const narrativeBlockH = 16 + narrativeLines.length * 5.8 + 6;
   const infoRowBlockH = 20;
   const naturalContentH = maturityBlockH + indicatorsBlockH + narrativeBlockH + infoRowBlockH + boxHeight;
   const availableH = (pageHeight - 14 - 10) - y; // stop 10mm above the footer line
@@ -492,10 +492,10 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   y += 16;
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
+  doc.setFontSize(11);
   doc.setTextColor(...INK);
   doc.text(narrativeLines, margin + 4, y, { lineHeightFactor: 1.5 });
-  y += narrativeLines.length * 5 + 6 + extraGap;
+  y += narrativeLines.length * 5.8 + 6 + extraGap;
 
   // Company info row
   const infoWidth = (contentWidth - 9) / 4;
