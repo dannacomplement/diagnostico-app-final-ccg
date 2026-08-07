@@ -6,7 +6,7 @@ import { buildSoftwareLabel } from './formatters';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from './diagnosticAnalysis';
 import { formatMonetaryValue } from './money';
-import { COMPLEMENT_MARK_PNG, COMPLEMENT_MARK_PNG_WHITE } from './brandLogo';
+import { COMPLEMENT_MARK_PNG, COMPLEMENT_MARK_PNG_WHITE, COMPLEMENT_TEXT_PNG_WHITE } from './brandLogo';
 
 /* -- Color palette (RGB arrays) -- */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -255,20 +255,13 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   const coverIconCy = 60;
   drawComplementIcon(doc, pageWidth / 2, coverIconCy, coverIconR, 'white');
 
-  // "COMPLEMENT" — spaced out, large
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.setTextColor(...WHITE);
-  doc.text('C O M P L E M E N T', pageWidth / 2, coverIconCy + coverIconR + 16, { align: 'center', charSpace: 0.8 });
-
-  // "CONSULTING GROUP" subtitle
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(148, 163, 184);
-  doc.text('C O N S U L T I N G   G R O U P', pageWidth / 2, coverIconCy + coverIconR + 26, { align: 'center' });
+  // Official "COMPLEMENT / CONSULTING GROUP" wordmark (white, from brand asset)
+  const wordmarkW = 85;
+  const wordmarkH = wordmarkW * (100 / 592);
+  doc.addImage(COMPLEMENT_TEXT_PNG_WHITE, 'PNG', pageWidth / 2 - wordmarkW / 2, coverIconCy + coverIconR + 8, wordmarkW, wordmarkH);
 
   // Orange divider line
-  const dividerY = coverIconCy + coverIconR + 36;
+  const dividerY = coverIconCy + coverIconR + wordmarkH + 20;
   doc.setDrawColor(...BRAND_ORANGE);
   doc.setLineWidth(0.8);
   doc.line(pageWidth / 2 - 35, dividerY, pageWidth / 2 + 35, dividerY);
