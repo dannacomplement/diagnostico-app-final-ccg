@@ -588,6 +588,29 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.addPage();
   y = drawBrandedHeader(doc, 'ANÁLISIS ESTRATÉGICO', pageWidth, margin);
 
+  // Pre-measure this page's (conditional) blocks so the gaps between
+  // them can be stretched evenly across the full page, same approach
+  // as the Resumen Ejecutivo page.
+  const p3NextSteps = [
+    'Agendar una sesión de revisión de resultados con un consultor de Complement.',
+    'Priorizar las áreas de oportunidad con mayor impacto para su empresa.',
+    'Definir un plan de acción con plazos y responsables para cada área.',
+    'Implementar mejoras de forma gradual, comenzando por los focos rojos identificados.',
+  ];
+  const hasRisks = risks.length > 0;
+  const riskBlockH = hasRisks ? 12 + risks.length * 18 + 4 : 0;
+  const growthBlockH = 40;
+  const hasBenchmark = pdfHasAnyMargin && !!diagnostic.marginEvaluation;
+  const benchmarkBlockH = hasBenchmark ? 12 + 3 * 14 + 4 : 0;
+  const hasOpportunities = diagnostic.opportunityAreas.length > 0;
+  const oppCount = Math.min(diagnostic.opportunityAreas.length, 5);
+  const opportunityBlockH = hasOpportunities ? 10 + oppCount * 11 + 4 : 0;
+  const nextStepsBlockH = 2 + 11 + p3NextSteps.length * 5.5;
+  const p3NaturalH = riskBlockH + growthBlockH + benchmarkBlockH + opportunityBlockH + nextStepsBlockH;
+  const p3Gaps = [hasRisks, true, hasBenchmark, hasOpportunities, true].filter(Boolean).length;
+  const p3AvailableH = (pageHeight - 14 - 10) - y;
+  const p3ExtraGap = Math.max(0, (p3AvailableH - p3NaturalH) / p3Gaps);
+
   // --- RISK PROFILE ---
   if (risks.length > 0) {
     drawRoundedRect(doc, margin, y, contentWidth, 8, 2, [127, 29, 29]); // dark red
@@ -635,7 +658,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
       y += 18;
     });
-    y += 4;
+    y += 4 + p3ExtraGap;
   }
 
   // --- GROWTH READINESS ---
@@ -681,7 +704,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     doc.text(factor, factorsX + 5, factorY);
   });
 
-  y += 28;
+  y += 28 + p3ExtraGap;
 
   // --- SECTOR BENCHMARK ---
   if (pdfHasAnyMargin && diagnostic.marginEvaluation) {
@@ -752,7 +775,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
       y += 14;
     });
-    y += 4;
+    y += 4 + p3ExtraGap;
   }
 
   // --- AREAS DE OPORTUNIDAD + RECOMENDACIONES + SIGUIENTES PASOS ---
@@ -791,7 +814,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
       y += 11;
     });
-    y += 4;
+    y += 4 + p3ExtraGap;
   }
 
   // Next steps
@@ -804,13 +827,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.text('SIGUIENTES PASOS SUGERIDOS', margin + 6, y + 6);
   y += 11;
 
-  const nextSteps = [
-    'Agendar una sesión de revisión de resultados con un consultor de Complement.',
-    'Priorizar las áreas de oportunidad con mayor impacto para su empresa.',
-    'Definir un plan de acción con plazos y responsables para cada área.',
-    'Implementar mejoras de forma gradual, comenzando por los focos rojos identificados.',
-  ];
-  nextSteps.forEach((step) => {
+  p3NextSteps.forEach((step) => {
     y = ensureSpace(doc, y, 7, margin);
     drawStatusDot(doc, margin + 4, y - 2.6, 3, NAVY);
     doc.setFont('helvetica', 'normal');
@@ -819,6 +836,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     doc.text(step, margin + 10, y);
     y += 5.5;
   });
+  y += p3ExtraGap;
 
   /* ============================
      PAGE 4+: DETAILED DATA
