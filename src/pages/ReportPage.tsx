@@ -484,7 +484,7 @@ export default function ReportPage() {
               </div>
               {evalScore != null && (
                 <p className={`font-semibold ${evalScoreColor(evalScore)}`} style={{ fontSize: 'var(--fs-11)', marginTop: '6px', marginLeft: '18px' }}>
-                  Evaluación (estudios/experiencia/seguimiento): {evalScore.toFixed(1)}/10
+                  Evaluación (estudios/experiencia/nivel de gestión): {evalScore.toFixed(1)}/10
                 </p>
               )}
             </div>
