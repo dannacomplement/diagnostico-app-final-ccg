@@ -118,8 +118,8 @@ function drawUrgencyBattery(doc: jsPDF, x: number, y: number, level: string) {
   else if (level === 'Alta') activeLevels = 3;
   else if (level === 'Critica' || level === 'Crítica') activeLevels = 4;
 
-  const segW = 12;
-  const segH = 6;
+  const segW = 14;
+  const segH = 8;
   const gap = 2;
 
   for (let i = 0; i < 4; i++) {
@@ -130,9 +130,9 @@ function drawUrgencyBattery(doc: jsPDF, x: number, y: number, level: string) {
     doc.roundedRect(sx, y, segW, segH, 1.5, 1.5, 'F');
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5);
+    doc.setFontSize(6);
     doc.setTextColor(...(isActive ? color : MUTED));
-    doc.text(segLabels[i], sx + segW / 2, y + segH + 4, { align: 'center' });
+    doc.text(segLabels[i], sx + segW / 2, y + segH + 4.5, { align: 'center' });
   }
 }
 
@@ -346,7 +346,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(11);
   const narrativeLines = doc.splitTextToSize(narrative, contentWidth - 8);
-  const itemLineH = 8;
+  const itemLineH = 9.5;
   const highCriteria = [...diagnostic.profesionalizacion.answers, ...diagnostic.institucionalizacion.answers]
     .filter(a => a.rating >= 8)
     .map(a => ALL_CRITERIA.find(c => c.id === a.criterionId)?.shortLabel)
@@ -357,14 +357,14 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     .map(a => ALL_CRITERIA.find(c => c.id === a.criterionId)?.shortLabel)
     .filter(Boolean)
     .slice(0, 5);
-  const fortalezaBoxH = 6 + Math.max(highCriteria.length, 1) * itemLineH + 5;
-  const riskBoxH = 6 + Math.max(lowCriteria.length, 1) * itemLineH + 5;
+  const fortalezaBoxH = 10 + Math.max(highCriteria.length, 1) * itemLineH + 5;
+  const riskBoxH = 10 + Math.max(lowCriteria.length, 1) * itemLineH + 5;
   const boxHeight = Math.max(fortalezaBoxH, riskBoxH);
 
   const maturityBlockH = 38;
-  const indicatorsBlockH = 36;
+  const indicatorsBlockH = 50;
   const narrativeBlockH = 16 + narrativeLines.length * 5.8 + 6;
-  const infoRowBlockH = 20;
+  const infoRowBlockH = 30;
   const naturalContentH = maturityBlockH + indicatorsBlockH + narrativeBlockH + infoRowBlockH + boxHeight;
   const availableH = (pageHeight - 14 - 10) - y; // stop 10mm above the footer line
   const extraGap = Math.max(0, (availableH - naturalContentH) / 4);
@@ -423,63 +423,64 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
   // --- KEY INDICATORS ---
   const indicatorWidth = (contentWidth - 6) / 3;
+  const indicatorBoxH = 44;
 
   // Prof indicator
   const profX = margin;
   const profAvg = diagnostic.profesionalizacion.average;
   const profLevel = diagnostic.profesionalizacion.level;
-  drawRoundedRect(doc, profX, y, indicatorWidth, 32, 3, PALE);
+  drawRoundedRect(doc, profX, y, indicatorWidth, indicatorBoxH, 3, PALE);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6);
+  doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text('PROFESIONALIZACIÓN', profX + indicatorWidth / 2, y + 6, { align: 'center' });
+  doc.text('PROFESIONALIZACIÓN', profX + indicatorWidth / 2, y + 9, { align: 'center' });
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(24);
   doc.setTextColor(...levelColor(profLevel));
-  doc.text(`${profAvg.toFixed(0)}/100`, profX + indicatorWidth / 2, y + 17, { align: 'center' });
+  doc.text(`${profAvg.toFixed(0)}/100`, profX + indicatorWidth / 2, y + 25, { align: 'center' });
   const profBadgeColor = levelColor(profLevel);
-  drawRoundedRect(doc, profX + indicatorWidth / 2 - 10, y + 19, 20, 7, 2, profBadgeColor);
+  drawRoundedRect(doc, profX + indicatorWidth / 2 - 13, y + 29, 26, 9, 2, profBadgeColor);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(5.5);
+  doc.setFontSize(7.5);
   doc.setTextColor(...WHITE);
-  doc.text(profLevel, profX + indicatorWidth / 2, y + 24, { align: 'center' });
-  drawSegmentedBar(doc, profX + 4, y + 27, indicatorWidth - 8, 3, profAvg / 10, profBadgeColor);
+  doc.text(profLevel, profX + indicatorWidth / 2, y + 35, { align: 'center' });
+  drawSegmentedBar(doc, profX + 5, y + 40, indicatorWidth - 10, 4.5, profAvg / 10, profBadgeColor);
 
   // Inst indicator
   const instX = margin + indicatorWidth + 3;
   const instAvg = diagnostic.institucionalizacion.average;
   const instLevel = diagnostic.institucionalizacion.level;
-  drawRoundedRect(doc, instX, y, indicatorWidth, 32, 3, PALE);
+  drawRoundedRect(doc, instX, y, indicatorWidth, indicatorBoxH, 3, PALE);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6);
+  doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text('INSTITUCIONALIZACIÓN', instX + indicatorWidth / 2, y + 6, { align: 'center' });
+  doc.text('INSTITUCIONALIZACIÓN', instX + indicatorWidth / 2, y + 9, { align: 'center' });
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(24);
   doc.setTextColor(...levelColor(instLevel));
-  doc.text(`${instAvg.toFixed(0)}/100`, instX + indicatorWidth / 2, y + 17, { align: 'center' });
+  doc.text(`${instAvg.toFixed(0)}/100`, instX + indicatorWidth / 2, y + 25, { align: 'center' });
   const instBadgeColor = levelColor(instLevel);
-  drawRoundedRect(doc, instX + indicatorWidth / 2 - 10, y + 19, 20, 7, 2, instBadgeColor);
+  drawRoundedRect(doc, instX + indicatorWidth / 2 - 13, y + 29, 26, 9, 2, instBadgeColor);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(5.5);
+  doc.setFontSize(7.5);
   doc.setTextColor(...WHITE);
-  doc.text(instLevel, instX + indicatorWidth / 2, y + 24, { align: 'center' });
-  drawSegmentedBar(doc, instX + 4, y + 27, indicatorWidth - 8, 3, instAvg / 10, instBadgeColor);
+  doc.text(instLevel, instX + indicatorWidth / 2, y + 35, { align: 'center' });
+  drawSegmentedBar(doc, instX + 5, y + 40, indicatorWidth - 10, 4.5, instAvg / 10, instBadgeColor);
 
   // Urgency indicator
   const urgX = margin + 2 * (indicatorWidth + 3);
   const urgLevel = diagnostic.urgenciaLevel;
-  drawRoundedRect(doc, urgX, y, indicatorWidth, 32, 3, PALE);
+  drawRoundedRect(doc, urgX, y, indicatorWidth, indicatorBoxH, 3, PALE);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6);
+  doc.setFontSize(7.5);
   doc.setTextColor(...MUTED);
-  doc.text('NIVEL DE URGENCIA', urgX + indicatorWidth / 2, y + 6, { align: 'center' });
+  doc.text('NIVEL DE URGENCIA', urgX + indicatorWidth / 2, y + 9, { align: 'center' });
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
+  doc.setFontSize(19);
   doc.setTextColor(...urgencyColor(urgLevel));
-  doc.text(urgLevel, urgX + indicatorWidth / 2, y + 16, { align: 'center' });
-  const batteryTotalW = 4 * 12 + 3 * 2;
-  drawUrgencyBattery(doc, urgX + (indicatorWidth - batteryTotalW) / 2, y + 20, urgLevel);
+  doc.text(urgLevel, urgX + indicatorWidth / 2, y + 24, { align: 'center' });
+  const batteryTotalW = 4 * 14 + 3 * 2;
+  drawUrgencyBattery(doc, urgX + (indicatorWidth - batteryTotalW) / 2, y + 29, urgLevel);
 
   y += indicatorsBlockH + extraGap;
 
@@ -507,16 +508,16 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   ];
   infoItems.forEach((item, i) => {
     const ix = margin + i * (infoWidth + 3);
-    drawRoundedRect(doc, ix, y, infoWidth, 16, 2, LIGHT_BLUE);
+    drawRoundedRect(doc, ix, y, infoWidth, 24, 2, LIGHT_BLUE);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.5);
+    doc.setFontSize(7);
     doc.setTextColor(...MUTED);
-    doc.text(item.label, ix + infoWidth / 2, y + 5.5, { align: 'center' });
+    doc.text(item.label, ix + infoWidth / 2, y + 8, { align: 'center' });
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
+    doc.setFontSize(11.5);
     doc.setTextColor(...NAVY);
     const truncated = item.value.length > 20 ? item.value.substring(0, 18) + '...' : item.value;
-    doc.text(truncated, ix + infoWidth / 2, y + 12, { align: 'center' });
+    doc.text(truncated, ix + infoWidth / 2, y + 18, { align: 'center' });
   });
   y += infoRowBlockH + extraGap;
 
@@ -529,45 +530,45 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
   drawRoundedRect(doc, margin, y, halfWidth, fortalezaBoxH, 2, [240, 253, 244]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(10);
   doc.setTextColor(...SUCCESS);
-  doc.text('PRINCIPALES FORTALEZAS', margin + 6, y + 5);
+  doc.text('PRINCIPALES FORTALEZAS', margin + 6, y + 7);
   if (highCriteria.length > 0) {
     highCriteria.forEach((c, i) => {
-      const iy = y + 12 + i * itemLineH;
-      drawStatusDot(doc, margin + 6, iy - 2.5, 3.5, SUCCESS);
+      const iy = y + 15 + i * itemLineH;
+      drawStatusDot(doc, margin + 6, iy - 3, 4.5, SUCCESS);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
+      doc.setFontSize(10);
       doc.setTextColor(...INK);
-      doc.text(c!, margin + 12, iy + 0.5);
+      doc.text(c!, margin + 14, iy);
     });
   } else {
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
+    doc.setFontSize(10);
     doc.setTextColor(...MUTED);
-    doc.text('Sin datos suficientes', margin + 6, y + 12);
+    doc.text('Sin datos suficientes', margin + 6, y + 16);
   }
 
   const riskBoxX = margin + halfWidth + 4;
   drawRoundedRect(doc, riskBoxX, y, halfWidth, riskBoxH, 2, [254, 242, 242]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(10);
   doc.setTextColor(...ERROR);
-  doc.text('FOCOS ROJOS / RIESGOS', riskBoxX + 6, y + 5);
+  doc.text('FOCOS ROJOS / RIESGOS', riskBoxX + 6, y + 7);
   if (lowCriteria.length > 0) {
     lowCriteria.forEach((c, i) => {
-      const iy = y + 12 + i * itemLineH;
-      drawStatusDot(doc, riskBoxX + 6, iy - 2.5, 3.5, ERROR);
+      const iy = y + 15 + i * itemLineH;
+      drawStatusDot(doc, riskBoxX + 6, iy - 3, 4.5, ERROR);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
+      doc.setFontSize(10);
       doc.setTextColor(...INK);
-      doc.text(c!, riskBoxX + 12, iy + 0.5);
+      doc.text(c!, riskBoxX + 14, iy);
     });
   } else {
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
+    doc.setFontSize(10);
     doc.setTextColor(...MUTED);
-    doc.text('No se detectaron focos rojos', riskBoxX + 6, y + 12);
+    doc.text('No se detectaron focos rojos', riskBoxX + 6, y + 16);
   }
 
   y += boxHeight + 6;
