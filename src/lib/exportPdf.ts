@@ -118,8 +118,8 @@ function drawUrgencyBattery(doc: jsPDF, x: number, y: number, level: string) {
   else if (level === 'Alta') activeLevels = 3;
   else if (level === 'Critica' || level === 'Crítica') activeLevels = 4;
 
-  const segW = 14;
-  const segH = 8;
+  const segW = 10.5;
+  const segH = 7;
   const gap = 2;
 
   for (let i = 0; i < 4; i++) {
@@ -361,63 +361,79 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   const riskBoxH = 10 + Math.max(lowCriteria.length, 1) * itemLineH + 5;
   const boxHeight = Math.max(fortalezaBoxH, riskBoxH);
 
-  const maturityBlockH = 50;
+  const infoWidth = (contentWidth - 9) / 4;
+  const infoItems = [
+    { label: 'EMPRESA', value: dg.nombreComercial || '—' },
+    { label: 'SECTOR', value: sectorLabel },
+    { label: 'EMPLEADOS', value: sa.empleadosTotales?.toString() ?? '—' },
+    { label: 'VENTAS ANUALES', value: formatMonetaryValue({ value: sa.ventasAnualesMDP, currencyCode }) },
+  ];
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  const infoValueLines = infoItems.map(item => doc.splitTextToSize(item.value, infoWidth - 6));
+  const infoMaxLines = Math.max(...infoValueLines.map(l => l.length));
+  const infoBoxH = Math.max(24, 15 + infoMaxLines * 4.3);
+
+  const maturityBlockH = 58;
   const indicatorsBlockH = 50;
   const narrativeBlockH = 16 + narrativeLines.length * 5.8 + 6;
-  const infoRowBlockH = 30;
+  const infoRowBlockH = infoBoxH + 6;
   const naturalContentH = maturityBlockH + indicatorsBlockH + narrativeBlockH + infoRowBlockH + boxHeight;
   const availableH = (pageHeight - 14 - 10) - y; // stop 10mm above the footer line
   const extraGap = Math.max(0, (availableH - naturalContentH) / 4);
 
   // --- MATURITY INDEX (Hero metric) ---
   const maturityBoxW = contentWidth;
-  const maturityBoxH = 44;
+  const maturityBoxH = 52;
   drawRoundedRect(doc, margin, y, maturityBoxW, maturityBoxH, 3, PALE);
 
   // Score ring on left
-  const ringCx = margin + 20;
-  const ringCy = y + 17;
-  drawScoreRing(doc, ringCx, ringCy, 11, maturity.score, 100, maturityColor(maturity.score));
+  const ringCx = margin + 22;
+  const ringCy = y + 18;
+  drawScoreRing(doc, ringCx, ringCy, 14, maturity.score, 100, maturityColor(maturity.score));
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(24);
   doc.setTextColor(...maturityColor(maturity.score));
-  doc.text(`${maturity.score}`, ringCx, ringCy + 5, { align: 'center' });
+  doc.text(`${maturity.score}`, ringCx, ringCy + 4.3, { align: 'center' });
 
   // Label and level
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...NAVY);
-  doc.text('ÍNDICE DE MADUREZ EMPRESARIAL', margin + 38, y + 8);
+  doc.text('ÍNDICE DE MADUREZ EMPRESARIAL', margin + 42, y + 8);
 
   // Level badge
-  drawRoundedRect(doc, margin + 38, y + 11, 30, 8, 2, maturityColor(maturity.score));
+  drawRoundedRect(doc, margin + 42, y + 11, 30, 8, 2, maturityColor(maturity.score));
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(...WHITE);
-  doc.text(maturity.level, margin + 53, y + 16.5, { align: 'center' });
+  doc.text(maturity.level, margin + 57, y + 16.5, { align: 'center' });
 
-  // Contribution breakdown bars
-  const breakdownX = margin + 38;
-  const breakdownY = y + 32;
+  // Contribution breakdown bars — 2x2 grid so labels/percentages have room to be bigger
+  const breakdownX = margin + 42;
   const contribs = [
     { label: 'Profesionalización', value: maturity.profContrib, max: 35 },
     { label: 'Institucionalización', value: maturity.instContrib, max: 25 },
     { label: 'Gerencias', value: maturity.gerContrib, max: 20 },
     { label: 'Márgenes', value: maturity.marginContrib, max: 20 },
   ];
-  const contribBarW = (contentWidth - 44) / 4;
+  const contribColW = (maturityBoxW - (breakdownX - margin) - 4) / 2;
+  const contribRowH = 13;
   contribs.forEach((c, i) => {
-    const cx = breakdownX + i * (contribBarW + 2);
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const cx = breakdownX + col * (contribColW + 4);
+    const cy = y + 26 + row * contribRowH;
     const pct = c.max > 0 ? Math.round((c.value / c.max) * 100) : 0;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(9.5);
     doc.setTextColor(...MUTED);
-    doc.text(c.label, cx, breakdownY);
-    drawProgressBar(doc, cx, breakdownY + 3, contribBarW - 4, 4, c.value, c.max, ACCENT);
+    doc.text(c.label, cx, cy);
+    drawProgressBar(doc, cx, cy + 2.5, contribColW - 4, 4, c.value, c.max, ACCENT);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
+    doc.setFontSize(9.5);
     doc.setTextColor(...NAVY);
-    doc.text(`${pct}%`, cx + contribBarW - 3, breakdownY, { align: 'right' });
+    doc.text(`${pct}%`, cx + contribColW - 3, cy, { align: 'right' });
   });
 
   y += maturityBlockH + extraGap;
@@ -480,7 +496,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.setFontSize(19);
   doc.setTextColor(...urgencyColor(urgLevel));
   doc.text(urgLevel, urgX + indicatorWidth / 2, y + 24, { align: 'center' });
-  const batteryTotalW = 4 * 14 + 3 * 2;
+  const batteryTotalW = 4 * 10.5 + 3 * 2;
   drawUrgencyBattery(doc, urgX + (indicatorWidth - batteryTotalW) / 2, y + 29, urgLevel);
 
   y += indicatorsBlockH + extraGap;
@@ -500,25 +516,17 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   y += narrativeLines.length * 5.8 + 6 + extraGap;
 
   // Company info row
-  const infoWidth = (contentWidth - 9) / 4;
-  const infoItems = [
-    { label: 'EMPRESA', value: dg.nombreComercial || '—' },
-    { label: 'SECTOR', value: sectorLabel },
-    { label: 'EMPLEADOS', value: sa.empleadosTotales?.toString() ?? '—' },
-    { label: 'VENTAS ANUALES', value: formatMonetaryValue({ value: sa.ventasAnualesMDP, currencyCode }) },
-  ];
   infoItems.forEach((item, i) => {
     const ix = margin + i * (infoWidth + 3);
-    drawRoundedRect(doc, ix, y, infoWidth, 24, 2, LIGHT_BLUE);
+    drawRoundedRect(doc, ix, y, infoWidth, infoBoxH, 2, LIGHT_BLUE);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(...MUTED);
     doc.text(item.label, ix + infoWidth / 2, y + 8, { align: 'center' });
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11.5);
+    doc.setFontSize(8.5);
     doc.setTextColor(...NAVY);
-    const truncated = item.value.length > 20 ? item.value.substring(0, 18) + '...' : item.value;
-    doc.text(truncated, ix + infoWidth / 2, y + 18, { align: 'center' });
+    doc.text(infoValueLines[i], ix + infoWidth / 2, y + 14, { align: 'center' });
   });
   y += infoRowBlockH + extraGap;
 
