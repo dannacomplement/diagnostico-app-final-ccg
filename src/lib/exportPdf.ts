@@ -672,10 +672,13 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   const factorsX = margin + 128;
   growth.factors.slice(0, 3).forEach((factor, i) => {
     const isPositive = !factor.startsWith('Falta');
+    const factorColor = isPositive ? SUCCESS : WARN;
+    const factorY = y + 6 + i * 5.5;
+    drawStatusDot(doc, factorsX, factorY - 2.6, 3, factorColor);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6.5);
-    doc.setTextColor(...(isPositive ? SUCCESS : WARN));
-    doc.text(`${isPositive ? '+' : '−'} ${factor}`, factorsX, y + 6 + i * 5.5);
+    doc.setTextColor(...factorColor);
+    doc.text(factor, factorsX + 5, factorY);
   });
 
   y += 28;
@@ -809,10 +812,11 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   ];
   nextSteps.forEach((step) => {
     y = ensureSpace(doc, y, 7, margin);
+    drawStatusDot(doc, margin + 4, y - 2.6, 3, NAVY);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...INK);
-    doc.text(`→ ${step}`, margin + 4, y);
+    doc.text(step, margin + 10, y);
     y += 5.5;
   });
 
