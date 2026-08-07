@@ -264,7 +264,7 @@ export default function OrgReportPage() {
       {/* Footer */}
       <div className="w-full bg-navy rounded-2xl text-center" style={{ padding: 'var(--sp-footer)', marginTop: '4px' }}>
         <img
-          src={companyLogo || '/logo-complement.png'}
+          src={companyLogo || '/logo-complement.svg'}
           alt="Complement"
           className="mx-auto object-contain"
           style={{ height: 'var(--sz-logo-footer-sm)', marginBottom: '10px' }}

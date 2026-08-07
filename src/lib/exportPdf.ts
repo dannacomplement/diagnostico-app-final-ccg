@@ -6,6 +6,7 @@ import { buildSoftwareLabel } from './formatters';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from './diagnosticAnalysis';
 import { formatMonetaryValue } from './money';
+import { COMPLEMENT_MARK_PNG, COMPLEMENT_MARK_PNG_WHITE } from './brandLogo';
 
 /* -- Color palette (RGB arrays) -- */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -205,48 +206,9 @@ function drawComplementIcon(
   radius: number,
   variant: 'color' | 'white' = 'color',
 ) {
-  const dotR = radius * 0.24;
-  const numDots = 70;
-  const startDeg = 47;
-  const sweepDeg = 266; // 313 − 47
-
-  for (let i = 0; i <= numDots; i++) {
-    const t = i / numDots;
-    const angleDeg = startDeg + t * sweepDeg;
-    const rad = (angleDeg * Math.PI) / 180;
-    const dx = cx + radius * Math.cos(rad);
-    const dy = cy + radius * Math.sin(rad);
-
-    if (variant === 'white') {
-      const lum = Math.round(210 + t * 45); // subtle light → white gradient
-      doc.setFillColor(lum, lum, lum);
-    } else {
-      // Blue gradient: #0a2a52 → #2272b8 (at 45%) → #6db8e0
-      let r: number, g: number, b: number;
-      if (t < 0.45) {
-        const lt = t / 0.45;
-        r = Math.round(10 + lt * 24);
-        g = Math.round(42 + lt * 72);
-        b = Math.round(82 + lt * 102);
-      } else {
-        const lt = (t - 0.45) / 0.55;
-        r = Math.round(34 + lt * 75);
-        g = Math.round(114 + lt * 70);
-        b = Math.round(184 + lt * 40);
-      }
-      doc.setFillColor(r, g, b);
-    }
-    doc.circle(dx, dy, dotR, 'F');
-  }
-
-  // Orange triangle in the gap (right side)
-  doc.setFillColor(...BRAND_ORANGE);
-  doc.triangle(
-    cx + radius * 0.8,  cy,
-    cx + radius * 1.2,  cy - radius * 0.625,
-    cx + radius * 1.2,  cy + radius * 0.625,
-    'F',
-  );
+  const img = variant === 'white' ? COMPLEMENT_MARK_PNG_WHITE : COMPLEMENT_MARK_PNG;
+  const size = radius * 2;
+  doc.addImage(img, 'PNG', cx - radius, cy - radius, size, size);
 }
 
 /** Draw a full-width branded page header for interior pages. Returns the Y after the header. */
