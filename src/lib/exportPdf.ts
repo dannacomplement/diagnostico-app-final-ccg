@@ -650,7 +650,25 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   // Score + status
   const growthColor = growth.ready ? SUCCESS : WARN;
   const growthLabel = growth.ready ? 'LISTA PARA CRECER' : 'CONSOLIDAR PRIMERO';
-  drawRoundedRect(doc, margin, y, contentWidth, 22, 2, PALE);
+
+  // Wrap factor text to the available width first, then size the box to fit —
+  // long factor phrases must never spill past the page margin.
+  const factorsX = margin + 128;
+  const factorsMaxWidth = pageWidth - margin - factorsX - 3;
+  const factorFontSize = 6.5;
+  const factorLineHeight = 3.2;
+  const factorGap = 1.8;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(factorFontSize);
+  const wrappedFactors = growth.factors.slice(0, 3).map(factor => {
+    const isPositive = !factor.startsWith('Falta');
+    const lines: string[] = doc.splitTextToSize(`${isPositive ? '+' : '-'} ${factor}`, factorsMaxWidth);
+    return { lines, isPositive };
+  });
+  const factorsBlockHeight = wrappedFactors.reduce((h, f) => h + f.lines.length * factorLineHeight + factorGap, 0);
+  const growthBoxHeight = Math.max(22, factorsBlockHeight + 10);
+
+  drawRoundedRect(doc, margin, y, contentWidth, growthBoxHeight, 2, PALE);
 
   // Score number
   doc.setFont('helvetica', 'bold');
@@ -668,17 +686,19 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.setTextColor(...WHITE);
   doc.text(growthLabel, margin + 104, y + 12.5, { align: 'center' });
 
-  // Factors
-  const factorsX = margin + 128;
-  growth.factors.slice(0, 3).forEach((factor, i) => {
-    const isPositive = !factor.startsWith('Falta');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
+  // Factors (wrapped, so text never overflows the box)
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(factorFontSize);
+  let factorCursorY = y + 6;
+  wrappedFactors.forEach(({ lines, isPositive }) => {
     doc.setTextColor(...(isPositive ? SUCCESS : WARN));
-    doc.text(`${isPositive ? '+' : '−'} ${factor}`, factorsX, y + 6 + i * 5.5);
+    lines.forEach((line, li) => {
+      doc.text(line, factorsX, factorCursorY + li * factorLineHeight);
+    });
+    factorCursorY += lines.length * factorLineHeight + factorGap;
   });
 
-  y += 28;
+  y += growthBoxHeight + 6;
 
   // --- SECTOR BENCHMARK ---
   if (pdfHasAnyMargin && diagnostic.marginEvaluation) {
@@ -808,12 +828,13 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     'Implementar mejoras de forma gradual, comenzando por los focos rojos identificados.',
   ];
   nextSteps.forEach((step) => {
-    y = ensureSpace(doc, y, 7, margin);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...INK);
-    doc.text(`→ ${step}`, margin + 4, y);
-    y += 5.5;
+    const stepLines: string[] = doc.splitTextToSize(`» ${step}`, contentWidth - 8);
+    y = ensureSpace(doc, y, stepLines.length * 5.5, margin);
+    stepLines.forEach((line, li) => doc.text(line, margin + 4, y + li * 5.5));
+    y += stepLines.length * 5.5;
   });
 
   /* ============================
