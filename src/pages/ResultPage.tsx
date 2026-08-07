@@ -6,10 +6,8 @@ import { formatMonetaryValue } from '../lib/money';
 import type { MarginLevel } from '../lib/types';
 
 const MARGIN_LEVEL_CONFIG: Record<MarginLevel, { label: string; className: string }> = {
-  arriba_industria: { label: 'Arriba de industria', className: 'border-success/30 bg-success/5 text-success' },
-  en_rango: { label: 'En rango', className: 'border-mid/30 bg-mid/5 text-mid' },
-  debajo_industria: { label: 'Debajo de industria', className: 'border-warn/30 bg-warn/5 text-warn' },
-  critico: { label: 'Crítico', className: 'border-error/30 bg-error/5 text-error' },
+  en_rango: { label: 'Dentro de rango', className: 'border-success/30 bg-success/5 text-success' },
+  fuera_de_rango: { label: 'Fuera de rango', className: 'border-error/30 bg-error/5 text-error' },
 };
 
 export default function ResultPage() {

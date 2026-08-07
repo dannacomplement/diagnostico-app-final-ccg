@@ -48,9 +48,7 @@ export function computeMaturityIndex(d: SavedDiagnostic): MaturityResult {
   if (d.marginEvaluation) {
     const marginLevels = [d.marginEvaluation.margenBruto.level, d.marginEvaluation.margenOperativo.level, d.marginEvaluation.margenNeto.level];
     const marginPoints = marginLevels.reduce((sum, lvl) => {
-      if (lvl === 'arriba_industria') return sum + 6.67;
-      if (lvl === 'en_rango') return sum + 5;
-      if (lvl === 'debajo_industria') return sum + 2.5;
+      if (lvl === 'en_rango') return sum + 6.67;
       return sum + 0;
     }, 0);
     marginScore = marginPoints;
@@ -116,14 +114,14 @@ export function computeRiskProfile(d: SavedDiagnostic): RiskItem[] {
   }
 
   if (d.marginEvaluation) {
-    const criticalMargins = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
-      .filter(k => d.marginEvaluation![k].level === 'critico');
-    if (criticalMargins.length > 0) {
-      const labels = criticalMargins.map(k => k === 'margenBruto' ? 'bruto' : k === 'margenOperativo' ? 'operativo' : 'neto');
+    const outOfRangeMargins = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
+      .filter(k => d.marginEvaluation![k].level === 'fuera_de_rango');
+    if (outOfRangeMargins.length > 0) {
+      const labels = outOfRangeMargins.map(k => k === 'margenBruto' ? 'bruto' : k === 'margenOperativo' ? 'operativo' : 'neto');
       risks.push({
-        risk: `Márgenes en nivel crítico: ${labels.join(', ')}`,
+        risk: `Márgenes fuera de rango: ${labels.join(', ')}`,
         severity: 'critico',
-        impact: 'Los margenes estan significativamente por debajo de la industria, poniendo en riesgo la rentabilidad y sostenibilidad del negocio.',
+        impact: 'Los margenes estan por debajo del benchmark de la industria, poniendo en riesgo la rentabilidad y sostenibilidad del negocio.',
       });
     }
   }
@@ -225,14 +223,14 @@ export function generateDiagnosticNarrative(d: SavedDiagnostic, maturity: Maturi
   }
 
   if (d.marginEvaluation) {
-    const criticalCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
-      .filter(k => d.marginEvaluation![k].level === 'critico').length;
-    const aboveCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
-      .filter(k => d.marginEvaluation![k].level === 'arriba_industria').length;
-    if (criticalCount > 0) {
-      narrative += 'Los márgenes financieros presentan niveles críticos que requieren atención inmediata para asegurar la viabilidad del negocio. ';
-    } else if (aboveCount >= 2) {
-      narrative += 'La rentabilidad es solida, con margenes por encima del promedio de la industria. ';
+    const outOfRangeCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
+      .filter(k => d.marginEvaluation![k].level === 'fuera_de_rango').length;
+    const inRangeCount = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
+      .filter(k => d.marginEvaluation![k].level === 'en_rango').length;
+    if (outOfRangeCount > 0) {
+      narrative += 'Los márgenes financieros presentan niveles fuera de rango que requieren atención inmediata para asegurar la viabilidad del negocio. ';
+    } else if (inRangeCount >= 2) {
+      narrative += 'La rentabilidad es solida, con margenes dentro del rango del promedio de la industria. ';
     }
   }
 
@@ -266,7 +264,7 @@ export function generateGrowthReadiness(d: SavedDiagnostic): GrowthReadiness {
 
   if (d.marginEvaluation) {
     const healthy = (['margenBruto', 'margenOperativo', 'margenNeto'] as const)
-      .filter(k => d.marginEvaluation![k].level === 'arriba_industria' || d.marginEvaluation![k].level === 'en_rango').length;
+      .filter(k => d.marginEvaluation![k].level === 'en_rango').length;
     if (healthy >= 2) { score += 25; factors.push('Rentabilidad saludable'); }
     else if (healthy >= 1) { score += 10; }
     else { factors.push('Rentabilidad insuficiente para crecer'); }

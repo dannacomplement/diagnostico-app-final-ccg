@@ -151,7 +151,7 @@ export interface OpportunityArea {
   triggeringCriteria: { id: string; text: string; rating: number }[];
 }
 
-export type MarginLevel = 'arriba_industria' | 'en_rango' | 'debajo_industria' | 'critico';
+export type MarginLevel = 'en_rango' | 'fuera_de_rango';
 
 export interface MarginData {
   tieneDatosFinancieros: boolean;
@@ -173,8 +173,6 @@ export interface IndustryBenchmark {
   margenBruto: number;
   margenOperativo: number;
   margenNeto: number;
-  tolerancia: number;        // % above/below benchmark to be "en rango"
-  criticoUmbral: number;     // % below benchmark to be "critico"
 }
 
 export type IndustryBenchmarks = Record<Sector, IndustryBenchmark>;

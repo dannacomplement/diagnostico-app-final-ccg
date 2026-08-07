@@ -53,7 +53,7 @@ function urgencyToScore(level: string): number {
 /* ── Margin to score helper ── */
 function marginToScore(me?: { margenBruto: { level: string }; margenOperativo: { level: string }; margenNeto: { level: string } }, hasFin?: boolean): number {
   if (!me) return hasFin ? 30 : 50;
-  const levelMap: Record<string, number> = { arriba_industria: 90, en_rango: 65, debajo_industria: 35, critico: 15 };
+  const levelMap: Record<string, number> = { en_rango: 90, fuera_de_rango: 30 };
   const scores = [me.margenBruto.level, me.margenOperativo.level, me.margenNeto.level].map(l => levelMap[l] ?? 50);
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
