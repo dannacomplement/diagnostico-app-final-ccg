@@ -361,7 +361,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   const riskBoxH = 10 + Math.max(lowCriteria.length, 1) * itemLineH + 5;
   const boxHeight = Math.max(fortalezaBoxH, riskBoxH);
 
-  const maturityBlockH = 38;
+  const maturityBlockH = 50;
   const indicatorsBlockH = 50;
   const narrativeBlockH = 16 + narrativeLines.length * 5.8 + 6;
   const infoRowBlockH = 30;
@@ -371,7 +371,8 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
   // --- MATURITY INDEX (Hero metric) ---
   const maturityBoxW = contentWidth;
-  drawRoundedRect(doc, margin, y, maturityBoxW, 34, 3, PALE);
+  const maturityBoxH = 44;
+  drawRoundedRect(doc, margin, y, maturityBoxW, maturityBoxH, 3, PALE);
 
   // Score ring on left
   const ringCx = margin + 20;
@@ -397,7 +398,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
 
   // Contribution breakdown bars
   const breakdownX = margin + 38;
-  const breakdownY = y + 23;
+  const breakdownY = y + 32;
   const contribs = [
     { label: 'Profesionalización', value: maturity.profContrib, max: 35 },
     { label: 'Institucionalización', value: maturity.instContrib, max: 25 },
@@ -409,12 +410,12 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     const cx = breakdownX + i * (contribBarW + 2);
     const pct = c.max > 0 ? Math.round((c.value / c.max) * 100) : 0;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5);
+    doc.setFontSize(7.5);
     doc.setTextColor(...MUTED);
     doc.text(c.label, cx, breakdownY);
-    drawProgressBar(doc, cx, breakdownY + 2, contribBarW - 4, 3, c.value, c.max, ACCENT);
+    drawProgressBar(doc, cx, breakdownY + 3, contribBarW - 4, 4, c.value, c.max, ACCENT);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(5);
+    doc.setFontSize(7.5);
     doc.setTextColor(...NAVY);
     doc.text(`${pct}%`, cx + contribBarW - 3, breakdownY, { align: 'right' });
   });
