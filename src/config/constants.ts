@@ -150,12 +150,12 @@ export const DEFAULT_INDUSTRY_BENCHMARKS = {
   },
   comercio: {
     margenBruto: 25,
-    margenOperativo: 5,
-    margenNeto: 3,
+    margenOperativo: 15,
+    margenNeto: 10,
   },
   servicios: {
     margenBruto: 50,
-    margenOperativo: 15,
-    margenNeto: 10,
+    margenOperativo: 20,
+    margenNeto: 15,
   },
 } as const;
