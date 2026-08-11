@@ -83,7 +83,12 @@ export default function HistoryPage() {
   }, [refreshAccounts, refreshExpedientes]);
 
   async function handleDeleteAccount(accountId: string) {
-    await deleteClientAccount(accountId);
+    try {
+      await deleteClientAccount(accountId);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al borrar la cuenta.');
+      return;
+    }
     setDeleteAccountConfirm(null);
     await refreshAccounts();
     await refreshExpedientes();

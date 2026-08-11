@@ -483,8 +483,7 @@ export async function updateUserPermissions(userId: string, permissions: SurveyT
 export async function deleteClientAccount(userId: string): Promise<void> {
   const token = await getAccessToken();
   if (!token) {
-    console.error('deleteClientAccount: no auth token');
-    return;
+    throw new Error('No hay sesión activa. Vuelve a iniciar sesión e intenta de nuevo.');
   }
 
   const res = await fetch('/api/delete-user', {
@@ -495,7 +494,7 @@ export async function deleteClientAccount(userId: string): Promise<void> {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    console.error('deleteClientAccount error:', err.error || res.statusText);
+    throw new Error(err.error || res.statusText || 'Error al borrar la cuenta.');
   }
 }
 
