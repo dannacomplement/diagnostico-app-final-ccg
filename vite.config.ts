@@ -9,6 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icon-complement.svg', 'logo-complement.svg'],
       manifest: {
         name: 'Radiografía Empresarial · COMPLEMENT',
