@@ -9,7 +9,7 @@ import { ALL_CRITERIA } from '../config/questions';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { buildSoftwareLabel } from './formatters';
 import { formatMonetaryValue } from './money';
-import { normalizeMarginLevel } from './calculations';
+import { normalizeMarginLevel, getHighestPaidGerencia } from './calculations';
 import {
   computeMaturityIndex,
   computeRiskProfile,
@@ -794,7 +794,7 @@ function addCombinedCriteriaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
    SLIDE 6: Gerencias + Familia
    ══════════════════════════════════════════════════════ */
 
-function addGerenciasSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string) {
+function addGerenciasSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: string, currencyCode: CurrencyCode) {
   const slide = pptx.addSlide();
 
   addSlideHeader(slide, 'Estructura Organizacional', 'Gerencias, puestos clave y responsables');
@@ -914,7 +914,10 @@ function addGerenciasSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: str
       { label: 'Empleados Familiares', value: d.situacionActual.empleadosFamiliares?.toString() ?? '—' },
       { label: 'Socios', value: d.situacionActual.socios || '—' },
       { label: 'Familiares en Poder', value: d.situacionActual.familiaresEnPoder || '—' },
-      { label: 'Sueldo Más Alto', value: d.situacionActual.sueldoMasAlto ? `$${d.situacionActual.sueldoMasAlto}` : '—' },
+      { label: 'Sueldo Más Alto', value: (() => {
+        const highest = getHighestPaidGerencia(d.gerencias, currencyCode);
+        return highest ? `$${highest.rangoSueldo} — ${highest.area}` : '—';
+      })() },
     ];
 
     empItems.forEach((item, i) => {
@@ -1384,7 +1387,7 @@ export async function exportToPptx(d: SavedDiagnostic, currencyCode: CurrencyCod
   addPanoramaSlide(pptx, d, companyName, currencyCode);     // 2
   addResultsSlide(pptx, d, companyName);                    // 3
   addCombinedCriteriaSlide(pptx, d, companyName);           // 4
-  addGerenciasSlide(pptx, d, companyName);                  // 5
+  addGerenciasSlide(pptx, d, companyName, currencyCode);    // 5
   addFinancialsSlide(pptx, d, companyName);                 // 6 (conditional)
   addRetosSlide(pptx, d, companyName);                       // 7
   addExecutiveSummarySlide(pptx, d, companyName);           // 8

@@ -81,7 +81,6 @@ function defaultSituacionActual(): SituacionActual {
     socios: '',
     sociosDetalle: [],
     familiaresEnPoder: '',
-    sueldoMasAlto: '',
     pctIngresoFiscalizado: null,
     pctEgresoFiscalizado: null,
   };
@@ -726,7 +725,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         // Ensure puesto fields always exist
         merged.datosGenerales.puestoEmpresa = merged.datosGenerales.puestoEmpresa ?? '';
         merged.datosGenerales.puestoFamilia = merged.datosGenerales.puestoFamilia ?? '';
-        // Deep-merge situacionActual so new fields (sueldoMasAlto) always exist
+        // Deep-merge situacionActual so newly added fields always exist
         merged.situacionActual = {
           ...currentState.situacionActual,
           ...(persisted.situacionActual ?? {}),

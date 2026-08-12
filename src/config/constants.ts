@@ -62,6 +62,35 @@ export const GERENCIA_AREAS = [
   'Capital Humano',
 ];
 
+/** Ordenados de menor a mayor — el índice en el arreglo determina cuál es "más alto". */
+export const SUELDO_RANGES = [
+  '10-15 mil',
+  '15-20 mil',
+  '20-30 mil',
+  '30-40 mil',
+  '40-55 mil',
+  '55-75 mil',
+  '75-90 mil',
+  '100-120 mil',
+  '120-150 mil',
+  '150-200 mil',
+  '200+ mil',
+];
+
+export const SUELDO_RANGES_USD = [
+  '500-800',
+  '800-1,100',
+  '1,100-1,700',
+  '1,700-2,200',
+  '2,200-3,000',
+  '3,000-4,200',
+  '4,200-5,000',
+  '5,500-6,700',
+  '6,700-8,300',
+  '8,300-11,000',
+  '11,000+',
+];
+
 export const CLASSIFICATION_OPTIONS = [
   { value: 'prospecto' as const, label: 'Prospecto', color: 'bg-accent/15 text-accent' },
   { value: 'en_proceso' as const, label: 'En proceso', color: 'bg-warn/15 text-warn' },

@@ -91,7 +91,6 @@ export interface SituacionActual {
   socios: string;
   sociosDetalle: SocioDetail[];
   familiaresEnPoder: string;
-  sueldoMasAlto: string;
   pctIngresoFiscalizado: number | null;
   pctEgresoFiscalizado: number | null;
 }

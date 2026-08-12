@@ -4,7 +4,7 @@ import type { SavedDiagnostic, MarginLevel, CurrencyCode } from './types';
 import { ALL_CRITERIA } from '../config/questions';
 import { buildSoftwareLabel } from './formatters';
 import { formatMonetaryValue } from './money';
-import { normalizeMarginLevel } from './calculations';
+import { normalizeMarginLevel, getHighestPaidGerencia } from './calculations';
 
 /* ── Color palette ────────────────────────────────────────── */
 const NAVY    = '1B2A4A';
@@ -242,9 +242,6 @@ export async function exportToExcel(diagnostic: SavedDiagnostic, currencyCode: C
   }
   if (sa.familiaresEnPoder) {
     r = addKeyValue(ws, r, 'Familiares en el Poder', sa.familiaresEnPoder, COLS);
-  }
-  if (sa.sueldoMasAlto) {
-    r = addKeyValue(ws, r, 'Sueldo más alto mensual', `$${Number(sa.sueldoMasAlto).toLocaleString('es-MX')}`, COLS);
   }
 
   r = addSpacer(ws, r);
@@ -608,6 +605,11 @@ export async function exportToExcel(diagnostic: SavedDiagnostic, currencyCode: C
     ws.getRow(r).height = 20;
     r++;
   });
+
+  const highestPaid = getHighestPaidGerencia(diagnostic.gerencias, currencyCode);
+  if (highestPaid) {
+    r = addKeyValue(ws, r, 'Sueldo Más Alto', `$${highestPaid.rangoSueldo} — ${highestPaid.area}`, COLS);
+  }
 
   r = addSpacer(ws, r);
 

@@ -38,7 +38,6 @@ export function generateSampleDiagnostic(): SavedDiagnostic {
       { nombre: 'Javier López', esFamiliar: false, porcentaje: '15' },
     ],
     familiaresEnPoder: '4',
-    sueldoMasAlto: '85000',
     pctIngresoFiscalizado: 70,
     pctEgresoFiscalizado: 55,
   };

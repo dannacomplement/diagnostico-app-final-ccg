@@ -3,40 +3,14 @@ import type { LucideIcon } from 'lucide-react';
 import { Building, Briefcase, BarChart3, Settings, Users, ClipboardList, X } from 'lucide-react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import type { CalificadoStatus, DGEvaluation } from '../../lib/types';
+import { SUELDO_RANGES, SUELDO_RANGES_USD } from '../../config/constants';
+import { getHighestPaidGerencia } from '../../lib/calculations';
 
 
 const CALIFICADO_OPTIONS: { value: CalificadoStatus; label: string; color: string }[] = [
   { value: 'si', label: 'Sí', color: 'bg-success text-white' },
   { value: 'no', label: 'No', color: 'bg-error/80 text-white' },
   { value: 'por_evaluar', label: 'No lo sé', color: 'bg-warn text-white' },
-];
-
-const SUELDO_RANGES = [
-  '10-15 mil',
-  '15-20 mil',
-  '20-30 mil',
-  '30-40 mil',
-  '40-55 mil',
-  '55-75 mil',
-  '75-90 mil',
-  '100-120 mil',
-  '120-150 mil',
-  '150-200 mil',
-  '200+ mil',
-];
-
-const SUELDO_RANGES_USD = [
-  '500-800',
-  '800-1,100',
-  '1,100-1,700',
-  '1,700-2,200',
-  '2,200-3,000',
-  '3,000-4,200',
-  '4,200-5,000',
-  '5,500-6,700',
-  '6,700-8,300',
-  '8,300-11,000',
-  '11,000+',
 ];
 
 const DG_NIVEL_ESTUDIOS = [
@@ -360,8 +334,6 @@ function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges, isUsd }: {
 export default function Step5Gerencias() {
   const gerencias = useDiagnosticStore(s => s.gerencias);
   const setGerencia = useDiagnosticStore(s => s.setGerencia);
-  const situacion = useDiagnosticStore(s => s.situacionActual);
-  const updateSituacion = useDiagnosticStore(s => s.updateSituacionActual);
   const currencyCode = useDiagnosticStore(s => s.getEffectiveCurrency());
   const isUsd = currencyCode === 'USD';
   const sueldoRanges = isUsd ? SUELDO_RANGES_USD : SUELDO_RANGES;
@@ -553,48 +525,19 @@ export default function Step5Gerencias() {
         )}
       </div>
 
-      {/* Sueldo mas alto */}
-      <div className="border-t border-border/50" style={{ marginTop: '28px', paddingTop: '24px' }}>
-        <div className="flex items-center flex-wrap" style={{ gap: '10px' }}>
-          <label className="font-medium text-ink shrink-0" style={{ fontSize: 'var(--fs-12)' }}>
-            ¿Cuál gerencia tiene el sueldo más alto?
-          </label>
-          <select
-            value={(() => {
-              const coveredWithSueldo = gerencias.filter(g => g.cubierto && g.rangoSueldo);
-              const match = coveredWithSueldo.find(g => g.area === situacion.sueldoMasAlto);
-              return match ? match.area : situacion.sueldoMasAlto || '';
-            })()}
-            onChange={e => {
-              const selected = gerencias.find(g => g.area === e.target.value);
-              updateSituacion({ sueldoMasAlto: e.target.value });
-              if (selected?.rangoSueldo) {
-                // auto-show the range
-              }
-            }}
-            className="input-field"
-            style={{ maxWidth: '240px', fontSize: 'var(--fs-12)' }}
-          >
-            <option value="">Seleccionar...</option>
-            {gerencias.filter(g => g.cubierto && g.rangoSueldo).map(g => (
-              <option key={g.area} value={g.area}>
-                {g.area} — ${g.rangoSueldo}
-              </option>
-            ))}
-          </select>
-        </div>
-        {situacion.sueldoMasAlto && (() => {
-          const match = gerencias.find(g => g.area === situacion.sueldoMasAlto);
-          if (match?.rangoSueldo) {
-            return (
-              <p className="text-accent font-semibold" style={{ fontSize: 'var(--fs-12)', marginTop: '8px' }}>
-                Sueldo: ${match.rangoSueldo}
-              </p>
-            );
-          }
-          return null;
-        })()}
-      </div>
+      {/* Sueldo mas alto — calculado automaticamente a partir de los rangos capturados arriba */}
+      {(() => {
+        const highest = getHighestPaidGerencia(gerencias, currencyCode);
+        if (!highest) return null;
+        return (
+          <div className="border-t border-border/50" style={{ marginTop: '28px', paddingTop: '24px' }}>
+            <p className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)' }}>
+              Sueldo más alto: <span className="text-accent font-semibold">${highest.rangoSueldo}</span>
+              {' '}— {highest.area}
+            </p>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -13,9 +13,12 @@ import type {
   MarginEvaluation,
   MarginLevel,
   IndustryBenchmark,
+  Gerencia,
+  CurrencyCode,
 } from './types';
 import { classifyCompanySize } from '../config/companySize';
 import { SERVICE_AREAS } from '../config/serviceAreas';
+import { SUELDO_RANGES, SUELDO_RANGES_USD } from '../config/constants';
 import { formatMonetaryValue } from './money';
 
 export function calculateCompanySize(
@@ -155,4 +158,14 @@ export function evaluateMargins(marginData: MarginData, benchmark: IndustryBench
 /** @deprecated Use formatMonetaryValue() from './money' — kept for backward compat, MXN-only. */
 export function formatMDP(value: number): string {
   return formatMonetaryValue({ value, currencyCode: 'MXN' });
+}
+
+/** Gerencia cubierta con el rango de sueldo más alto, comparando por posición en la escala (no el texto). */
+export function getHighestPaidGerencia(gerencias: Gerencia[], currencyCode: CurrencyCode): Gerencia | null {
+  const ranges = currencyCode === 'USD' ? SUELDO_RANGES_USD : SUELDO_RANGES;
+  const candidates = gerencias.filter(g => g.cubierto && g.rangoSueldo && ranges.includes(g.rangoSueldo));
+  if (candidates.length === 0) return null;
+  return candidates.reduce((best, g) =>
+    ranges.indexOf(g.rangoSueldo!) > ranges.indexOf(best.rangoSueldo!) ? g : best
+  );
 }

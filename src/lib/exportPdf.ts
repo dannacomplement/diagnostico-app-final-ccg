@@ -7,7 +7,7 @@ import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from './diagnosticAnalysis';
 import { formatMonetaryValue } from './money';
 import { COMPLEMENT_MARK_PNG, COMPLEMENT_MARK_PNG_WHITE, COMPLEMENT_TEXT_PNG_WHITE } from './brandLogo';
-import { normalizeMarginLevel } from './calculations';
+import { normalizeMarginLevel, getHighestPaidGerencia } from './calculations';
 
 /* -- Color palette (RGB arrays) -- */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -903,7 +903,6 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     });
   }
   if (sa.familiaresEnPoder) sitBody.push(['Familiares en el Poder', sa.familiaresEnPoder]);
-  if (sa.sueldoMasAlto) sitBody.push(['Sueldo más alto mensual', `$${Number(sa.sueldoMasAlto).toLocaleString('es-MX')}`]);
   if (sa.pctIngresoFiscalizado != null) sitBody.push(['% Ingreso Fiscalizado', `${sa.pctIngresoFiscalizado}%`]);
   if (sa.pctEgresoFiscalizado != null) sitBody.push(['% Egreso Fiscalizado', `${sa.pctEgresoFiscalizado}%`]);
 
@@ -1166,6 +1165,15 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.setTextColor(...NAVY);
   doc.text(`${coveredCount} de ${totalGerencias} puestos cubiertos`, margin + 5, y);
   y += 8;
+
+  const highestPaid = getHighestPaidGerencia(diagnostic.gerencias, currencyCode);
+  if (highestPaid) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...ACCENT);
+    doc.text(`Sueldo más alto: $${highestPaid.rangoSueldo} — ${highestPaid.area}`, margin + 5, y);
+    y += 8;
+  }
 
   // Gerencia evaluations (nivel de estudios / experiencia / seguimiento) — one block per gerencia that has it
   diagnostic.gerencias.forEach(ger => {
