@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { EMPRESA_FAMILIAR_OPTIONS, SECTOR_OPTIONS, SOFTWARE_OPTIONS, EXCEL_NIVEL_OPTIONS, PUESTO_EMPRESA_OPTIONS, PUESTO_FAMILIA_OPTIONS, ERP_OPTIONS, MRP_OPTIONS, CRM_OPTIONS, UBICACION_OPTIONS } from '../../config/constants';
 import { CEMEX_COUNTRIES, STATES_BY_COUNTRY, type CemexCountry } from '../../config/countryStates';
@@ -20,6 +20,7 @@ function parseCemexUbicacion(ubicacion: string): { pais: CemexCountry | ''; esta
 export default function Step1DatosGenerales() {
   const datos = useDiagnosticStore(s => s.datosGenerales);
   const update = useDiagnosticStore(s => s.updateDatosGenerales);
+  const getEffectiveEmail = useDiagnosticStore(s => s.getEffectiveEmail);
   const isFamilyBusiness = useDiagnosticStore(s => s.isFamilyBusiness);
   const isFamily = isFamilyBusiness();
   const effectiveCorporateGroup = useDiagnosticStore(s => s.getEffectiveCorporateGroup());
@@ -42,6 +43,17 @@ export default function Step1DatosGenerales() {
 
   // Defensive: handle old persisted data that may lack softwareSelections
   const sel = datos.softwareSelections ?? EMPTY_SELECTIONS;
+
+  // El correo de "Persona que contesta" ya no se captura a mano — siempre es
+  // el correo con el que la cuenta está dada de alta (el del cliente, o el
+  // del cliente que el master está pre-llenando).
+  useEffect(() => {
+    const effectiveEmail = getEffectiveEmail();
+    if (effectiveEmail && datos.email !== effectiveEmail) {
+      update({ email: effectiveEmail });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="card">
@@ -148,26 +160,16 @@ export default function Step1DatosGenerales() {
         <div className="border-t border-border/50" style={{ paddingTop: '32px' }}>
           <h3 className="font-semibold text-navy uppercase tracking-wide" style={{ fontSize: 'var(--fs-11)', marginBottom: '24px' }}>Persona que contesta</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
-              <Field label="Nombre completo" required>
-                <input
-                  type="text"
-                  value={datos.respondente}
-                  onChange={e => update({ respondente: e.target.value })}
-                  placeholder="Nombre de la persona que contesta"
-                  className="input-field"
-                />
-              </Field>
-              <Field label="Correo electrónico" required>
-                <input
-                  type="email"
-                  value={datos.email}
-                  onChange={e => update({ email: e.target.value })}
-                  placeholder="Ej: nombre@empresa.com"
-                  className="input-field"
-                />
-              </Field>
-            </div>
+            <Field label="Nombre completo" required>
+              <input
+                type="text"
+                value={datos.respondente}
+                onChange={e => update({ respondente: e.target.value })}
+                placeholder="Nombre de la persona que contesta"
+                className="input-field"
+                style={{ maxWidth: '360px' }}
+              />
+            </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '28px' }}>
               <Field label="Puesto en la empresa" required>
                 <SearchableCombobox
