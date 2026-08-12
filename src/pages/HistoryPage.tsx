@@ -251,10 +251,10 @@ function ExpedientesPanel({
         hasDiagPrefill={hasDiagPrefill}
         hasTechPrefill={hasTechPrefill}
         onBack={() => { setSelectedClientId(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-        onDiagExtenso={(d) => { loadDiagnosticForReport(d, acc.currencyCode ?? 'MXN', acc.corporateGroup); }}
+        onDiagExtenso={(d) => { loadDiagnosticForReport(d, acc.currencyCode ?? 'MXN', acc.corporateGroup, acc.email); }}
         onOrgExtenso={(s) => { loadOrgSurveyForReport(s); setView('org_report'); }}
         onTechExtenso={(s) => { loadTechSurveyForReport(s); setView('tech_report'); }}
-        onDiagEdit={(d) => { loadDiagnosticForEdit(d, acc.currencyCode ?? 'MXN', acc.corporateGroup); }}
+        onDiagEdit={(d) => { loadDiagnosticForEdit(d, acc.currencyCode ?? 'MXN', acc.corporateGroup, acc.email); }}
         onOrgEdit={(s) => { loadOrgSurveyForEdit(s); setView('org_wizard'); }}
         onTechEdit={(s) => { loadTechSurveyForEdit(s); setView('tech_wizard'); }}
         onDeleteDiag={async (id) => { await deleteDiagnostic(id); onRefresh(); }}
@@ -497,11 +497,11 @@ function ClientExpedienteDetail({
     if (hasDiagPrefill) {
       const existing = await getPrefillForUser(account.id, 'diagnostico_empresarial');
       if (existing) {
-        editPrefillMode(account.id, existing, account.currencyCode, account.corporateGroup);
+        editPrefillMode(account.id, existing, account.currencyCode, account.corporateGroup, account.email);
         return;
       }
     }
-    startPrefillMode(account.id, account.currencyCode, account.corporateGroup);
+    startPrefillMode(account.id, account.currencyCode, account.corporateGroup, account.email);
   }
 
   async function handleStartTechPrefill() {
@@ -2406,10 +2406,10 @@ function DatosPruebaPanel({
           hasDiagPrefill={hasDiagPrefill}
           hasTechPrefill={hasTechPrefill}
           onBack={() => { setSelectedClientId(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          onDiagExtenso={(d) => { loadDiagnosticForReport(d, acc.currencyCode ?? 'MXN', acc.corporateGroup); }}
+          onDiagExtenso={(d) => { loadDiagnosticForReport(d, acc.currencyCode ?? 'MXN', acc.corporateGroup, acc.email); }}
           onOrgExtenso={(s) => { loadOrgSurveyForReport(s); setView('org_report'); }}
           onTechExtenso={(s) => { loadTechSurveyForReport(s); setView('tech_report'); }}
-          onDiagEdit={(d) => { loadDiagnosticForEdit(d, acc.currencyCode ?? 'MXN', acc.corporateGroup); }}
+          onDiagEdit={(d) => { loadDiagnosticForEdit(d, acc.currencyCode ?? 'MXN', acc.corporateGroup, acc.email); }}
           onOrgEdit={(s) => { loadOrgSurveyForEdit(s); setView('org_wizard'); }}
           onTechEdit={(s) => { loadTechSurveyForEdit(s); setView('tech_wizard'); }}
           onDeleteDiag={async (id) => { await deleteDiagnostic(id); onRefresh(); }}
