@@ -1069,7 +1069,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
       bodyStyles: { fontSize: 8, textColor: INK },
       columnStyles: {
         0: { fontStyle: 'bold', cellWidth: 40, textColor: NAVY },
-        1: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
+        1: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },
         2: { cellWidth: 14, halign: 'center', fontStyle: 'bold' },
         3: { fontSize: 7, textColor: MUTED },
       },
