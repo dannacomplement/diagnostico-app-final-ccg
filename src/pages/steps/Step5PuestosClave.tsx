@@ -106,13 +106,13 @@ function DGEvaluationPanel({ evaluation, onChange, areaLabel }: {
     onSelect: (v: number) => void,
   ) {
     return (
-      <div className="flex items-center" style={{ gap: '8px', marginBottom: '10px' }}>
-        <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '200px' }}>{label}</span>
+      <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '6px', marginBottom: '12px' }}>
+        <span className="text-muted font-medium sm:shrink-0 sm:w-[200px]" style={{ fontSize: 'var(--fs-11)' }}>{label}</span>
         <select
           value={current ?? ''}
           onChange={e => onSelect(Number(e.target.value))}
-          className="input-field-sm"
-          style={{ flex: 1, fontSize: 'var(--fs-11)' }}
+          className="input-field-sm w-full sm:flex-1"
+          style={{ fontSize: 'var(--fs-12)' }}
         >
           <option value="">Seleccionar...</option>
           {options.map(opt => (
@@ -208,9 +208,9 @@ function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges, isUsd }: {
       </div>
 
       {/* Cubierto? */}
-      <div className="flex items-center" style={{ gap: '10px', marginBottom: '16px' }}>
-        <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Puesto cubierto?</span>
-        <div className="flex" style={{ gap: '4px' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '8px', marginBottom: '16px' }}>
+        <span className="text-muted font-medium sm:shrink-0 sm:w-[110px]" style={{ fontSize: 'var(--fs-11)' }}>Puesto cubierto?</span>
+        <div className="flex flex-wrap" style={{ gap: '4px' }}>
           <button
             type="button"
             onClick={() => setGerencia(i, { cubierto: true, soyYo: false })}
@@ -248,56 +248,59 @@ function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges, isUsd }: {
       {g.cubierto && (
         <div className="border-t border-border/40" style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Nombre */}
-          <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Nombre:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '6px' }}>
+            <span className="text-muted font-medium sm:shrink-0 sm:w-[110px]" style={{ fontSize: 'var(--fs-11)' }}>Nombre:</span>
             <input
               type="text"
               value={g.nombre ?? ''}
               onChange={e => setGerencia(i, { nombre: e.target.value })}
               placeholder="Nombre de la persona"
-              className="input-field-sm"
-              style={{ maxWidth: '200px' }}
+              className="input-field-sm w-full sm:max-w-[240px]"
             />
           </div>
 
           {/* Antigüedad */}
-          <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Antigüedad:</span>
-            <input
-              type="number"
-              value={g.antiguedad}
-              onChange={e => setGerencia(i, { antiguedad: e.target.value })}
-              placeholder=""
-              min="0"
-              className="input-field-sm"
-              style={{ maxWidth: '80px' }}
-            />
-            <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)' }}>años</span>
+          <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '6px' }}>
+            <span className="text-muted font-medium sm:shrink-0 sm:w-[110px]" style={{ fontSize: 'var(--fs-11)' }}>Antigüedad:</span>
+            <div className="flex items-center" style={{ gap: '8px' }}>
+              <input
+                type="number"
+                value={g.antiguedad}
+                onChange={e => setGerencia(i, { antiguedad: e.target.value })}
+                placeholder=""
+                min="0"
+                className="input-field-sm"
+                style={{ maxWidth: '100px' }}
+              />
+              <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)' }}>años</span>
+            </div>
           </div>
 
           {/* Rango de sueldo */}
-          <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Sueldo mensual:</span>
-            <select
-              value={g.rangoSueldo || ''}
-              onChange={e => setGerencia(i, { rangoSueldo: e.target.value })}
-              className="input-field-sm"
-              style={{ maxWidth: '160px', fontSize: 'var(--fs-11)' }}
-            >
-              <option value="">Seleccionar...</option>
-              {sueldoRanges.map(r => (
-                <option key={r} value={r}>${r}</option>
-              ))}
-            </select>
-            {isUsd && g.rangoSueldo && (
-              <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)' }}>USD</span>
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '6px' }}>
+            <span className="text-muted font-medium sm:shrink-0 sm:w-[110px]" style={{ fontSize: 'var(--fs-11)' }}>Sueldo mensual:</span>
+            <div className="flex items-center" style={{ gap: '8px' }}>
+              <select
+                value={g.rangoSueldo || ''}
+                onChange={e => setGerencia(i, { rangoSueldo: e.target.value })}
+                className="input-field-sm"
+                style={{ maxWidth: '200px', fontSize: 'var(--fs-12)' }}
+              >
+                <option value="">Seleccionar...</option>
+                {sueldoRanges.map(r => (
+                  <option key={r} value={r}>${r}</option>
+                ))}
+              </select>
+              {isUsd && g.rangoSueldo && (
+                <span className="text-muted font-medium" style={{ fontSize: 'var(--fs-11)' }}>USD</span>
+              )}
+            </div>
           </div>
 
           {/* Es familiar? */}
-          <div className="flex items-center" style={{ gap: '8px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Es familiar?</span>
-            <div className="flex" style={{ gap: '4px' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '8px' }}>
+            <span className="text-muted font-medium sm:shrink-0 sm:w-[110px]" style={{ fontSize: 'var(--fs-11)' }}>Es familiar?</span>
+            <div className="flex flex-wrap" style={{ gap: '4px' }}>
               <button
                 type="button"
                 onClick={() => setGerencia(i, { esFamiliar: true })}
@@ -322,9 +325,9 @@ function GerenciaPanel({ g, i, setGerencia, onClose, sueldoRanges, isUsd }: {
           </div>
 
           {/* Calificado? */}
-          <div className="flex items-center" style={{ gap: '10px' }}>
-            <span className="text-muted font-medium shrink-0" style={{ fontSize: 'var(--fs-11)', width: '110px' }}>Calificado?</span>
-            <div className="flex" style={{ gap: '4px' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center" style={{ gap: '8px' }}>
+            <span className="text-muted font-medium sm:shrink-0 sm:w-[110px]" style={{ fontSize: 'var(--fs-11)' }}>Calificado?</span>
+            <div className="flex flex-wrap" style={{ gap: '4px' }}>
               {CALIFICADO_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
