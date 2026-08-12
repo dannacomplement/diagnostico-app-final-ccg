@@ -7,6 +7,7 @@ import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { computeMaturityIndex, computeRiskProfile, generateDiagnosticNarrative, generateGrowthReadiness } from './diagnosticAnalysis';
 import { formatMonetaryValue } from './money';
 import { COMPLEMENT_MARK_PNG, COMPLEMENT_MARK_PNG_WHITE, COMPLEMENT_TEXT_PNG_WHITE } from './brandLogo';
+import { normalizeMarginLevel } from './calculations';
 
 /* -- Color palette (RGB arrays) -- */
 const NAVY: [number, number, number] = [27, 42, 74];
@@ -713,9 +714,9 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
     y += 12;
 
     const benchItems = [
-      { label: 'Margen Bruto', actual: diagnostic.marginEvaluation.margenBruto.value, benchmark: bench.margenBruto, level: diagnostic.marginEvaluation.margenBruto.level },
-      { label: 'Margen Operativo', actual: diagnostic.marginEvaluation.margenOperativo.value, benchmark: bench.margenOperativo, level: diagnostic.marginEvaluation.margenOperativo.level },
-      { label: 'Margen Neto', actual: diagnostic.marginEvaluation.margenNeto.value, benchmark: bench.margenNeto, level: diagnostic.marginEvaluation.margenNeto.level },
+      { label: 'Margen Bruto', actual: diagnostic.marginEvaluation.margenBruto.value, benchmark: bench.margenBruto, level: normalizeMarginLevel(diagnostic.marginEvaluation.margenBruto.level) },
+      { label: 'Margen Operativo', actual: diagnostic.marginEvaluation.margenOperativo.value, benchmark: bench.margenOperativo, level: normalizeMarginLevel(diagnostic.marginEvaluation.margenOperativo.level) },
+      { label: 'Margen Neto', actual: diagnostic.marginEvaluation.margenNeto.value, benchmark: bench.margenNeto, level: normalizeMarginLevel(diagnostic.marginEvaluation.margenNeto.level) },
     ];
 
     benchItems.forEach(item => {

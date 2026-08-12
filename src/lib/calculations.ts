@@ -126,6 +126,15 @@ function evaluateSingleMargin(value: number | null, benchmark: number): MarginLe
   return value >= benchmark ? 'en_rango' : 'fuera_de_rango';
 }
 
+/**
+ * Diagnósticos guardados antes de simplificar MarginLevel a 'en_rango'/'fuera_de_rango'
+ * pueden traer valores viejos (ej. 'critico', 'arriba_industria') en el JSON guardado.
+ * Cualquier valor que no sea exactamente 'en_rango' se trata como 'fuera_de_rango'.
+ */
+export function normalizeMarginLevel(level: MarginLevel): MarginLevel {
+  return level === 'en_rango' ? 'en_rango' : 'fuera_de_rango';
+}
+
 export function evaluateMargins(marginData: MarginData, benchmark: IndustryBenchmark): MarginEvaluation {
   return {
     margenBruto: {

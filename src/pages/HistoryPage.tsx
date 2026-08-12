@@ -21,6 +21,7 @@ import { exportToPptx } from '../lib/exportPptx';
 import { SECTOR_OPTIONS } from '../config/constants';
 import { getServiceArea } from '../config/serviceAreas';
 import { formatMonetaryValue } from '../lib/money';
+import { normalizeMarginLevel } from '../lib/calculations';
 import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, CurrencyCode } from '../lib/types';
 import HistoricalComparison from '../components/ui/HistoricalComparison';
 import { TECH_AREAS } from '../config/techQuestions';
@@ -966,7 +967,7 @@ function DiagEjecutivoCard({ diag, onExtenso, currencyCode }: { diag: SavedDiagn
             ]).map(m => {
               const ev = d.marginEvaluation![m.key];
               if (ev.value === null) return null;
-              const ml = MARGIN_LABELS[ev.level];
+              const ml = MARGIN_LABELS[normalizeMarginLevel(ev.level)];
               return (
                 <div key={m.key} className="rounded-lg border border-border/30 bg-white text-center" style={{ padding: 'var(--sp-btn-b)', minWidth: '100px' }}>
                   <p className="text-muted" style={{ fontSize: 'var(--fs-9)' }}>{m.label}</p>

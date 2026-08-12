@@ -4,6 +4,7 @@ import type { SavedDiagnostic, MarginLevel, CurrencyCode } from './types';
 import { ALL_CRITERIA } from '../config/questions';
 import { buildSoftwareLabel } from './formatters';
 import { formatMonetaryValue } from './money';
+import { normalizeMarginLevel } from './calculations';
 
 /* ── Color palette ────────────────────────────────────────── */
 const NAVY    = '1B2A4A';
@@ -326,7 +327,8 @@ export async function exportToExcel(diagnostic: SavedDiagnostic, currencyCode: C
     ];
 
     marginRows.forEach((m, idx) => {
-      const ev = diagnostic.marginEvaluation![m.key];
+      const rawEv = diagnostic.marginEvaluation![m.key];
+      const ev = { ...rawEv, level: normalizeMarginLevel(rawEv.level) };
       const isZebra = idx % 2 === 1;
 
       // Label cell (merged 1-2)

@@ -9,6 +9,7 @@ import { ALL_CRITERIA } from '../config/questions';
 import { DEFAULT_INDUSTRY_BENCHMARKS } from '../config/constants';
 import { buildSoftwareLabel } from './formatters';
 import { formatMonetaryValue } from './money';
+import { normalizeMarginLevel } from './calculations';
 import {
   computeMaturityIndex,
   computeRiskProfile,
@@ -943,9 +944,9 @@ function addFinancialsSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: st
   const startY = 1.1;
 
   const margins = [
-    { label: 'Margen Bruto', data: d.marginEvaluation.margenBruto, benchmark: bench.margenBruto },
-    { label: 'Margen Operativo', data: d.marginEvaluation.margenOperativo, benchmark: bench.margenOperativo },
-    { label: 'Margen Neto', data: d.marginEvaluation.margenNeto, benchmark: bench.margenNeto },
+    { label: 'Margen Bruto', data: { ...d.marginEvaluation.margenBruto, level: normalizeMarginLevel(d.marginEvaluation.margenBruto.level) }, benchmark: bench.margenBruto },
+    { label: 'Margen Operativo', data: { ...d.marginEvaluation.margenOperativo, level: normalizeMarginLevel(d.marginEvaluation.margenOperativo.level) }, benchmark: bench.margenOperativo },
+    { label: 'Margen Neto', data: { ...d.marginEvaluation.margenNeto, level: normalizeMarginLevel(d.marginEvaluation.margenNeto.level) }, benchmark: bench.margenNeto },
   ];
 
   // ── Three big margin cards ──
@@ -1252,9 +1253,9 @@ function addExecutiveSummarySlide(pptx: PptxGenJS, d: SavedDiagnostic, companyNa
     });
 
     const marginItems = [
-      { label: 'M. Bruto', data: d.marginEvaluation.margenBruto },
-      { label: 'M. Operativo', data: d.marginEvaluation.margenOperativo },
-      { label: 'M. Neto', data: d.marginEvaluation.margenNeto },
+      { label: 'M. Bruto', data: { ...d.marginEvaluation.margenBruto, level: normalizeMarginLevel(d.marginEvaluation.margenBruto.level) } },
+      { label: 'M. Operativo', data: { ...d.marginEvaluation.margenOperativo, level: normalizeMarginLevel(d.marginEvaluation.margenOperativo.level) } },
+      { label: 'M. Neto', data: { ...d.marginEvaluation.margenNeto, level: normalizeMarginLevel(d.marginEvaluation.margenNeto.level) } },
     ];
 
     marginItems.forEach((m, i) => {
