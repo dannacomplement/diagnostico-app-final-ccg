@@ -2650,7 +2650,9 @@ function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreate
                       <td className="text-ink" style={{ padding: '6px 10px' }}>{r.usuario}</td>
                       <td className="text-muted font-mono" style={{ padding: '6px 10px' }}>{r.ok ? r.password : '—'}</td>
                       <td style={{ padding: '6px 10px' }}>
-                        {r.ok ? <span className="text-success">Creada</span> : <span className="text-error" title={r.error}>Error</span>}
+                        {r.ok
+                          ? <span className="text-success">Creada</span>
+                          : <span className="text-error">Error: {r.error || 'desconocido'}</span>}
                       </td>
                     </tr>
                   ))}
