@@ -45,6 +45,21 @@ function validateStep(stepId: string, state: ReturnType<typeof useDiagnosticStor
       if (!dg.softwareSelections || dg.softwareSelections.selected.length === 0) missing.push('Software de gestión');
       break;
     }
+    case 'negocio': {
+      const lineasTotal = state.lineasNegocio.reduce((sum, l) => sum + (parseFloat(l.porcentaje) || 0), 0);
+      if (state.lineasNegocio.length > 0 && Math.abs(lineasTotal - 100) >= 0.5) {
+        missing.push(`Líneas de negocio (suman ${lineasTotal.toFixed(1)}%, deben sumar 100%)`);
+      }
+      if (state.tieneMultiplesSucursales === true) {
+        const sucursalesTotal = state.sucursales.reduce((sum, s) => sum + (parseFloat(s.porcentajeVentas) || 0), 0);
+        if (state.sucursales.length === 0) {
+          missing.push('Agregue al menos una sucursal');
+        } else if (Math.abs(sucursalesTotal - 100) >= 0.5) {
+          missing.push(`Sucursales (suman ${sucursalesTotal.toFixed(1)}%, deben sumar 100%)`);
+        }
+      }
+      break;
+    }
     case 'situacion': {
       const isFamily = state.isFamilyBusiness();
       if (state.situacionActual.ventasAnualesMDP === null) missing.push('Ventas anuales');
@@ -52,6 +67,14 @@ function validateStep(stepId: string, state: ReturnType<typeof useDiagnosticStor
       if (!state.situacionActual.socios) missing.push('Número de socios');
       if (isFamily) {
         if (state.situacionActual.empleadosFamiliares === null) missing.push('Empleados familiares');
+      }
+      const numSocios = parseInt(state.situacionActual.socios, 10) || 0;
+      const sociosDetalle = state.situacionActual.sociosDetalle ?? [];
+      if (numSocios > 0 && sociosDetalle.length === numSocios) {
+        const sociosTotal = sociosDetalle.reduce((sum, s) => sum + (parseFloat(s.porcentaje) || 0), 0);
+        if (Math.abs(sociosTotal - 100) >= 0.5) {
+          missing.push(`% de socios (suman ${sociosTotal.toFixed(1)}%, deben sumar 100%)`);
+        }
       }
       break;
     }
