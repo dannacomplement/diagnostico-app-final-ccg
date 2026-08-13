@@ -45,10 +45,8 @@ export default function OrgWizardShell() {
   }
 
   function handleStepClick(index: number) {
-    if (index <= currentStep) {
-      setStep(index);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setStep(index);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleSaveAndExit() {

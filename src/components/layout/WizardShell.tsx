@@ -244,11 +244,9 @@ export default function WizardShell() {
   }
 
   function handleStepClick(index: number) {
-    if (index <= currentStep) {
-      setValidationErrors([]);
-      setStep(index);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setValidationErrors([]);
+    setStep(index);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleSaveAndExit() {
