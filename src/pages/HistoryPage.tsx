@@ -3,8 +3,10 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Folder, Users, FlaskConical, Settings, Sparkles, CircleCheck, Pencil, Trash2,
   BarChart3, ClipboardList, Building2, Monitor, TriangleAlert, Check, Circle,
-  Building, Eye, EyeOff, Palette, X, Info,
+  Building, Eye, EyeOff, Palette, X, Info, Upload, Download,
 } from 'lucide-react';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { useAuthStore } from '../store/authStore';
 import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds } from '../lib/storage';
 import { ALL_CRITERIA } from '../config/questions';
@@ -1555,6 +1557,7 @@ function ClientesPanel({
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'prospecto'>('todos');
   const [groupFilter, setGroupFilter] = useState<string>('todos');
   const [sortBy, setSortBy] = useState<'fecha' | 'nombre' | 'estatus'>('fecha');
+  const [showBulkImport, setShowBulkImport] = useState(false);
 
   const corporateGroups = Array.from(new Set(accounts.map(a => a.corporateGroup).filter((g): g is string => !!g))).sort();
 
@@ -1579,14 +1582,25 @@ function ClientesPanel({
         <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
           {filtered.length} de {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''}
         </p>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
-          style={{ padding: '8px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
-        >
-          + Crear cuenta
-        </button>
+        <div className="flex" style={{ gap: '10px' }}>
+          <button
+            onClick={() => setShowBulkImport(true)}
+            className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer flex items-center"
+            style={{ padding: '8px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)', gap: '6px' }}
+          >
+            <Upload style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> Importar Excel
+          </button>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
+            style={{ padding: '8px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
+          >
+            + Crear cuenta
+          </button>
+        </div>
       </div>
+
+      {showBulkImport && <BulkImportModal onClose={() => setShowBulkImport(false)} onCreated={onCreated} />}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center" style={{ gap: '10px', marginBottom: '16px' }}>
@@ -2169,21 +2183,22 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
     if (permTech) permissions.push('prueba_tecnologia');
     // Auto-generate username from email
     const autoUsername = email.trim().split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || email.trim();
-    const result = await createClientAccount(
-      autoUsername,
-      password.trim(),
-      displayName.trim(),
-      permissions,
-      logoPreview ?? undefined,
-      email.trim(),
-      currencyCode,
-      corporateGroup.trim() || undefined,
-    );
-    setSaving(false);
-    if (result) {
+    try {
+      await createClientAccount(
+        autoUsername,
+        password.trim(),
+        displayName.trim(),
+        permissions,
+        logoPreview ?? undefined,
+        email.trim(),
+        currencyCode,
+        corporateGroup.trim() || undefined,
+      );
+      setSaving(false);
       onCreated();
-    } else {
-      setError('Error al crear la cuenta. Es posible que el usuario ya exista.');
+    } catch (err) {
+      setSaving(false);
+      setError(err instanceof Error ? err.message : 'Error al crear la cuenta.');
     }
   }
 
@@ -2328,6 +2343,336 @@ function CreateAccountModal({ onClose, onCreated }: { onClose: () => void; onCre
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   BULK IMPORT (Excel) — crea varias cuentas de cliente a la vez
+   ══════════════════════════════════════════════════════════ */
+
+interface BulkImportRow {
+  nombre: string;
+  empresa: string;
+  correo: string;
+  cemex: boolean;
+}
+
+interface BulkImportResult extends BulkImportRow {
+  usuario: string;
+  password: string;
+  ok: boolean;
+  error?: string;
+}
+
+function slugifyUsername(nombre: string): string {
+  const base = nombre
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '');
+  return base || 'cliente';
+}
+
+function generatePassword(): string {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // sin I, O
+  const lower = 'abcdefghijkmnpqrstuvwxyz'; // sin l, o
+  const digits = '23456789'; // sin 0, 1
+  const all = upper + lower + digits;
+  let pw = '';
+  pw += upper[Math.floor(Math.random() * upper.length)];
+  pw += digits[Math.floor(Math.random() * digits.length)];
+  for (let i = 0; i < 7; i++) pw += all[Math.floor(Math.random() * all.length)];
+  return pw;
+}
+
+async function downloadBulkImportTemplate() {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Clientes');
+  ws.columns = [
+    { header: 'Nombre', key: 'nombre', width: 28 },
+    { header: 'Empresa', key: 'empresa', width: 32 },
+    { header: 'Correo', key: 'correo', width: 32 },
+    { header: 'CEMEX', key: 'cemex', width: 12 },
+  ];
+  ws.getRow(1).font = { bold: true };
+  ws.addRow({ nombre: 'Juan Pérez', empresa: 'Construrama Monterrey', correo: 'juan.perez@ejemplo.com', cemex: 'Sí' });
+  ws.addRow({ nombre: 'María López', empresa: 'Materiales del Norte', correo: 'maria.lopez@ejemplo.com', cemex: 'No' });
+  const buffer = await wb.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), 'plantilla_clientes.xlsx');
+}
+
+function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [rows, setRows] = useState<BulkImportRow[]>([]);
+  const [fileName, setFileName] = useState('');
+  const [parseError, setParseError] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [results, setResults] = useState<BulkImportResult[] | null>(null);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileName(file.name);
+    setParseError('');
+    setResults(null);
+    setRows([]);
+    try {
+      const buffer = await file.arrayBuffer();
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(buffer);
+      const ws = wb.worksheets[0];
+      if (!ws) {
+        setParseError('El archivo no tiene hojas con datos.');
+        return;
+      }
+      const headerValues = (ws.getRow(1).values as unknown[]) ?? [];
+      const findCol = (needles: string[]) => {
+        for (let i = 1; i < headerValues.length; i++) {
+          const h = String(headerValues[i] ?? '').trim().toLowerCase();
+          if (needles.some(n => h.includes(n))) return i;
+        }
+        return -1;
+      };
+      const colNombre = findCol(['nombre']);
+      const colEmpresa = findCol(['empresa']);
+      const colCorreo = findCol(['correo', 'email']);
+      const colCemex = findCol(['cemex']);
+      if (colNombre === -1 || colEmpresa === -1 || colCorreo === -1) {
+        setParseError('El Excel debe tener columnas de Nombre, Empresa y Correo. Descarga la plantilla si tienes dudas del formato.');
+        return;
+      }
+      const parsed: BulkImportRow[] = [];
+      ws.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const nombre = String(row.getCell(colNombre).value ?? '').trim();
+        const empresa = String(row.getCell(colEmpresa).value ?? '').trim();
+        const correo = String(row.getCell(colCorreo).value ?? '').trim();
+        if (!nombre && !correo) return;
+        const cemexRaw = colCemex !== -1 ? String(row.getCell(colCemex).value ?? '').trim().toLowerCase() : '';
+        const cemex = ['si', 'sí', 'x', 'yes', 'true', '1'].includes(cemexRaw);
+        parsed.push({ nombre, empresa, correo, cemex });
+      });
+      if (parsed.length === 0) {
+        setParseError('No se encontraron filas con datos debajo del encabezado.');
+        return;
+      }
+      setRows(parsed);
+    } catch {
+      setParseError('No se pudo leer el archivo. Asegúrate de que sea un .xlsx válido.');
+    }
+  }
+
+  async function handleCreateAll() {
+    setCreating(true);
+    setProgress(0);
+    const localResults: BulkImportResult[] = [];
+    const usedUsernames = new Set<string>();
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const base = slugifyUsername(r.nombre);
+      const password = generatePassword();
+      let ok = false;
+      let usedUsername = base;
+      let lastError = '';
+
+      for (let attempt = 0; attempt < 5 && !ok; attempt++) {
+        const candidate = attempt === 0 ? base : `${base}${attempt + 1}`;
+        if (usedUsernames.has(candidate)) continue;
+        try {
+          await createClientAccount(
+            candidate,
+            password,
+            r.nombre,
+            ['diagnostico_empresarial'],
+            undefined,
+            r.correo,
+            r.cemex ? 'USD' : 'MXN',
+            r.cemex ? 'CEMEX' : undefined,
+          );
+          ok = true;
+          usedUsername = candidate;
+          usedUsernames.add(candidate);
+        } catch (err) {
+          lastError = err instanceof Error ? err.message : 'Error desconocido';
+          // Solo tiene sentido reintentar con otro usuario si el choque fue por username, no por correo
+          if (!lastError.toLowerCase().includes('usuario') && !lastError.toLowerCase().includes('username')) {
+            break;
+          }
+        }
+      }
+
+      localResults.push({ ...r, usuario: usedUsername, password, ok, error: ok ? undefined : lastError });
+      setProgress(i + 1);
+    }
+
+    setResults(localResults);
+    setCreating(false);
+    onCreated();
+  }
+
+  async function downloadResults() {
+    if (!results) return;
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Cuentas creadas');
+    ws.columns = [
+      { header: 'Nombre', key: 'nombre', width: 28 },
+      { header: 'Empresa', key: 'empresa', width: 32 },
+      { header: 'Correo', key: 'correo', width: 32 },
+      { header: 'Usuario', key: 'usuario', width: 20 },
+      { header: 'Contraseña', key: 'password', width: 16 },
+      { header: 'CEMEX', key: 'cemex', width: 10 },
+      { header: 'Estado', key: 'estado', width: 24 },
+    ];
+    ws.getRow(1).font = { bold: true };
+    results.forEach(r => {
+      ws.addRow({
+        nombre: r.nombre, empresa: r.empresa, correo: r.correo, usuario: r.usuario,
+        password: r.password, cemex: r.cemex ? 'Sí' : 'No', estado: r.ok ? 'Creada' : `Error: ${r.error}`,
+      });
+    });
+    const buffer = await wb.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), 'cuentas_creadas.xlsx');
+  }
+
+  const okCount = results?.filter(r => r.ok).length ?? 0;
+  const failCount = results ? results.length - okCount : 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md sm:max-w-lg lg:max-w-2xl w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '6px' }}>Importar Clientes desde Excel</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px' }}>
+          Crea varias cuentas de cliente a la vez. El usuario y la contraseña se generan automáticamente.
+        </p>
+
+        {!results && (
+          <>
+            <button
+              type="button"
+              onClick={downloadBulkImportTemplate}
+              className="flex items-center text-accent font-medium hover:underline cursor-pointer"
+              style={{ fontSize: 'var(--fs-12)', gap: '5px', marginBottom: '20px' }}
+            >
+              <Download style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} /> Descargar plantilla de ejemplo
+            </button>
+
+            <div>
+              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>
+                Archivo Excel (columnas: Nombre, Empresa, Correo, CEMEX)
+              </label>
+              <label
+                className="flex items-center justify-center border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-accent transition-all"
+                style={{ padding: '24px', fontSize: 'var(--fs-12)' }}
+              >
+                <span className="text-muted">{fileName || 'Selecciona un archivo .xlsx...'}</span>
+                <input type="file" accept=".xlsx" onChange={handleFile} className="hidden" />
+              </label>
+              {parseError && <p className="text-error" style={{ fontSize: 'var(--fs-12)', marginTop: '8px' }}>{parseError}</p>}
+            </div>
+
+            {rows.length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <p className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '10px' }}>
+                  {rows.length} cliente{rows.length !== 1 ? 's' : ''} listo{rows.length !== 1 ? 's' : ''} para crear
+                </p>
+                <div className="border border-border rounded-xl" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                  <table className="w-full" style={{ fontSize: 'var(--fs-11)' }}>
+                    <thead className="bg-pale sticky top-0">
+                      <tr>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Nombre</th>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Empresa</th>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Correo</th>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>CEMEX</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r, i) => (
+                        <tr key={i} className="border-t border-border/50">
+                          <td className="text-ink" style={{ padding: '6px 10px' }}>{r.nombre}</td>
+                          <td className="text-ink" style={{ padding: '6px 10px' }}>{r.empresa}</td>
+                          <td className="text-muted" style={{ padding: '6px 10px' }}>{r.correo}</td>
+                          <td style={{ padding: '6px 10px' }}>{r.cemex ? <span className="text-accent font-semibold">Sí</span> : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {creating && (
+              <p className="text-center text-muted" style={{ fontSize: 'var(--fs-12)', marginTop: '16px' }}>
+                Creando cuenta {progress} de {rows.length}...
+              </p>
+            )}
+
+            <div className="flex" style={{ gap: '12px', marginTop: '24px' }}>
+              <button type="button" onClick={onClose} disabled={creating} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer disabled:opacity-50" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateAll}
+                disabled={rows.length === 0 || creating}
+                className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50"
+                style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}
+              >
+                {creating ? 'Creando...' : `Crear ${rows.length || ''} cuenta${rows.length !== 1 ? 's' : ''}`}
+              </button>
+            </div>
+          </>
+        )}
+
+        {results && (
+          <div>
+            <div className="flex items-center" style={{ gap: '10px', marginBottom: '16px' }}>
+              <span className="text-success font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{okCount} creadas</span>
+              {failCount > 0 && <span className="text-error font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{failCount} con error</span>}
+            </div>
+            <div className="border border-border rounded-xl" style={{ maxHeight: '260px', overflowY: 'auto' }}>
+              <table className="w-full" style={{ fontSize: 'var(--fs-11)' }}>
+                <thead className="bg-pale sticky top-0">
+                  <tr>
+                    <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Nombre</th>
+                    <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Usuario</th>
+                    <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Contraseña</th>
+                    <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((r, i) => (
+                    <tr key={i} className="border-t border-border/50">
+                      <td className="text-ink" style={{ padding: '6px 10px' }}>{r.nombre}</td>
+                      <td className="text-ink" style={{ padding: '6px 10px' }}>{r.usuario}</td>
+                      <td className="text-muted font-mono" style={{ padding: '6px 10px' }}>{r.ok ? r.password : '—'}</td>
+                      <td style={{ padding: '6px 10px' }}>
+                        {r.ok ? <span className="text-success">Creada</span> : <span className="text-error" title={r.error}>Error</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex" style={{ gap: '12px', marginTop: '24px' }}>
+              <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
+                Cerrar
+              </button>
+              <button
+                type="button"
+                onClick={downloadResults}
+                className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer flex items-center justify-center"
+                style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)', gap: '6px' }}
+              >
+                <Download style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> Descargar Excel con credenciales
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

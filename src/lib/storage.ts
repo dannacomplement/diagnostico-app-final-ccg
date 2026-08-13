@@ -328,14 +328,12 @@ export async function createClientAccount(
   corporateGroup?: string,
 ): Promise<AppUser | null> {
   if (!email) {
-    console.error('createClientAccount: email is required for Supabase Auth');
-    return null;
+    throw new Error('El correo electrónico es obligatorio.');
   }
 
   const token = await getAccessToken();
   if (!token) {
-    console.error('createClientAccount: no auth token');
-    return null;
+    throw new Error('No hay sesión activa. Vuelve a iniciar sesión e intenta de nuevo.');
   }
 
   const res = await fetch('/api/create-user', {
@@ -349,8 +347,7 @@ export async function createClientAccount(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    console.error('createClientAccount error:', err.error || res.statusText);
-    return null;
+    throw new Error(err.error || res.statusText || 'Error al crear la cuenta.');
   }
 
   const { user: profile } = await res.json();
