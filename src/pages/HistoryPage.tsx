@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Folder, Users, FlaskConical, Settings, Sparkles, CircleCheck, Pencil, Trash2,
   BarChart3, ClipboardList, Building2, Monitor, TriangleAlert, Check, Circle,
-  Building, Eye, EyeOff, Palette, X, Info, Upload, Download,
+  Building, Eye, EyeOff, Palette, X, Info, Upload, Download, Search,
 } from 'lucide-react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -1558,12 +1558,23 @@ function ClientesPanel({
   const [groupFilter, setGroupFilter] = useState<string>('todos');
   const [sortBy, setSortBy] = useState<'fecha' | 'nombre' | 'estatus'>('fecha');
   const [showBulkImport, setShowBulkImport] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const corporateGroups = Array.from(new Set(accounts.map(a => a.corporateGroup).filter((g): g is string => !!g))).sort();
 
+  const searchNormalized = searchQuery.trim().toLowerCase();
   const filtered = accounts
     .filter(a => statusFilter === 'todos' || (a.status ?? 'activo') === statusFilter)
     .filter(a => groupFilter === 'todos' || a.corporateGroup === groupFilter)
+    .filter(a => {
+      if (!searchNormalized) return true;
+      return (
+        (a.displayName ?? '').toLowerCase().includes(searchNormalized) ||
+        (a.email ?? '').toLowerCase().includes(searchNormalized) ||
+        (a.username ?? '').toLowerCase().includes(searchNormalized) ||
+        (a.corporateGroup ?? '').toLowerCase().includes(searchNormalized)
+      );
+    })
     .sort((a, b) => {
       if (sortBy === 'nombre') return (a.displayName || '').localeCompare(b.displayName || '');
       if (sortBy === 'estatus') return (a.status ?? 'activo').localeCompare(b.status ?? 'activo');
@@ -1601,6 +1612,28 @@ function ClientesPanel({
       </div>
 
       {showBulkImport && <BulkImportModal accounts={accounts} onClose={() => setShowBulkImport(false)} onCreated={onCreated} />}
+
+      {/* Search */}
+      <div className="relative" style={{ marginBottom: '14px' }}>
+        <Search className="absolute text-muted" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Buscar por nombre, correo, usuario o grupo..."
+          className="input-field w-full"
+          style={{ paddingLeft: '36px', fontSize: 'var(--fs-13)' }}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute text-muted hover:text-ink cursor-pointer"
+            style={{ right: '12px', top: '50%', transform: 'translateY(-50%)' }}
+          >
+            <X style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} />
+          </button>
+        )}
+      </div>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center" style={{ gap: '10px', marginBottom: '16px' }}>
