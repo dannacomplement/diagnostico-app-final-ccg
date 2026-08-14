@@ -34,6 +34,16 @@ function normalizeText(s: string): string {
     .replace(/\s+/g, ' ');
 }
 
+function cellText(value: ExcelJS.CellValue): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object') {
+    if ('text' in value && value.text !== undefined) return String(value.text);
+    if ('result' in value && value.result !== undefined) return String(value.result);
+    if ('richText' in value && Array.isArray(value.richText)) return value.richText.map(r => r.text).join('');
+  }
+  return String(value);
+}
+
 function defaultAnswer(criterionId: string): CriterionAnswer {
   return { criterionId, siNo: true, rating: -1, comentario: '' };
 }
@@ -61,10 +71,10 @@ export async function parseBulkPrefillExcel(buffer: ArrayBuffer): Promise<Parsed
     return { rows: [], parseError: 'El archivo no tiene hojas con datos.' };
   }
 
-  const headerValues = (ws.getRow(1).values as unknown[]) ?? [];
+  const headerRow = ws.getRow(1);
   const headerByCol = new Map<number, string>();
-  for (let i = 1; i < headerValues.length; i++) {
-    headerByCol.set(i, normalizeText(String(headerValues[i] ?? '')));
+  for (let i = 1; i <= ws.columnCount; i++) {
+    headerByCol.set(i, normalizeText(cellText(headerRow.getCell(i).value)));
   }
 
   const findCol = (needles: string[]) => {
@@ -100,9 +110,9 @@ export async function parseBulkPrefillExcel(buffer: ArrayBuffer): Promise<Parsed
 
   ws.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
-    const correo = String(row.getCell(colCorreo).value ?? '').trim();
-    const nombre = colNombre !== -1 ? String(row.getCell(colNombre).value ?? '').trim() : '';
-    const empresa = colEmpresa !== -1 ? String(row.getCell(colEmpresa).value ?? '').trim() : '';
+    const correo = cellText(row.getCell(colCorreo).value).trim();
+    const nombre = colNombre !== -1 ? cellText(row.getCell(colNombre).value).trim() : '';
+    const empresa = colEmpresa !== -1 ? cellText(row.getCell(colEmpresa).value).trim() : '';
     if (!correo) return;
 
     const profAnswers: CriterionAnswer[] = [];
@@ -113,7 +123,7 @@ export async function parseBulkPrefillExcel(buffer: ArrayBuffer): Promise<Parsed
 
     for (const criterion of ALL_ANSWER_CRITERIA) {
       const col = criterionCols.get(criterion.id);
-      const raw = col !== undefined ? String(row.getCell(col).value ?? '').trim() : '';
+      const raw = col !== undefined ? cellText(row.getCell(col).value).trim() : '';
       const target = criterion.category === 'profesionalizacion' ? profAnswers : instAnswers;
 
       if (!raw) {
