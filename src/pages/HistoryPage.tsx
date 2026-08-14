@@ -212,6 +212,7 @@ function ExpedientesPanel({
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'prospecto'>('todos');
   const [groupFilter, setGroupFilter] = useState<string>('todos');
   const [sortBy, setSortBy] = useState<'fecha' | 'nombre' | 'estatus' | 'tamaño'>('fecha');
+  const [searchQuery, setSearchQuery] = useState('');
   const loadDiagnosticForReport = useDiagnosticStore(s => s.loadDiagnosticForReport);
   const loadDiagnosticForEdit = useDiagnosticStore(s => s.loadDiagnosticForEdit);
   const loadOrgSurveyForReport = useOrgSurveyStore(s => s.loadOrgSurveyForReport);
@@ -277,9 +278,19 @@ function ExpedientesPanel({
 
   const corporateGroups = Array.from(new Set(accounts.map(a => a.corporateGroup).filter((g): g is string => !!g))).sort();
 
+  const searchNormalized = searchQuery.trim().toLowerCase();
   const filtered = accounts
     .filter(a => statusFilter === 'todos' || (a.status ?? 'activo') === statusFilter)
     .filter(a => groupFilter === 'todos' || a.corporateGroup === groupFilter)
+    .filter(a => {
+      if (!searchNormalized) return true;
+      return (
+        (a.displayName ?? '').toLowerCase().includes(searchNormalized) ||
+        (a.email ?? '').toLowerCase().includes(searchNormalized) ||
+        (a.username ?? '').toLowerCase().includes(searchNormalized) ||
+        (a.corporateGroup ?? '').toLowerCase().includes(searchNormalized)
+      );
+    })
     .sort((a, b) => {
       if (sortBy === 'nombre') return (a.displayName || '').localeCompare(b.displayName || '');
       if (sortBy === 'estatus') return (a.status ?? 'activo').localeCompare(b.status ?? 'activo');
@@ -297,6 +308,28 @@ function ExpedientesPanel({
         <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
           {filtered.length} de {accounts.length} expediente{accounts.length !== 1 ? 's' : ''}
         </p>
+      </div>
+
+      {/* Search */}
+      <div className="relative" style={{ marginBottom: '10px' }}>
+        <Search className="absolute text-muted" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Buscar por nombre, correo, usuario o grupo..."
+          className="input-field w-full"
+          style={{ paddingLeft: '36px', fontSize: 'var(--fs-13)' }}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute text-muted hover:text-ink cursor-pointer"
+            style={{ right: '12px', top: '50%', transform: 'translateY(-50%)' }}
+          >
+            <X style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} />
+          </button>
+        )}
       </div>
 
       {/* Filters */}
