@@ -1,6 +1,8 @@
 import ExcelJS from 'exceljs';
 import { PROFESIONALIZACION_CRITERIA, INSTITUCIONALIZACION_CRITERIA, CRITERION_CARD_OPTIONS } from '../config/questions';
-import type { CriterionAnswer } from './types';
+import type { CriterionAnswer, EmpresaFamiliar } from './types';
+
+export const EMPRESA_FAMILIAR_VALUES: EmpresaFamiliar[] = ['si_1era', 'si_1era_transicion', 'si_2da', 'si_3era', 'no'];
 
 export interface PrefillImportIssue {
   criterionId: string;
@@ -13,6 +15,7 @@ export interface PrefillImportRow {
   correo: string;
   nombre: string;
   empresa: string;
+  empresaFamiliar: EmpresaFamiliar | null;
   profAnswers: CriterionAnswer[];
   instAnswers: CriterionAnswer[];
   issues: PrefillImportIssue[];
@@ -84,9 +87,17 @@ export async function parseBulkPrefillExcel(buffer: ArrayBuffer): Promise<Parsed
     return -1;
   };
 
+  const findExactCol = (headerId: string) => {
+    for (const [col, h] of headerByCol) {
+      if (h === headerId) return col;
+    }
+    return -1;
+  };
+
   const colCorreo = findCol(['correo', 'email']);
   const colNombre = findCol(['nombre']);
   const colEmpresa = findCol(['empresa']);
+  const colEmpresaFamiliar = findExactCol('empresa_familiar');
 
   if (colCorreo === -1) {
     return { rows: [], parseError: 'El Excel debe tener una columna de Correo para identificar al cliente.' };
@@ -115,9 +126,20 @@ export async function parseBulkPrefillExcel(buffer: ArrayBuffer): Promise<Parsed
     const empresa = colEmpresa !== -1 ? cellText(row.getCell(colEmpresa).value).trim() : '';
     if (!correo) return;
 
+    const issues: PrefillImportIssue[] = [];
+
+    const empresaFamiliarRaw = colEmpresaFamiliar !== -1 ? cellText(row.getCell(colEmpresaFamiliar).value).trim().toLowerCase() : '';
+    let empresaFamiliar: EmpresaFamiliar | null = null;
+    if (empresaFamiliarRaw) {
+      if ((EMPRESA_FAMILIAR_VALUES as string[]).includes(empresaFamiliarRaw)) {
+        empresaFamiliar = empresaFamiliarRaw as EmpresaFamiliar;
+      } else {
+        issues.push({ criterionId: 'empresa_familiar', raw: empresaFamiliarRaw, reason: 'unrecognized' });
+      }
+    }
+
     const profAnswers: CriterionAnswer[] = [];
     const instAnswers: CriterionAnswer[] = [];
-    const issues: PrefillImportIssue[] = [];
     let recognizedCount = 0;
     let totalAnswerCells = 0;
 
@@ -146,7 +168,7 @@ export async function parseBulkPrefillExcel(buffer: ArrayBuffer): Promise<Parsed
       }
     }
 
-    rows.push({ rowNumber, correo, nombre, empresa, profAnswers, instAnswers, issues, recognizedCount, totalAnswerCells });
+    rows.push({ rowNumber, correo, nombre, empresa, empresaFamiliar, profAnswers, instAnswers, issues, recognizedCount, totalAnswerCells });
   });
 
   return { rows };

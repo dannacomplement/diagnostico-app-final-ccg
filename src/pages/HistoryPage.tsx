@@ -10,7 +10,7 @@ import { saveAs } from 'file-saver';
 import { useAuthStore } from '../store/authStore';
 import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, savePrefill, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds } from '../lib/storage';
 import { ALL_CRITERIA, PROFESIONALIZACION_CRITERIA, INSTITUCIONALIZACION_CRITERIA, CRITERION_CARD_OPTIONS } from '../config/questions';
-import { parseBulkPrefillExcel, type PrefillImportRow } from '../lib/bulkPrefillImport';
+import { parseBulkPrefillExcel, EMPRESA_FAMILIAR_VALUES, type PrefillImportRow } from '../lib/bulkPrefillImport';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useOrgSurveyStore } from '../store/orgSurveyStore';
 import { useTechSurveyStore } from '../store/techSurveyStore';
@@ -2788,11 +2788,12 @@ async function downloadBulkPrefillTemplate() {
     { header: 'Correo', key: 'correo', width: 32 },
     { header: 'Nombre', key: 'nombre', width: 26 },
     { header: 'Empresa', key: 'empresa', width: 28 },
+    { header: 'empresa_familiar', key: 'empresa_familiar', width: 22 },
     ...answerCols,
   ];
   ws.getRow(1).font = { bold: true };
   const example: Record<string, string> = {
-    correo: 'maria.lopez@ejemplo.com', nombre: 'María López', empresa: 'Materiales del Norte',
+    correo: 'maria.lopez@ejemplo.com', nombre: 'María López', empresa: 'Materiales del Norte', empresa_familiar: 'si_1era',
   };
   for (const c of PROFESIONALIZACION_CRITERIA) {
     example[c.id] = CRITERION_CARD_OPTIONS[c.id]?.[0]?.title ?? '';
@@ -2810,6 +2811,12 @@ async function downloadBulkPrefillTemplate() {
     { header: 'Opciones válidas (texto exacto)', key: 'opciones', width: 70 },
   ];
   wsRef.getRow(1).font = { bold: true };
+  wsRef.addRow({
+    id: 'empresa_familiar',
+    pregunta: '¿Es empresa familiar? (columna opcional — si se deja vacía, lo contesta el cliente)',
+    familiar: '—',
+    opciones: EMPRESA_FAMILIAR_VALUES.join(' / '),
+  });
   for (const c of ALL_CRITERIA) {
     const opciones = (CRITERION_CARD_OPTIONS[c.id] ?? []).map(o => o.title).join(' / ');
     wsRef.addRow({ id: c.id, pregunta: c.text, familiar: c.requiresFamilyBusiness ? 'Sí' : 'No', opciones });
@@ -2874,7 +2881,14 @@ function BulkPrefillImportModal({ accounts, onClose, onImported }: { accounts: A
       }
       try {
         const existing = await getPrefillForUser(account.id, 'diagnostico_empresarial');
-        const merged = { ...(existing ?? {}), profAnswers: row.profAnswers, instAnswers: row.instAnswers };
+        const merged = {
+          ...(existing ?? {}),
+          profAnswers: row.profAnswers,
+          instAnswers: row.instAnswers,
+          ...(row.empresaFamiliar
+            ? { datosGenerales: { ...(existing?.datosGenerales ?? {}), empresaFamiliar: row.empresaFamiliar } }
+            : {}),
+        };
         const ok = await savePrefill(account.id, 'diagnostico_empresarial', merged);
         localResults.push({ row, accountName: account.displayName, ok, error: ok ? undefined : 'No se pudo guardar la precarga.' });
       } catch (err) {
