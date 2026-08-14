@@ -1600,7 +1600,7 @@ function ClientesPanel({
         </div>
       </div>
 
-      {showBulkImport && <BulkImportModal onClose={() => setShowBulkImport(false)} onCreated={onCreated} />}
+      {showBulkImport && <BulkImportModal accounts={accounts} onClose={() => setShowBulkImport(false)} onCreated={onCreated} />}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center" style={{ gap: '10px', marginBottom: '16px' }}>
@@ -2363,6 +2363,7 @@ interface BulkImportResult extends BulkImportRow {
   usuario: string;
   password: string;
   ok: boolean;
+  action: 'creada' | 'corregida';
   error?: string;
 }
 
@@ -2404,7 +2405,7 @@ async function downloadBulkImportTemplate() {
   saveAs(new Blob([buffer]), 'plantilla_clientes.xlsx');
 }
 
-function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function BulkImportModal({ accounts, onClose, onCreated }: { accounts: AppUser[]; onClose: () => void; onCreated: () => void }) {
   const [rows, setRows] = useState<BulkImportRow[]>([]);
   const [fileName, setFileName] = useState('');
   const [parseError, setParseError] = useState('');
@@ -2473,6 +2474,23 @@ function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
+      const existing = accounts.find(a => (a.email ?? '').trim().toLowerCase() === r.correo.trim().toLowerCase());
+
+      // Ya existe una cuenta con ese correo: solo corrige nombre/grupo/moneda, no crea otra ni toca la contraseña.
+      if (existing) {
+        const ok = await updateClientProfile(existing.id, {
+          displayName: r.empresa || r.nombre,
+          currencyCode: r.cemex ? 'USD' : 'MXN',
+          corporateGroup: r.cemex ? 'CEMEX' : null,
+        });
+        localResults.push({
+          ...r, usuario: existing.username, password: '', ok, action: 'corregida',
+          error: ok ? undefined : 'No se pudo actualizar la cuenta existente.',
+        });
+        setProgress(i + 1);
+        continue;
+      }
+
       const base = slugifyUsername(r.nombre);
       const password = generatePassword();
       let ok = false;
@@ -2486,7 +2504,7 @@ function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreate
           await createClientAccount(
             candidate,
             password,
-            r.nombre,
+            r.empresa || r.nombre,
             ['diagnostico_empresarial'],
             undefined,
             r.correo,
@@ -2505,7 +2523,7 @@ function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreate
         }
       }
 
-      localResults.push({ ...r, usuario: usedUsername, password, ok, error: ok ? undefined : lastError });
+      localResults.push({ ...r, usuario: usedUsername, password, ok, action: 'creada', error: ok ? undefined : lastError });
       setProgress(i + 1);
     }
 
@@ -2529,17 +2547,20 @@ function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreate
     ];
     ws.getRow(1).font = { bold: true };
     results.forEach(r => {
+      const estado = !r.ok ? `Error: ${r.error}` : r.action === 'corregida' ? 'Ya existía — nombre corregido' : 'Creada';
       ws.addRow({
         nombre: r.nombre, empresa: r.empresa, correo: r.correo, usuario: r.usuario,
-        password: r.password, cemex: r.cemex ? 'Sí' : 'No', estado: r.ok ? 'Creada' : `Error: ${r.error}`,
+        password: r.action === 'corregida' ? '(sin cambios)' : r.password,
+        cemex: r.cemex ? 'Sí' : 'No', estado,
       });
     });
     const buffer = await wb.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), 'cuentas_creadas.xlsx');
   }
 
-  const okCount = results?.filter(r => r.ok).length ?? 0;
-  const failCount = results ? results.length - okCount : 0;
+  const createdCount = results?.filter(r => r.ok && r.action === 'creada').length ?? 0;
+  const fixedCount = results?.filter(r => r.ok && r.action === 'corregida').length ?? 0;
+  const failCount = results ? results.length - createdCount - fixedCount : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
@@ -2629,8 +2650,9 @@ function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
         {results && (
           <div>
-            <div className="flex items-center" style={{ gap: '10px', marginBottom: '16px' }}>
-              <span className="text-success font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{okCount} creadas</span>
+            <div className="flex items-center flex-wrap" style={{ gap: '10px', marginBottom: '16px' }}>
+              {createdCount > 0 && <span className="text-success font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{createdCount} creadas</span>}
+              {fixedCount > 0 && <span className="text-accent font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{fixedCount} ya existían — nombre corregido</span>}
               {failCount > 0 && <span className="text-error font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{failCount} con error</span>}
             </div>
             <div className="border border-border rounded-xl" style={{ maxHeight: '260px', overflowY: 'auto' }}>
@@ -2648,11 +2670,13 @@ function BulkImportModal({ onClose, onCreated }: { onClose: () => void; onCreate
                     <tr key={i} className="border-t border-border/50">
                       <td className="text-ink" style={{ padding: '6px 10px' }}>{r.nombre}</td>
                       <td className="text-ink" style={{ padding: '6px 10px' }}>{r.usuario}</td>
-                      <td className="text-muted font-mono" style={{ padding: '6px 10px' }}>{r.ok ? r.password : '—'}</td>
+                      <td className="text-muted font-mono" style={{ padding: '6px 10px' }}>{r.ok && r.action === 'creada' ? r.password : '—'}</td>
                       <td style={{ padding: '6px 10px' }}>
-                        {r.ok
-                          ? <span className="text-success">Creada</span>
-                          : <span className="text-error">Error: {r.error || 'desconocido'}</span>}
+                        {!r.ok
+                          ? <span className="text-error">Error: {r.error || 'desconocido'}</span>
+                          : r.action === 'corregida'
+                            ? <span className="text-accent">Ya existía — nombre corregido</span>
+                            : <span className="text-success">Creada</span>}
                       </td>
                     </tr>
                   ))}
