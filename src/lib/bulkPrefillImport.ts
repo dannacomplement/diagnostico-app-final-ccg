@@ -37,13 +37,17 @@ function normalizeText(s: string): string {
     .replace(/\s+/g, ' ');
 }
 
-function cellText(value: ExcelJS.CellValue): string {
+function cellText(value: unknown): string {
   if (value === null || value === undefined) return '';
-  if (typeof value === 'object') {
-    if ('text' in value && value.text !== undefined) return String(value.text);
-    if ('result' in value && value.result !== undefined) return String(value.result);
-    if ('richText' in value && Array.isArray(value.richText)) return value.richText.map(r => r.text).join('');
+  if (typeof value !== 'object') return String(value);
+  const v = value as Record<string, unknown>;
+  // Rich-text runs (used directly, or nested inside a hyperlink cell's .text)
+  if (Array.isArray(v.richText)) {
+    return v.richText.map(r => cellText((r as { text?: unknown }).text)).join('');
   }
+  if ('text' in v && v.text !== undefined) return cellText(v.text);
+  if ('result' in v && v.result !== undefined) return cellText(v.result);
+  if ('hyperlink' in v && v.hyperlink !== undefined) return cellText(v.hyperlink);
   return String(value);
 }
 
