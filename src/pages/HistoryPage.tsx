@@ -280,7 +280,8 @@ function ExpedientesPanel({
 
   const corporateGroups = Array.from(new Set(accounts.map(a => a.corporateGroup).filter((g): g is string => !!g))).sort();
 
-  const diagAccounts = accounts.filter(a => (a.surveyPermissions ?? ['diagnostico_empresarial']).includes('diagnostico_empresarial'));
+  const groupFilteredAccounts = accounts.filter(a => groupFilter === 'todos' || a.corporateGroup === groupFilter);
+  const diagAccounts = groupFilteredAccounts.filter(a => (a.surveyPermissions ?? ['diagnostico_empresarial']).includes('diagnostico_empresarial'));
   const radiografiaCounts: Record<RadiografiaStatus, number> = { completada: 0, sin_contestar: 0 };
   for (const a of diagAccounts) radiografiaCounts[getRadiografiaStatus(a, expedienteData)]++;
 
@@ -351,7 +352,7 @@ function ExpedientesPanel({
             className={`font-medium transition-all cursor-pointer border ${statusFilter === s ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
             style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)', textTransform: 'capitalize' }}
           >
-            {s === 'todos' ? `Todos (${accounts.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${accounts.filter(a => (a.status ?? 'activo') === s).length})`}
+            {s === 'todos' ? `Todos (${groupFilteredAccounts.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${groupFilteredAccounts.filter(a => (a.status ?? 'activo') === s).length})`}
           </button>
         ))}
 
