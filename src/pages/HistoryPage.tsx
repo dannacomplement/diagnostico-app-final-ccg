@@ -403,7 +403,12 @@ function ExpedientesPanel({
         const techCount = data.techSurveys.length;
         const hasAnySurvey = diagCount > 0 || orgCount > 0 || techCount > 0;
         const latestDiag = data.diagnostics[0];
-        const hasPrefill = (clientPrefills.get(acc.id) ?? []).length > 0;
+        const pendingPrefillTypes = (clientPrefills.get(acc.id) ?? []).filter(t =>
+          (t === 'diagnostico_empresarial' && diagCount === 0) ||
+          (t === 'prueba_tecnologia' && techCount === 0) ||
+          (t === 'estructura_organizacional' && orgCount === 0)
+        );
+        const hasPrefill = pendingPrefillTypes.length > 0;
         const prefilledCount = data.diagnostics.filter(d => d.wasPrefilled === true).length;
         const soloCount = data.diagnostics.filter(d => d.wasPrefilled === false).length;
         const accStatus = acc.status ?? 'activo';
