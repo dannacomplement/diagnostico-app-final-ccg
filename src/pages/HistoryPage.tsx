@@ -355,14 +355,14 @@ function ExpedientesPanel({
           </button>
         ))}
 
-        {(['todos', 'completada', 'sin_contestar'] as const).map(s => (
+        {(['completada', 'sin_contestar'] as const).map(s => (
           <button
             key={s}
-            onClick={() => setRadiografiaFilter(s)}
+            onClick={() => setRadiografiaFilter(radiografiaFilter === s ? 'todos' : s)}
             className={`font-medium transition-all cursor-pointer border ${radiografiaFilter === s ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
             style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
           >
-            {s === 'todos' ? `Radiografía: todas (${diagAccounts.length})` : `${RADIOGRAFIA_STATUS_INFO[s].label} (${radiografiaCounts[s]})`}
+            {RADIOGRAFIA_STATUS_INFO[s].label} ({radiografiaCounts[s]})
           </button>
         ))}
 
