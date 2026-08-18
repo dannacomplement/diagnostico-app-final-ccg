@@ -1200,6 +1200,20 @@ function DiagAnswersModal({ diag, currencyCode, onClose }: { diag: SavedDiagnost
             </div>
           </div>
 
+          {/* Márgenes Financieros */}
+          <div style={{ marginBottom: '24px' }}>
+            <h4 className="font-serif text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '4px' }}>Márgenes Financieros</h4>
+            {d.marginData ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '0 20px' }}>
+                <AnswerRow label="Margen bruto" value={d.marginData.conoceMargenBruto ? `${d.marginData.margenBruto}%` : 'No lo conoce'} />
+                <AnswerRow label="Margen operativo" value={d.marginData.conoceMargenOperativo ? `${d.marginData.margenOperativo}%` : 'No lo conoce'} />
+                <AnswerRow label="Margen neto" value={d.marginData.conoceMargenNeto ? `${d.marginData.margenNeto}%` : 'No lo conoce'} />
+              </div>
+            ) : (
+              <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>No conoce ninguno de sus márgenes financieros.</p>
+            )}
+          </div>
+
           {/* Profesionalización */}
           <CriteriaAnswersBlock title="Profesionalización" criteria={PROFESIONALIZACION_CRITERIA} answers={d.profesionalizacion.answers} isFamily={isFamily} />
 
