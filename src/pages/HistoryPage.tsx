@@ -21,11 +21,11 @@ import { exportToPdf } from '../lib/exportPdf';
 import { exportOrgSurveyToPdf } from '../lib/exportOrgPdf';
 import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
 import { exportToPptx } from '../lib/exportPptx';
-import { SECTOR_OPTIONS } from '../config/constants';
+import { SECTOR_OPTIONS, EMPRESA_FAMILIAR_OPTIONS, URGENCY_OPTIONS } from '../config/constants';
 import { getServiceArea } from '../config/serviceAreas';
 import { formatMonetaryValue } from '../lib/money';
 import { normalizeMarginLevel } from '../lib/calculations';
-import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, CurrencyCode } from '../lib/types';
+import type { SavedDiagnostic, SavedOrgSurvey, SavedTechSurvey, Sector, AppUser, SurveyType, MarginLevel, CurrencyCode, CriterionAnswer } from '../lib/types';
 import HistoricalComparison from '../components/ui/HistoricalComparison';
 import { TECH_AREAS } from '../config/techQuestions';
 
@@ -876,6 +876,7 @@ function ResumenEjecutivoSection({
 
 function DiagEjecutivoCard({ diag, onExtenso, currencyCode }: { diag: SavedDiagnostic; onExtenso: (d: SavedDiagnostic) => void; currencyCode: CurrencyCode }) {
   const d = diag;
+  const [viewingAnswers, setViewingAnswers] = useState(false);
   const lowProfCriteria = d.profesionalizacion.answers
     .filter(a => a.rating >= 0 && a.rating < 5)
     .map(a => {
@@ -934,6 +935,13 @@ function DiagEjecutivoCard({ diag, onExtenso, currencyCode }: { diag: SavedDiagn
             PDF
           </button>
           <button
+            onClick={() => setViewingAnswers(true)}
+            className="border border-mid text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer"
+            style={{ fontSize: 'var(--fs-11)', padding: 'var(--sp-btn-d)', borderRadius: '8px' }}
+          >
+            Ver respuestas
+          </button>
+          <button
             onClick={() => onExtenso(d)}
             className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
             style={{ fontSize: 'var(--fs-11)', padding: '6px 16px', borderRadius: '8px' }}
@@ -942,6 +950,7 @@ function DiagEjecutivoCard({ diag, onExtenso, currencyCode }: { diag: SavedDiagn
           </button>
         </div>
       </div>
+      {viewingAnswers && <DiagAnswersModal diag={d} currencyCode={currencyCode} onClose={() => setViewingAnswers(false)} />}
 
       {/* Key metrics grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '10px', marginBottom: '16px' }}>
@@ -1080,6 +1089,181 @@ function DiagEjecutivoCard({ diag, onExtenso, currencyCode }: { diag: SavedDiagn
   );
 }
 
+/* ── Diagnostic Answers Modal (read-only, no editing) ──── */
+
+const CALIFICADO_LABELS: Record<string, string> = { si: 'Sí', no: 'No', por_evaluar: 'Por evaluar' };
+
+function AnswerRow({ label, value }: { label: string; value: string }) {
+  if (!value) return null;
+  return (
+    <div style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border, #e5e7eb)' }}>
+      <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginBottom: '2px' }}>{label}</p>
+      <p className="text-ink font-medium" style={{ fontSize: 'var(--fs-13)' }}>{value}</p>
+    </div>
+  );
+}
+
+function CriteriaAnswersBlock({ title, criteria, answers, isFamily }: {
+  title: string;
+  criteria: typeof PROFESIONALIZACION_CRITERIA;
+  answers: CriterionAnswer[];
+  isFamily: boolean;
+}) {
+  const visible = criteria.filter(c => !c.requiresFamilyBusiness || isFamily);
+  return (
+    <div style={{ marginBottom: '24px' }}>
+      <h4 className="font-serif text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '12px' }}>{title}</h4>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {visible.map(c => {
+          const answer = answers.find(a => a.criterionId === c.id);
+          const options = CRITERION_CARD_OPTIONS[c.id] ?? [];
+          const chosen = answer ? options.find(o => o.score === answer.rating) : undefined;
+          return (
+            <div key={c.id} className="bg-pale/40 rounded-xl border border-border/40" style={{ padding: '12px 16px' }}>
+              <p className="text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>{c.text}</p>
+              {chosen ? (
+                <div className="inline-flex items-center bg-accent/10 text-accent font-semibold rounded-lg" style={{ padding: '4px 10px', fontSize: 'var(--fs-11)', gap: '5px' }}>
+                  <Check style={{ width: 'var(--fs-11)', height: 'var(--fs-11)' }} /> {chosen.title}
+                </div>
+              ) : (
+                <p className="text-muted" style={{ fontSize: 'var(--fs-11)' }}>Sin respuesta</p>
+              )}
+              {answer?.comentario && (
+                <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '6px', fontStyle: 'italic' }}>"{answer.comentario}"</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DiagAnswersModal({ diag, currencyCode, onClose }: { diag: SavedDiagnostic; currencyCode: CurrencyCode; onClose: () => void }) {
+  const d = diag;
+  const isFamily = d.datosGenerales.empresaFamiliar !== 'no';
+  const familiaLabel = EMPRESA_FAMILIAR_OPTIONS.find(o => o.value === d.datosGenerales.empresaFamiliar)?.label ?? d.datosGenerales.empresaFamiliar;
+  const sectorLabel = SECTOR_OPTIONS.find(o => o.value === d.datosGenerales.sector)?.label ?? d.datosGenerales.sector;
+  const urgenciaLabel = URGENCY_OPTIONS.find(o => o.value === d.urgenciaSelection)?.label ?? d.urgenciaSelection;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm" style={{ padding: '16px' }} onClick={onClose}>
+      <div
+        className="bg-white rounded-2xl shadow-xl border border-border w-full animate-fade-up"
+        style={{ maxWidth: '760px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border" style={{ padding: '18px 24px', flexShrink: 0 }}>
+          <div>
+            <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-17)' }}>{d.datosGenerales.nombreComercial || 'Radiografía'} — Respuestas completas</h3>
+            <p className="text-muted" style={{ fontSize: 'var(--fs-11)', marginTop: '2px' }}>
+              {new Date(d.savedAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })} · Solo lectura
+            </p>
+          </div>
+          <button onClick={onClose} className="text-muted hover:text-ink transition-colors cursor-pointer">
+            <X style={{ width: 'var(--fs-18)', height: 'var(--fs-18)' }} />
+          </button>
+        </div>
+
+        <div style={{ padding: '20px 24px', overflowY: 'auto' }}>
+          {/* Datos Generales */}
+          <div style={{ marginBottom: '24px' }}>
+            <h4 className="font-serif text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '4px' }}>Datos Generales</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '0 20px' }}>
+              <AnswerRow label="Nombre comercial" value={d.datosGenerales.nombreComercial} />
+              <AnswerRow label="Ubicación" value={d.datosGenerales.ubicacion} />
+              <AnswerRow label="Sector" value={sectorLabel} />
+              <AnswerRow label="Antigüedad constituida" value={d.datosGenerales.antiguedadConstituida} />
+              <AnswerRow label="Antigüedad operativa" value={d.datosGenerales.antiguedadOperativa} />
+              <AnswerRow label="Empresa familiar" value={familiaLabel} />
+              <AnswerRow label="Respondente" value={d.datosGenerales.respondente} />
+              <AnswerRow label="Correo" value={d.datosGenerales.email} />
+              <AnswerRow label="Puesto en la empresa" value={d.datosGenerales.puestoEmpresa} />
+              <AnswerRow label="Puesto en la familia" value={d.datosGenerales.puestoFamilia} />
+              <AnswerRow label="¿Es socio?" value={d.datosGenerales.esSocio === 'si' ? 'Sí' : d.datosGenerales.esSocio === 'no' ? 'No' : ''} />
+              <AnswerRow label="% de acciones" value={d.datosGenerales.porcentajeAcciones} />
+            </div>
+            {d.descripcionNegocio && <AnswerRow label="Descripción del negocio" value={d.descripcionNegocio} />}
+          </div>
+
+          {/* Situación Actual */}
+          <div style={{ marginBottom: '24px' }}>
+            <h4 className="font-serif text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '4px' }}>Situación Actual</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '0 20px' }}>
+              <AnswerRow label="Ventas anuales" value={formatMonetaryValue({ value: d.situacionActual.ventasAnualesMDP, currencyCode })} />
+              <AnswerRow label="Empleados totales" value={d.situacionActual.empleadosTotales?.toString() ?? ''} />
+              <AnswerRow label="Empleados familiares" value={d.situacionActual.empleadosFamiliares?.toString() ?? ''} />
+              <AnswerRow label="Socios" value={d.situacionActual.socios} />
+              <AnswerRow label="Familiares en el poder" value={d.situacionActual.familiaresEnPoder} />
+              <AnswerRow label="% ingreso fiscalizado" value={d.situacionActual.pctIngresoFiscalizado != null ? `${d.situacionActual.pctIngresoFiscalizado}%` : ''} />
+              <AnswerRow label="% egreso fiscalizado" value={d.situacionActual.pctEgresoFiscalizado != null ? `${d.situacionActual.pctEgresoFiscalizado}%` : ''} />
+            </div>
+          </div>
+
+          {/* Profesionalización */}
+          <CriteriaAnswersBlock title="Profesionalización" criteria={PROFESIONALIZACION_CRITERIA} answers={d.profesionalizacion.answers} isFamily={isFamily} />
+
+          {/* Institucionalización */}
+          <CriteriaAnswersBlock title="Institucionalización" criteria={INSTITUCIONALIZACION_CRITERIA} answers={d.institucionalizacion.answers} isFamily={isFamily} />
+
+          {/* Gerencias */}
+          <div style={{ marginBottom: '24px' }}>
+            <h4 className="font-serif text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '10px' }}>Gerencias / Puestos Clave</h4>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--fs-11)' }}>
+                <thead>
+                  <tr className="text-muted" style={{ textAlign: 'left', borderBottom: '1px solid var(--color-border, #e5e7eb)' }}>
+                    <th style={{ padding: '6px 8px' }}>Área</th>
+                    <th style={{ padding: '6px 8px' }}>Cubierto</th>
+                    <th style={{ padding: '6px 8px' }}>Nombre</th>
+                    <th style={{ padding: '6px 8px' }}>Antigüedad</th>
+                    <th style={{ padding: '6px 8px' }}>Calificado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {d.gerencias.map((g, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid var(--color-border, #f1f1f1)' }}>
+                      <td className="text-ink font-medium" style={{ padding: '6px 8px' }}>{g.area}</td>
+                      <td style={{ padding: '6px 8px' }}>{g.cubierto ? 'Sí' : 'No'}</td>
+                      <td className="text-muted" style={{ padding: '6px 8px' }}>{g.nombre || '—'}</td>
+                      <td className="text-muted" style={{ padding: '6px 8px' }}>{g.antiguedad || '—'}</td>
+                      <td className="text-muted" style={{ padding: '6px 8px' }}>{CALIFICADO_LABELS[g.calificado] ?? g.calificado}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Retos y Urgencia */}
+          <div style={{ marginBottom: '24px' }}>
+            <h4 className="font-serif text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '10px' }}>Retos y Urgencia</h4>
+            {d.retos.filter(r => r).map((r, i) => (
+              <p key={i} className="text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>
+                <span className="font-semibold text-navy">Reto #{i + 1}:</span> {r}
+              </p>
+            ))}
+            <AnswerRow label="Nivel de urgencia" value={urgenciaLabel} />
+          </div>
+
+          {/* Análisis Familiar */}
+          {isFamily && d.analisisFamiliar && (
+            <div style={{ marginBottom: '8px' }}>
+              <h4 className="font-serif text-navy" style={{ fontSize: 'var(--fs-15)', marginBottom: '4px' }}>Análisis Familiar</h4>
+              <AnswerRow label="Gobierno familiar" value={d.analisisFamiliar.gobiernoFamiliar} />
+              <AnswerRow label="Plan de sucesión" value={d.analisisFamiliar.planSucesion} />
+              <AnswerRow label="Protocolo familiar" value={d.analisisFamiliar.protocoloFamiliar} />
+              <AnswerRow label="Conflictos familiares" value={d.analisisFamiliar.conflictosFamiliares} />
+              <AnswerRow label="Roles en operación" value={d.analisisFamiliar.rolesOperacion} />
+              <AnswerRow label="Profesionalización de familiares" value={d.analisisFamiliar.profesionalizacionFamiliares} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Org Survey Ejecutivo Card ──────────────────────────── */
 
 function OrgEjecutivoCard({ survey, onExtenso }: { survey: SavedOrgSurvey; onExtenso: (s: SavedOrgSurvey) => void }) {
@@ -1197,6 +1381,7 @@ function DiagnosticosSection({
 }) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewingAnswers, setViewingAnswers] = useState<SavedDiagnostic | null>(null);
 
   async function handleDelete(id: string) {
     setDeleting(true);
@@ -1235,6 +1420,13 @@ function DiagnosticosSection({
             </span>
           </div>
           <div className="flex flex-wrap items-center" style={{ gap: '8px' }}>
+            <button
+              onClick={() => setViewingAnswers(d)}
+              className="border border-mid text-mid font-semibold hover:bg-mid/5 transition-all cursor-pointer"
+              style={{ fontSize: 'var(--fs-11)', padding: '7px 14px', borderRadius: '8px' }}
+            >
+              Ver respuestas
+            </button>
             <button
               onClick={() => onExtenso(d)}
               className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
@@ -1295,6 +1487,7 @@ function DiagnosticosSection({
           </div>
         </div>
       ))}
+      {viewingAnswers && <DiagAnswersModal diag={viewingAnswers} currencyCode={currencyCode} onClose={() => setViewingAnswers(null)} />}
     </div>
   );
 }
