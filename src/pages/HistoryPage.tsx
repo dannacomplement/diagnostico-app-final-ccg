@@ -8,8 +8,9 @@ import {
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useAuthStore } from '../store/authStore';
-import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds } from '../lib/storage';
-import { ALL_CRITERIA } from '../config/questions';
+import { createClientAccount, getAllClientAccounts, deleteClientAccount, updateClientProfile, getExpedienteDataForClients, getPrefillsForClients, getPrefillForUser, savePrefill, deletePrefill, deleteDiagnostic, deleteOrgSurvey, deleteTechSurvey, getTestClientIds, setTestClientIds } from '../lib/storage';
+import { ALL_CRITERIA, PROFESIONALIZACION_CRITERIA, INSTITUCIONALIZACION_CRITERIA, CRITERION_CARD_OPTIONS } from '../config/questions';
+import { parseBulkPrefillExcel, EMPRESA_FAMILIAR_VALUES, type PrefillImportRow } from '../lib/bulkPrefillImport';
 import { useDiagnosticStore } from '../store/diagnosticStore';
 import { useOrgSurveyStore } from '../store/orgSurveyStore';
 import { useTechSurveyStore } from '../store/techSurveyStore';
@@ -1612,6 +1613,7 @@ function ClientesPanel({
   const [radiografiaFilter, setRadiografiaFilter] = useState<'todos' | RadiografiaStatus>('todos');
   const [sortBy, setSortBy] = useState<'fecha' | 'nombre' | 'estatus'>('fecha');
   const [showBulkImport, setShowBulkImport] = useState(false);
+  const [showBulkPrefillImport, setShowBulkPrefillImport] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const corporateGroups = Array.from(new Set(accounts.map(a => a.corporateGroup).filter((g): g is string => !!g))).sort();
@@ -1664,6 +1666,13 @@ function ClientesPanel({
             <Upload style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> Importar Excel
           </button>
           <button
+            onClick={() => setShowBulkPrefillImport(true)}
+            className="border border-accent text-accent font-semibold hover:bg-accent/5 transition-all cursor-pointer flex items-center"
+            style={{ padding: '8px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)', gap: '6px' }}
+          >
+            <ClipboardList style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> Precargar respuestas
+          </button>
+          <button
             onClick={() => setShowCreate(true)}
             className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer"
             style={{ padding: '8px 20px', borderRadius: '10px', fontSize: 'var(--fs-12)' }}
@@ -1674,6 +1683,7 @@ function ClientesPanel({
       </div>
 
       {showBulkImport && <BulkImportModal accounts={accounts} onClose={() => setShowBulkImport(false)} onCreated={onCreated} />}
+      {showBulkPrefillImport && <BulkPrefillImportModal accounts={accounts} onClose={() => setShowBulkPrefillImport(false)} onImported={onCreated} />}
 
       {/* Estatus de Radiografía Empresarial — apartado */}
       <div style={{ marginBottom: '20px' }}>
@@ -2836,6 +2846,276 @@ function BulkImportModal({ accounts, onClose, onCreated }: { accounts: AppUser[]
                 style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)', gap: '6px' }}
               >
                 <Download style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /> Descargar Excel con credenciales
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+async function downloadBulkPrefillTemplate() {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Respuestas');
+  const answerCols = ALL_CRITERIA.map(c => ({ header: c.id, key: c.id, width: 14 }));
+  ws.columns = [
+    { header: 'Correo', key: 'correo', width: 32 },
+    { header: 'Nombre', key: 'nombre', width: 26 },
+    { header: 'Empresa', key: 'empresa', width: 28 },
+    { header: 'empresa_familiar', key: 'empresa_familiar', width: 22 },
+    ...answerCols,
+  ];
+  ws.getRow(1).font = { bold: true };
+  const example: Record<string, string> = {
+    correo: 'maria.lopez@ejemplo.com', nombre: 'María López', empresa: 'Materiales del Norte', empresa_familiar: 'si_1era',
+  };
+  for (const c of PROFESIONALIZACION_CRITERIA) {
+    example[c.id] = CRITERION_CARD_OPTIONS[c.id]?.[0]?.title ?? '';
+  }
+  for (const c of INSTITUCIONALIZACION_CRITERIA) {
+    example[c.id] = c.requiresFamilyBusiness ? '' : (CRITERION_CARD_OPTIONS[c.id]?.[0]?.title ?? '');
+  }
+  ws.addRow(example);
+
+  const wsRef = wb.addWorksheet('Preguntas y opciones');
+  wsRef.columns = [
+    { header: 'ID', key: 'id', width: 12 },
+    { header: 'Pregunta', key: 'pregunta', width: 60 },
+    { header: 'Solo empresas familiares', key: 'familiar', width: 20 },
+    { header: 'Opciones válidas (texto exacto)', key: 'opciones', width: 70 },
+  ];
+  wsRef.getRow(1).font = { bold: true };
+  wsRef.addRow({
+    id: 'empresa_familiar',
+    pregunta: '¿Es empresa familiar? (columna opcional — si se deja vacía, lo contesta el cliente)',
+    familiar: '—',
+    opciones: EMPRESA_FAMILIAR_VALUES.join(' / '),
+  });
+  for (const c of ALL_CRITERIA) {
+    const opciones = (CRITERION_CARD_OPTIONS[c.id] ?? []).map(o => o.title).join(' / ');
+    wsRef.addRow({ id: c.id, pregunta: c.text, familiar: c.requiresFamilyBusiness ? 'Sí' : 'No', opciones });
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), 'plantilla_precarga_respuestas.xlsx');
+}
+
+interface PrefillImportOutcome {
+  row: PrefillImportRow;
+  accountName: string | null;
+  ok: boolean;
+  error?: string;
+}
+
+function BulkPrefillImportModal({ accounts, onClose, onImported }: { accounts: AppUser[]; onClose: () => void; onImported: () => void }) {
+  const [rows, setRows] = useState<PrefillImportRow[]>([]);
+  const [fileName, setFileName] = useState('');
+  const [parseError, setParseError] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [results, setResults] = useState<PrefillImportOutcome[] | null>(null);
+
+  function findAccount(correo: string): AppUser | null {
+    const target = correo.trim().toLowerCase();
+    return accounts.find(a => (a.email ?? '').trim().toLowerCase() === target) ?? null;
+  }
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileName(file.name);
+    setParseError('');
+    setResults(null);
+    setRows([]);
+    const buffer = await file.arrayBuffer();
+    const parsed = await parseBulkPrefillExcel(buffer);
+    if (parsed.parseError) {
+      setParseError(parsed.parseError);
+      return;
+    }
+    if (parsed.rows.length === 0) {
+      setParseError('No se encontraron filas con datos debajo del encabezado.');
+      return;
+    }
+    setRows(parsed.rows);
+  }
+
+  async function handleImportAll() {
+    setImporting(true);
+    setProgress(0);
+    const localResults: PrefillImportOutcome[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const account = findAccount(row.correo);
+      if (!account) {
+        localResults.push({ row, accountName: null, ok: false, error: 'Correo no encontrado en las cuentas de clientes.' });
+        setProgress(i + 1);
+        continue;
+      }
+      try {
+        const existing = await getPrefillForUser(account.id, 'diagnostico_empresarial');
+        const merged = {
+          ...(existing ?? {}),
+          profAnswers: row.profAnswers,
+          instAnswers: row.instAnswers,
+          ...(row.empresaFamiliar
+            ? { datosGenerales: { ...(existing?.datosGenerales ?? {}), empresaFamiliar: row.empresaFamiliar } }
+            : {}),
+        };
+        const ok = await savePrefill(account.id, 'diagnostico_empresarial', merged);
+        localResults.push({ row, accountName: account.displayName, ok, error: ok ? undefined : 'No se pudo guardar la precarga.' });
+      } catch (err) {
+        localResults.push({ row, accountName: account.displayName, ok: false, error: err instanceof Error ? err.message : 'Error desconocido.' });
+      }
+      setProgress(i + 1);
+    }
+
+    setResults(localResults);
+    setImporting(false);
+    onImported();
+  }
+
+  const matchedCount = rows.filter(r => findAccount(r.correo) !== null).length;
+  const unmatchedCount = rows.length - matchedCount;
+  const rowsWithIssues = rows.filter(r => r.issues.some(i => i.reason === 'unrecognized'));
+
+  const importedCount = results?.filter(r => r.ok).length ?? 0;
+  const failedResults = results?.filter(r => !r.ok) ?? [];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl border border-border max-w-md sm:max-w-lg lg:max-w-2xl w-full animate-fade-up" style={{ padding: '40px 32px', margin: '0 16px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <h3 className="font-serif text-navy" style={{ fontSize: 'var(--fs-18)', marginBottom: '6px' }}>Precargar Respuestas desde Excel</h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-12)', marginBottom: '20px' }}>
+          Carga las respuestas de Profesionalización e Institucionalización que los clientes ya contestaron. Al entrar a su encuesta, la app se las carga automáticamente.
+        </p>
+
+        {!results && (
+          <>
+            <button
+              type="button"
+              onClick={downloadBulkPrefillTemplate}
+              className="flex items-center text-accent font-medium hover:underline cursor-pointer"
+              style={{ fontSize: 'var(--fs-12)', gap: '5px', marginBottom: '20px' }}
+            >
+              <Download style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} /> Descargar plantilla de ejemplo
+            </button>
+
+            <div>
+              <label className="block font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '6px' }}>
+                Archivo Excel (columnas: Correo, Nombre, Empresa, prof_01…inst_10)
+              </label>
+              <label
+                className="flex items-center justify-center border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-accent transition-all"
+                style={{ padding: '24px', fontSize: 'var(--fs-12)' }}
+              >
+                <span className="text-muted">{fileName || 'Selecciona un archivo .xlsx...'}</span>
+                <input type="file" accept=".xlsx" onChange={handleFile} className="hidden" />
+              </label>
+              {parseError && <p className="text-error" style={{ fontSize: 'var(--fs-12)', marginTop: '8px' }}>{parseError}</p>}
+            </div>
+
+            {rows.length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <div className="flex items-center flex-wrap" style={{ gap: '10px', marginBottom: '10px' }}>
+                  <span className="text-success font-semibold" style={{ fontSize: 'var(--fs-12)' }}>{matchedCount} cliente{matchedCount !== 1 ? 's' : ''} encontrado{matchedCount !== 1 ? 's' : ''}</span>
+                  {unmatchedCount > 0 && <span className="text-error font-semibold" style={{ fontSize: 'var(--fs-12)' }}>{unmatchedCount} correo{unmatchedCount !== 1 ? 's' : ''} no encontrado{unmatchedCount !== 1 ? 's' : ''}</span>}
+                  {rowsWithIssues.length > 0 && <span className="text-warn font-semibold" style={{ fontSize: 'var(--fs-12)' }}>{rowsWithIssues.length} con respuestas no reconocidas</span>}
+                </div>
+                <div className="border border-border rounded-xl" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                  <table className="w-full" style={{ fontSize: 'var(--fs-11)' }}>
+                    <thead className="bg-pale sticky top-0">
+                      <tr>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Correo</th>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Cliente</th>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Reconocidas</th>
+                        <th className="text-left font-semibold text-muted" style={{ padding: '8px 10px' }}>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r, i) => {
+                        const account = findAccount(r.correo);
+                        const unrecognized = r.issues.filter(iss => iss.reason === 'unrecognized').length;
+                        return (
+                          <tr key={i} className="border-t border-border/50">
+                            <td className="text-ink" style={{ padding: '6px 10px' }}>{r.correo}</td>
+                            <td className="text-muted" style={{ padding: '6px 10px' }}>{account?.displayName ?? '—'}</td>
+                            <td className="text-muted" style={{ padding: '6px 10px' }}>{r.recognizedCount}/{r.totalAnswerCells}</td>
+                            <td style={{ padding: '6px 10px' }}>
+                              {!account
+                                ? <span className="text-error">Sin cuenta</span>
+                                : unrecognized > 0
+                                  ? <span className="text-warn">Revisar</span>
+                                  : <span className="text-success">Listo</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {importing && (
+              <p className="text-center text-muted" style={{ fontSize: 'var(--fs-12)', marginTop: '16px' }}>
+                Precargando {progress} de {rows.length}...
+              </p>
+            )}
+
+            <div className="flex" style={{ gap: '12px', marginTop: '24px' }}>
+              <button type="button" onClick={onClose} disabled={importing} className="flex-1 rounded-xl border border-border font-medium text-muted hover:text-ink transition-all cursor-pointer disabled:opacity-50" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleImportAll}
+                disabled={matchedCount === 0 || importing}
+                className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-50"
+                style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}
+              >
+                {importing ? 'Precargando...' : `Precargar ${matchedCount || ''} cliente${matchedCount !== 1 ? 's' : ''}`}
+              </button>
+            </div>
+          </>
+        )}
+
+        {results && (
+          <div>
+            <div className="flex items-center flex-wrap" style={{ gap: '10px', marginBottom: '16px' }}>
+              <span className="text-success font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{importedCount} cliente{importedCount !== 1 ? 's' : ''} precargado{importedCount !== 1 ? 's' : ''}</span>
+              {failedResults.length > 0 && <span className="text-error font-semibold" style={{ fontSize: 'var(--fs-13)' }}>{failedResults.length} sin precargar</span>}
+            </div>
+
+            {failedResults.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <p className="font-medium text-ink" style={{ fontSize: 'var(--fs-12)', marginBottom: '8px' }}>Correos sin precargar</p>
+                <ul className="text-muted" style={{ fontSize: 'var(--fs-11)', paddingLeft: '18px' }}>
+                  {failedResults.map((r, i) => (
+                    <li key={i} style={{ marginBottom: '4px' }}>{r.row.correo} — {r.error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {rowsWithIssues.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <p className="font-medium text-warn" style={{ fontSize: 'var(--fs-12)', marginBottom: '8px' }}>Respuestas no reconocidas (revisar y volver a subir si hace falta)</p>
+                <ul className="text-muted" style={{ fontSize: 'var(--fs-11)', paddingLeft: '18px' }}>
+                  {rowsWithIssues.map((r, i) => (
+                    <li key={i} style={{ marginBottom: '4px' }}>
+                      {r.correo}: {r.issues.filter(iss => iss.reason === 'unrecognized').map(iss => `${iss.criterionId} = "${iss.raw}"`).join(', ')}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex" style={{ gap: '12px', marginTop: '24px' }}>
+              <button type="button" onClick={onClose} className="flex-1 rounded-xl bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer" style={{ padding: 'var(--sp-btn-b)', fontSize: 'var(--fs-13)' }}>
+                Cerrar
               </button>
             </div>
           </div>
