@@ -25,7 +25,7 @@ import { calculateCompanySize, calculateScore, mapOpportunityAreas, calculateUrg
 import { useBenchmarkStore } from './benchmarkStore';
 import { PROFESIONALIZACION_CRITERIA, INSTITUCIONALIZACION_CRITERIA } from '../config/questions';
 import { GERENCIA_AREAS } from '../config/constants';
-import { saveDiagnostic as saveToStorage, updateDiagnostic as updateInStorage, savePrefill as savePrefillToStorage } from '../lib/storage';
+import { saveDiagnostic as saveToStorage, updateDiagnostic as updateInStorage, savePrefill as savePrefillToStorage, deletePrefill as deletePrefillFromStorage } from '../lib/storage';
 import type { PrefillData } from '../lib/storage';
 import { getCurrentUser } from '../lib/auth';
 
@@ -399,6 +399,9 @@ export const useDiagnosticStore = create<DiagnosticState>()(
           } else {
             const currentUser = getCurrentUser();
             await saveToStorage(diagnostic, currentUser?.id);
+            if (state.originatedFromPrefill && currentUser?.id) {
+              deletePrefillFromStorage(currentUser.id, 'diagnostico_empresarial').catch(() => {});
+            }
           }
         }
         set({ savedResultId: id, editMode: false, editDiagnosticId: null, draftActive: false });
