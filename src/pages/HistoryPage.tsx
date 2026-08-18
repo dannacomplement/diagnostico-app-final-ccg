@@ -409,8 +409,6 @@ function ExpedientesPanel({
           (t === 'estructura_organizacional' && orgCount === 0)
         );
         const hasPrefill = pendingPrefillTypes.length > 0;
-        const prefilledCount = data.diagnostics.filter(d => d.wasPrefilled === true).length;
-        const soloCount = data.diagnostics.filter(d => d.wasPrefilled === false).length;
         const accStatus = acc.status ?? 'activo';
 
         return (
@@ -470,14 +468,9 @@ function ExpedientesPanel({
                   <Sparkles style={{ width: 'var(--fs-10)', height: 'var(--fs-10)' }} /> Pre-llenado pendiente
                 </span>
               )}
-              {prefilledCount > 0 && (
-                <span style={{ fontSize: 'var(--fs-10)', color: '#d4922e', fontWeight: 600 }}>
-                  {prefilledCount} pre-llenado{prefilledCount > 1 ? 's' : ''}
-                </span>
-              )}
-              {soloCount > 0 && (
-                <span style={{ fontSize: 'var(--fs-10)', color: '#6366f1', fontWeight: 600 }}>
-                  {soloCount} contestado{soloCount > 1 ? 's' : ''} solo
+              {diagCount > 0 && (
+                <span className="text-success font-semibold inline-flex items-center" style={{ fontSize: 'var(--fs-10)', gap: '3px' }}>
+                  <Check style={{ width: 'var(--fs-10)', height: 'var(--fs-10)' }} /> {diagCount} radiografía{diagCount > 1 ? 's' : ''} completada{diagCount > 1 ? 's' : ''}
                 </span>
               )}
             </div>
