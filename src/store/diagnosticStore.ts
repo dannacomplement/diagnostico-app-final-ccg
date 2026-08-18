@@ -202,7 +202,7 @@ interface DiagnosticState {
   getUrgencyLevel: () => UrgencyLevel | null;
   getMarginEvaluation: () => MarginEvaluation | null;
   setEmailStatus: (status: 'idle' | 'sending' | 'sent' | 'error') => void;
-  saveDiagnostic: () => SavedDiagnostic;
+  saveDiagnostic: () => Promise<SavedDiagnostic>;
   resetDiagnostic: () => void;
   loadDiagnosticForReport: (d: SavedDiagnostic, currencyCode?: CurrencyCode, corporateGroup?: string, email?: string) => void;
   loadDiagnosticForEdit: (d: SavedDiagnostic, currencyCode?: CurrencyCode, corporateGroup?: string, email?: string) => void;
@@ -355,7 +355,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         return evaluateMargins(marginData, benchmark);
       },
 
-      saveDiagnostic: () => {
+      saveDiagnostic: async () => {
         const state = get();
         const id = state.editMode && state.editDiagnosticId ? state.editDiagnosticId : uuidv4();
         const companySize = state.getCompanySize() ?? { size: 'Micro' as const, tmcScore: 0, productivityIndex: 0 };
@@ -394,13 +394,11 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         // In testMode (master preview), skip persisting to Supabase
         if (!state.testMode) {
           if (state.editMode && state.editDiagnosticId) {
-            // Update existing record
-            updateInStorage(state.editDiagnosticId, diagnostic).catch(err =>
-              console.error('Failed to update diagnostic in Supabase:', err),
-            );
+            // Update existing record — let failures propagate so the caller can retry
+            await updateInStorage(state.editDiagnosticId, diagnostic);
           } else {
             const currentUser = getCurrentUser();
-            saveToStorage(diagnostic, currentUser?.id).catch(err => console.error('Failed to save to Supabase:', err));
+            await saveToStorage(diagnostic, currentUser?.id);
           }
         }
         set({ savedResultId: id, editMode: false, editDiagnosticId: null, draftActive: false });

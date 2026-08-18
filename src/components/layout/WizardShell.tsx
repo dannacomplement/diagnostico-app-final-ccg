@@ -4,6 +4,7 @@ import StepIndicator from './StepIndicator';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import { useAuthStore } from '../../store/authStore';
 import { sendReportEmail } from '../../lib/sendReportEmail';
+import { updateDiagnostic } from '../../lib/storage';
 import { getCurrentUser, ensureFreshSession } from '../../lib/auth';
 import { INSTITUCIONALIZACION_CRITERIA } from '../../config/questions';
 import CompletionCelebration from '../ui/CompletionCelebration';
@@ -101,6 +102,8 @@ export default function WizardShell() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [savingPrefill, setSavingPrefill] = useState(false);
   const [showPrefillSuccess, setShowPrefillSuccess] = useState(false);
+  const [savingDiagnostic, setSavingDiagnostic] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   /* ── B5: Celebration state ── */
   const [showCelebration, setShowCelebration] = useState(false);
@@ -168,7 +171,7 @@ export default function WizardShell() {
     return Math.min(99, Math.round((currentStep / steps.length) * 100 + stepWeight * 0.5));
   }, [currentStep, steps.length]);
 
-  function handleNext() {
+  async function handleNext() {
     if (!isMaster && !testMode && !prefillMode) {
       const state = useDiagnosticStore.getState();
       const stepId = steps[currentStep]?.id;
@@ -198,7 +201,17 @@ export default function WizardShell() {
       }
 
       // ── B5: Show celebration before result ──
-      const diagnostic = saveDiagnostic();
+      setSavingDiagnostic(true);
+      setSaveError(false);
+      let diagnostic;
+      try {
+        diagnostic = await saveDiagnostic();
+      } catch {
+        setSavingDiagnostic(false);
+        setSaveError(true);
+        return;
+      }
+      setSavingDiagnostic(false);
       const avgScore = Math.round((diagnostic.profesionalizacion.average + diagnostic.institucionalizacion.average) / 2);
       const companyName = diagnostic.datosGenerales.nombreComercial || 'Tu Empresa';
 
@@ -226,8 +239,14 @@ export default function WizardShell() {
         });
 
         Promise.all(emailPromises)
-          .then(() => setEmailStatus('sent'))
-          .catch(() => setEmailStatus('error'));
+          .then(() => {
+            setEmailStatus('sent');
+            updateDiagnostic(diagnostic.id, { reportEmailStatus: 'enviado' }).catch(() => {});
+          })
+          .catch(() => {
+            setEmailStatus('error');
+            updateDiagnostic(diagnostic.id, { reportEmailStatus: 'error' }).catch(() => {});
+          });
       }
     } else {
       setStep(currentStep + 1);
@@ -438,6 +457,17 @@ export default function WizardShell() {
         </div>
       )}
 
+      {saveError && (
+        <div className="bg-error/10 border border-error/30 rounded-xl" style={{ padding: '16px 20px', marginTop: '20px' }}>
+          <p className="text-error font-semibold" style={{ fontSize: 'var(--fs-13)', marginBottom: '4px' }}>
+            No se pudo guardar tu radiografía.
+          </p>
+          <p className="text-error" style={{ fontSize: 'var(--fs-12)' }}>
+            Revisa tu conexión a internet e intenta de nuevo — tus respuestas siguen aquí, no se perdieron.
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between" style={{ marginTop: '48px', paddingBottom: '48px' }}>
         <button
           onClick={handlePrev}
@@ -449,7 +479,7 @@ export default function WizardShell() {
         </button>
         <button
           onClick={handleNext}
-          disabled={savingPrefill}
+          disabled={savingPrefill || savingDiagnostic}
           className={`font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50 ${prefillMode && isLast ? 'bg-success text-white hover:bg-success/80' : ''}`}
           style={{
             padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 28px)',
@@ -475,12 +505,14 @@ export default function WizardShell() {
             }
           }}
         >
-          {savingPrefill
+          {savingPrefill || savingDiagnostic
             ? 'Guardando...'
             : isLast
               ? prefillMode
                 ? 'Guardar pre-llenado'
-                : <span className="inline-flex items-center" style={{ gap: '6px' }}>Finalizar radiografía <Check style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /></span>
+                : saveError
+                  ? 'Reintentar guardar'
+                  : <span className="inline-flex items-center" style={{ gap: '6px' }}>Finalizar radiografía <Check style={{ width: 'var(--fs-14)', height: 'var(--fs-14)' }} /></span>
               : 'Siguiente →'}
         </button>
       </div>

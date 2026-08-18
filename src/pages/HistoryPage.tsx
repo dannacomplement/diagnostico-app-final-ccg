@@ -155,6 +155,7 @@ export default function HistoryPage() {
       {activeTab === 'clientes' && (
         <ClientesPanel
           accounts={accounts}
+          expedienteData={expedienteData}
           onCreated={() => { refreshAccounts(); refreshExpedientes(); }}
           showCreate={showCreateAccount}
           setShowCreate={setShowCreateAccount}
@@ -1570,8 +1571,26 @@ function TecnologiaSection({
    CLIENTES PANEL
    ══════════════════════════════════════════════════════════ */
 
+type RadiografiaStatus = 'enviada' | 'guardada' | 'sin_contestar';
+
+function getRadiografiaStatus(
+  account: AppUser,
+  expedienteData: Map<string, { diagnostics: SavedDiagnostic[]; orgSurveys: SavedOrgSurvey[]; techSurveys: SavedTechSurvey[] }>,
+): RadiografiaStatus {
+  const diags = expedienteData.get(account.id)?.diagnostics ?? [];
+  if (diags.length === 0) return 'sin_contestar';
+  return diags[0].reportEmailStatus === 'enviado' ? 'enviada' : 'guardada';
+}
+
+const RADIOGRAFIA_STATUS_INFO: Record<RadiografiaStatus, { label: string; color: string }> = {
+  enviada: { label: 'Radiografía enviada', color: 'bg-success/10 text-success border-success/30' },
+  guardada: { label: 'Guardada, no enviada', color: 'bg-warn/10 text-warn border-warn/30' },
+  sin_contestar: { label: 'Sin contestar', color: 'bg-muted/10 text-muted border-border' },
+};
+
 function ClientesPanel({
   accounts,
+  expedienteData,
   onCreated,
   showCreate,
   setShowCreate,
@@ -1580,6 +1599,7 @@ function ClientesPanel({
   onDelete,
 }: {
   accounts: AppUser[];
+  expedienteData: Map<string, { diagnostics: SavedDiagnostic[]; orgSurveys: SavedOrgSurvey[]; techSurveys: SavedTechSurvey[] }>;
   onCreated: () => void;
   showCreate: boolean;
   setShowCreate: (v: boolean) => void;
@@ -1589,16 +1609,25 @@ function ClientesPanel({
 }) {
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'prospecto'>('todos');
   const [groupFilter, setGroupFilter] = useState<string>('todos');
+  const [radiografiaFilter, setRadiografiaFilter] = useState<'todos' | RadiografiaStatus>('todos');
   const [sortBy, setSortBy] = useState<'fecha' | 'nombre' | 'estatus'>('fecha');
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const corporateGroups = Array.from(new Set(accounts.map(a => a.corporateGroup).filter((g): g is string => !!g))).sort();
 
+  const diagAccounts = accounts.filter(a => (a.surveyPermissions ?? ['diagnostico_empresarial']).includes('diagnostico_empresarial'));
+  const radiografiaCounts: Record<RadiografiaStatus, number> = { enviada: 0, guardada: 0, sin_contestar: 0 };
+  for (const a of diagAccounts) radiografiaCounts[getRadiografiaStatus(a, expedienteData)]++;
+
   const searchNormalized = searchQuery.trim().toLowerCase();
   const filtered = accounts
     .filter(a => statusFilter === 'todos' || (a.status ?? 'activo') === statusFilter)
     .filter(a => groupFilter === 'todos' || a.corporateGroup === groupFilter)
+    .filter(a => radiografiaFilter === 'todos' || (
+      (a.surveyPermissions ?? ['diagnostico_empresarial']).includes('diagnostico_empresarial') &&
+      getRadiografiaStatus(a, expedienteData) === radiografiaFilter
+    ))
     .filter(a => {
       if (!searchNormalized) return true;
       return (
@@ -1646,6 +1675,31 @@ function ClientesPanel({
 
       {showBulkImport && <BulkImportModal accounts={accounts} onClose={() => setShowBulkImport(false)} onCreated={onCreated} />}
 
+      {/* Estatus de Radiografía Empresarial — apartado */}
+      <div style={{ marginBottom: '20px' }}>
+        <p className="text-muted font-semibold" style={{ fontSize: 'var(--fs-11)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
+          Estatus de Radiografía Empresarial
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+          {(['todos', 'enviada', 'guardada', 'sin_contestar'] as const).map(s => {
+            const active = radiografiaFilter === s;
+            const count = s === 'todos' ? diagAccounts.length : radiografiaCounts[s];
+            const label = s === 'todos' ? 'Todos' : RADIOGRAFIA_STATUS_INFO[s].label;
+            return (
+              <button
+                key={s}
+                onClick={() => setRadiografiaFilter(s)}
+                className={`text-left transition-all cursor-pointer border rounded-xl ${active ? 'bg-navy border-navy' : 'bg-white border-border hover:border-navy/30'}`}
+                style={{ padding: '14px 16px' }}
+              >
+                <p className={`font-bold ${active ? 'text-white' : 'text-navy'}`} style={{ fontSize: 'var(--fs-22)', lineHeight: 1 }}>{count}</p>
+                <p className={active ? 'text-white/80' : 'text-muted'} style={{ fontSize: 'var(--fs-11)', marginTop: '4px', fontWeight: 500 }}>{label}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Search */}
       <div className="relative" style={{ marginBottom: '14px' }}>
         <Search className="absolute text-muted" style={{ width: 'var(--fs-14)', height: 'var(--fs-14)', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -1683,15 +1737,25 @@ function ClientesPanel({
         ))}
 
         {corporateGroups.length > 0 && (
-          <select
-            value={groupFilter}
-            onChange={e => setGroupFilter(e.target.value)}
-            className="bg-white border border-border text-muted cursor-pointer"
-            style={{ padding: '5px 10px', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
-          >
-            <option value="todos">Todos los grupos</option>
-            {corporateGroups.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
+          <>
+            <button
+              onClick={() => setGroupFilter('todos')}
+              className={`font-medium transition-all cursor-pointer border ${groupFilter === 'todos' ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
+              style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
+            >
+              Todos los grupos
+            </button>
+            {corporateGroups.map(g => (
+              <button
+                key={g}
+                onClick={() => setGroupFilter(g)}
+                className={`font-medium transition-all cursor-pointer border ${groupFilter === g ? 'bg-navy text-white border-navy' : 'bg-white text-muted border-border hover:border-navy/30'}`}
+                style={{ padding: '5px 14px', borderRadius: '8px', fontSize: 'var(--fs-11)' }}
+              >
+                {g}
+              </button>
+            ))}
+          </>
         )}
 
         {/* Sort selector */}
@@ -1719,6 +1783,7 @@ function ClientesPanel({
               key={acc.id}
               account={acc}
               statusColors={statusColors}
+              radiografiaStatus={getRadiografiaStatus(acc, expedienteData)}
               onDeleteRequest={() => setDeleteConfirm(acc.id)}
               onUpdated={onCreated}
             />
@@ -1773,11 +1838,13 @@ function ClientesPanel({
 function AccountCard({
   account,
   statusColors,
+  radiografiaStatus,
   onDeleteRequest,
   onUpdated,
 }: {
   account: AppUser;
   statusColors: Record<string, string>;
+  radiografiaStatus: RadiografiaStatus;
   onDeleteRequest: () => void;
   onUpdated: () => void;
 }) {
@@ -1838,6 +1905,14 @@ function AccountCard({
               {account.corporateGroup && (
                 <span className="border border-accent/30 bg-accent/5 text-accent font-semibold flex-shrink-0" style={{ padding: '1px 8px', borderRadius: '6px', fontSize: 'var(--fs-9)' }}>
                   {account.corporateGroup}
+                </span>
+              )}
+              {hasDiag && (
+                <span
+                  className={`border font-semibold flex-shrink-0 ${RADIOGRAFIA_STATUS_INFO[radiografiaStatus].color}`}
+                  style={{ padding: '2px 10px', borderRadius: '6px', fontSize: 'var(--fs-9)' }}
+                >
+                  {RADIOGRAFIA_STATUS_INFO[radiografiaStatus].label}
                 </span>
               )}
             </div>

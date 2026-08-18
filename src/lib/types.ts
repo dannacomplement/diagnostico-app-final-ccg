@@ -263,6 +263,7 @@ export interface SavedDiagnostic {
   priority?: boolean;
   classification?: DiagnosticClassification;
   wasPrefilled?: boolean;
+  reportEmailStatus?: 'enviado' | 'error';
 }
 
 /* ── Prueba de Tecnología Survey ─────────────────────── */

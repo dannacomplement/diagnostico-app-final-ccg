@@ -88,7 +88,7 @@ export async function saveDiagnostic(diagnostic: SavedDiagnostic, userId?: strin
     });
 
   if (error) {
-    console.error('Supabase saveDiagnostic error:', error);
+    throw new Error(error.message || 'No se pudo guardar el diagnostico.');
   }
 }
 
@@ -123,8 +123,7 @@ export async function updateDiagnostic(id: string, partial: Partial<SavedDiagnos
     .single();
 
   if (fetchErr || !current) {
-    console.error('Supabase updateDiagnostic fetch error:', fetchErr);
-    return;
+    throw new Error(fetchErr?.message || 'No se encontro el diagnostico a actualizar.');
   }
 
   const updatedData = { ...current.data, ...partial };
@@ -139,7 +138,7 @@ export async function updateDiagnostic(id: string, partial: Partial<SavedDiagnos
     .eq('id', id);
 
   if (error) {
-    console.error('Supabase updateDiagnostic error:', error);
+    throw new Error(error.message || 'No se pudo actualizar el diagnostico.');
   }
 }
 
