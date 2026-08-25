@@ -87,7 +87,7 @@ export default function ResultPage() {
           <MetricBox label="Tamaño" value={sizeResult?.size ?? '—'} highlight />
           <MetricBox
             label="Productividad per cápita"
-            value={sizeResult ? `${currencyCode === 'USD' ? 'US$' : '$'}${sizeResult.productivityIndex.toFixed(2)} ${currencyCode === 'USD' ? 'M' : 'MDP'}` : '—'}
+            value={sizeResult ? `${currencyCode === 'USD' ? 'US$' : '$'}${Math.round(sizeResult.productivityIndex).toLocaleString(currencyCode === 'USD' ? 'en-US' : 'es-MX')} ${currencyCode === 'USD' ? 'M' : 'MDP'}` : '—'}
           />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap: '14px' }}>
