@@ -323,7 +323,7 @@ function addPanoramaSlide(pptx: PptxGenJS, d: SavedDiagnostic, companyName: stri
     { label: 'Puesto', value: d.datosGenerales.puestoEmpresa || '—' },
     { label: 'Socios', value: d.situacionActual.socios || '—' },
     { label: 'Software', value: buildSoftwareLabel(d.datosGenerales) || '—' },
-    { label: 'Productividad', value: d.companySize.productivityIndex ? `${d.companySize.productivityIndex.toFixed(1)} ${currencyCode === 'USD' ? 'US$M/emp' : 'MDP/emp'}` : '—' },
+    { label: 'Productividad', value: d.companySize.productivityIndex ? `${Math.round(d.companySize.productivityIndex).toLocaleString(currencyCode === 'USD' ? 'en-US' : 'es-MX')} ${currencyCode === 'USD' ? 'US$M/emp' : 'MDP/emp'}` : '—' },
     { label: '% Ingreso Fiscal.', value: d.situacionActual.pctIngresoFiscalizado != null ? `${d.situacionActual.pctIngresoFiscalizado}%` : '—' },
     { label: '% Egreso Fiscal.', value: d.situacionActual.pctEgresoFiscalizado != null ? `${d.situacionActual.pctEgresoFiscalizado}%` : '—' },
   ];
