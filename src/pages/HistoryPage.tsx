@@ -21,6 +21,7 @@ import { exportToPdf } from '../lib/exportPdf';
 import { exportOrgSurveyToPdf } from '../lib/exportOrgPdf';
 import { exportTechSurveyToPdf } from '../lib/exportTechPdf';
 import { exportToPptx } from '../lib/exportPptx';
+import { exportSelectedDiagnosticsToExcel } from '../lib/export';
 import { SECTOR_OPTIONS, EMPRESA_FAMILIAR_OPTIONS, URGENCY_OPTIONS } from '../config/constants';
 import { getServiceArea } from '../config/serviceAreas';
 import { formatMonetaryValue } from '../lib/money';
@@ -210,6 +211,9 @@ function ExpedientesPanel({
   onRefresh: () => void;
 }) {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [exportingSelected, setExportingSelected] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'prospecto'>('todos');
   const [groupFilter, setGroupFilter] = useState<string>('todos');
   const [radiografiaFilter, setRadiografiaFilter] = useState<'todos' | RadiografiaStatus>('todos');
@@ -313,12 +317,58 @@ function ExpedientesPanel({
       return (b.createdAt ?? '').localeCompare(a.createdAt ?? '');
     });
 
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function handleCancelSelect() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  async function handleExportSelected() {
+    setExportingSelected(true);
+    try {
+      const entries = Array.from(selectedIds)
+        .map(id => {
+          const account = accounts.find(a => a.id === id);
+          const diagnostic = expedienteData.get(id)?.diagnostics[0];
+          return account && diagnostic ? { account, diagnostic } : null;
+        })
+        .filter((e): e is { account: AppUser; diagnostic: SavedDiagnostic } => e !== null);
+
+      if (entries.length === 0) {
+        alert('Ninguno de los clientes seleccionados tiene una radiografía contestada.');
+        return;
+      }
+      await exportSelectedDiagnosticsToExcel(entries);
+      handleCancelSelect();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo generar el Excel.');
+    } finally {
+      setExportingSelected(false);
+    }
+  }
+
+  const selectableCount = filtered.filter(a => (expedienteData.get(a.id)?.diagnostics.length ?? 0) > 0).length;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <div className="flex items-center justify-between" style={{ marginBottom: '4px' }}>
         <p className="text-muted" style={{ fontSize: 'var(--fs-12)' }}>
           {filtered.length} de {accounts.length} expediente{accounts.length !== 1 ? 's' : ''}
         </p>
+        <button
+          onClick={() => (selectMode ? handleCancelSelect() : setSelectMode(true))}
+          className={`font-semibold transition-all cursor-pointer ${selectMode ? 'text-error' : 'text-accent'}`}
+          style={{ fontSize: 'var(--fs-11)' }}
+        >
+          {selectMode ? 'Cancelar selección' : 'Seleccionar para exportar'}
+        </button>
       </div>
 
       {/* Search */}
@@ -410,15 +460,37 @@ function ExpedientesPanel({
         );
         const hasPrefill = pendingPrefillTypes.length > 0;
         const accStatus = acc.status ?? 'activo';
+        const selectable = diagCount > 0;
+        const isSelected = selectedIds.has(acc.id);
 
         return (
           <button
             key={acc.id}
-            onClick={() => { setSelectedClientId(acc.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            className="w-full bg-white rounded-2xl border border-border/40 shadow-sm hover:shadow-lg hover:border-accent/30 transition-all cursor-pointer text-left group"
+            disabled={selectMode && !selectable}
+            onClick={() => {
+              if (selectMode) {
+                if (selectable) toggleSelect(acc.id);
+                return;
+              }
+              setSelectedClientId(acc.id);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`w-full bg-white rounded-2xl border shadow-sm transition-all text-left group ${
+              selectMode
+                ? isSelected ? 'border-accent ring-2 ring-accent/30' : selectable ? 'border-border/40 hover:border-accent/30 cursor-pointer' : 'border-border/40 opacity-40 cursor-not-allowed'
+                : 'border-border/40 hover:shadow-lg hover:border-accent/30 cursor-pointer'
+            }`}
             style={{ padding: '20px 24px' }}
           >
             <div className="flex items-center" style={{ gap: '14px' }}>
+              {selectMode && (
+                <div
+                  className={`flex-shrink-0 flex items-center justify-center rounded-md border-2 ${isSelected ? 'bg-accent border-accent' : 'border-border'}`}
+                  style={{ width: '20px', height: '20px' }}
+                >
+                  {isSelected && <Check style={{ width: '13px', height: '13px', color: 'white' }} />}
+                </div>
+              )}
               <ClientLogo logoUrl={acc.logoUrl} size={44} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center" style={{ gap: '8px' }}>
@@ -482,6 +554,35 @@ function ExpedientesPanel({
           </button>
         );
       })}
+
+      {selectMode && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-center"
+          style={{ padding: '16px' }}
+        >
+          <div className="bg-navy text-white rounded-2xl shadow-xl flex items-center flex-wrap" style={{ padding: '12px 20px', gap: '16px', maxWidth: '560px' }}>
+            <p style={{ fontSize: 'var(--fs-13)' }}>
+              <span className="font-bold">{selectedIds.size}</span> de {selectableCount} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+            </p>
+            <button
+              onClick={handleExportSelected}
+              disabled={selectedIds.size === 0 || exportingSelected}
+              className="bg-accent text-white font-semibold hover:bg-mid transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center"
+              style={{ padding: '8px 18px', borderRadius: '10px', fontSize: 'var(--fs-12)', gap: '6px' }}
+            >
+              <Download style={{ width: 'var(--fs-13)', height: 'var(--fs-13)' }} />
+              {exportingSelected ? 'Generando...' : 'Descargar Excel'}
+            </button>
+            <button
+              onClick={handleCancelSelect}
+              className="text-white/70 hover:text-white font-medium transition-colors cursor-pointer"
+              style={{ fontSize: 'var(--fs-12)' }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

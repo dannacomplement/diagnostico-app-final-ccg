@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import type { SavedDiagnostic, MarginLevel, CurrencyCode } from './types';
-import { ALL_CRITERIA } from '../config/questions';
+import type { SavedDiagnostic, MarginLevel, CurrencyCode, AppUser } from './types';
+import { ALL_CRITERIA, PROFESIONALIZACION_CRITERIA, INSTITUCIONALIZACION_CRITERIA } from '../config/questions';
 import { buildSoftwareLabel } from './formatters';
 import { formatMonetaryValue } from './money';
 import { normalizeMarginLevel, getHighestPaidGerencia } from './calculations';
@@ -712,4 +712,202 @@ export async function exportToExcel(diagnostic: SavedDiagnostic, currencyCode: C
   const buffer = await wb.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   saveAs(blob, `Diagnostico_${safeName}.xlsx`);
+}
+
+/* ── Multi-client export — one workbook, several clients ───── */
+
+interface SelectedDiagEntry {
+  account: AppUser;
+  diagnostic: SavedDiagnostic;
+}
+
+function ratingLabel(rating: number): string {
+  return rating <= 0 ? 'Bajo' : rating <= 5 ? 'Medio' : 'Alto';
+}
+
+function ratingColor(rating: number): string {
+  return rating <= 0 ? ERROR : rating <= 5 ? WARN : SUCCESS;
+}
+
+function styleHeaderRow(ws: ExcelJS.Worksheet, row: number, colCount: number) {
+  for (let c = 1; c <= colCount; c++) {
+    const cell = ws.getCell(row, c);
+    cell.font = tableHeaderFont();
+    cell.fill = tableHeaderFill();
+    cell.border = thinBorder();
+    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+  }
+  ws.getRow(row).height = 26;
+}
+
+export async function exportSelectedDiagnosticsToExcel(entries: SelectedDiagEntry[]): Promise<void> {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Complement Consulting Group';
+  wb.created = new Date();
+
+  const companyName = (e: SelectedDiagEntry) => e.diagnostic.datosGenerales.nombreComercial || e.account.displayName || 'Sin nombre';
+
+  /* ── Sheet 1: Resumen ── */
+  const wsResumen = wb.addWorksheet('Resumen');
+  wsResumen.columns = [
+    { header: 'Empresa', key: 'empresa', width: 28 },
+    { header: 'Grupo', key: 'grupo', width: 14 },
+    { header: 'Sector', key: 'sector', width: 14 },
+    { header: 'Empresa Familiar', key: 'familiar', width: 18 },
+    { header: 'Fecha', key: 'fecha', width: 14 },
+    { header: 'Ventas Anuales', key: 'ventas', width: 16 },
+    { header: 'Moneda', key: 'moneda', width: 10 },
+    { header: 'Empleados', key: 'empleados', width: 12 },
+    { header: 'Tamaño', key: 'tamano', width: 12 },
+    { header: 'Profesionalización (nivel)', key: 'profNivel', width: 20 },
+    { header: 'Profesionalización (score)', key: 'profScore', width: 20 },
+    { header: 'Institucionalización (nivel)', key: 'instNivel', width: 20 },
+    { header: 'Institucionalización (score)', key: 'instScore', width: 20 },
+    { header: 'Urgencia', key: 'urgencia', width: 12 },
+    { header: 'Margen Bruto', key: 'margenBruto', width: 14 },
+    { header: 'Margen Operativo', key: 'margenOperativo', width: 16 },
+    { header: 'Margen Neto', key: 'margenNeto', width: 14 },
+  ];
+  styleHeaderRow(wsResumen, 1, wsResumen.columns.length);
+  wsResumen.views = [{ state: 'frozen', ySplit: 1 }];
+
+  entries.forEach((e, idx) => {
+    const d = e.diagnostic;
+    const cc = e.account.currencyCode ?? 'MXN';
+    const familiarLabel = d.datosGenerales.empresaFamiliar === 'no' ? 'No'
+      : d.datosGenerales.empresaFamiliar === 'si_1era' ? 'Sí, 1ª generación'
+      : d.datosGenerales.empresaFamiliar === 'si_1era_transicion' ? 'Sí, 1ª en transición'
+      : d.datosGenerales.empresaFamiliar === 'si_2da' ? 'Sí, 2ª generación'
+      : 'Sí, 3ª generación';
+    const me = d.marginEvaluation;
+    const row = wsResumen.addRow({
+      empresa: companyName(e),
+      grupo: e.account.corporateGroup ?? '—',
+      sector: d.datosGenerales.sector === 'manufactura' ? 'Manufactura' : d.datosGenerales.sector === 'comercio' ? 'Comercio' : 'Servicios',
+      familiar: familiarLabel,
+      fecha: new Date(d.savedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }),
+      ventas: formatMonetaryValue({ value: d.situacionActual.ventasAnualesMDP, currencyCode: cc }),
+      moneda: cc,
+      empleados: d.situacionActual.empleadosTotales ?? '—',
+      tamano: d.companySize.size,
+      profNivel: d.profesionalizacion.level,
+      profScore: Math.round(d.profesionalizacion.average),
+      instNivel: d.institucionalizacion.level,
+      instScore: Math.round(d.institucionalizacion.average),
+      urgencia: d.urgenciaLevel,
+      margenBruto: me ? (me.margenBruto.value !== null ? `${me.margenBruto.value}%` : 'No lo conoce') : '—',
+      margenOperativo: me ? (me.margenOperativo.value !== null ? `${me.margenOperativo.value}%` : 'No lo conoce') : '—',
+      margenNeto: me ? (me.margenNeto.value !== null ? `${me.margenNeto.value}%` : 'No lo conoce') : '—',
+    });
+    row.eachCell(cell => {
+      cell.border = thinBorder();
+      cell.font = valueFont();
+      cell.alignment = { vertical: 'middle' };
+      if (idx % 2 === 1) cell.fill = zebraFill();
+    });
+  });
+
+  /* ── Sheets 2 & 3: Profesionalización / Institucionalización ── */
+  function addCriteriaSheet(title: string, criteria: typeof PROFESIONALIZACION_CRITERIA, getScore: (d: SavedDiagnostic) => { average: number; level: string; answers: { criterionId: string; rating: number }[] }) {
+    const ws = wb.addWorksheet(title);
+    ws.columns = [
+      { header: 'Empresa', key: 'empresa', width: 28 },
+      ...criteria.map(c => ({ header: c.shortLabel, key: c.id, width: 16 })),
+      { header: 'Promedio', key: 'promedio', width: 12 },
+      { header: 'Nivel', key: 'nivel', width: 10 },
+    ];
+    styleHeaderRow(ws, 1, ws.columns.length);
+    ws.views = [{ state: 'frozen', xSplit: 1, ySplit: 1 }];
+
+    entries.forEach((e, idx) => {
+      const score = getScore(e.diagnostic);
+      const rowData: Record<string, string | number> = { empresa: companyName(e), promedio: Math.round(score.average), nivel: score.level };
+      criteria.forEach(c => {
+        const answer = score.answers.find(a => a.criterionId === c.id);
+        rowData[c.id] = answer ? ratingLabel(answer.rating) : '—';
+      });
+      const row = ws.addRow(rowData);
+      row.eachCell((cell, colNumber) => {
+        cell.border = thinBorder();
+        cell.alignment = { vertical: 'middle', horizontal: colNumber === 1 ? 'left' : 'center' };
+        cell.font = valueFont();
+        if (idx % 2 === 1) cell.fill = zebraFill();
+      });
+      criteria.forEach((c, i) => {
+        const answer = score.answers.find(a => a.criterionId === c.id);
+        if (answer) {
+          const cell = row.getCell(i + 2);
+          cell.font = { bold: true, size: 10, color: { argb: ratingColor(answer.rating) }, name: 'Calibri' };
+        }
+      });
+    });
+  }
+
+  addCriteriaSheet('Profesionalización', PROFESIONALIZACION_CRITERIA, d => d.profesionalizacion);
+  addCriteriaSheet('Institucionalización', INSTITUCIONALIZACION_CRITERIA, d => d.institucionalizacion);
+
+  /* ── Sheet 4: Gerencias ── */
+  const wsGer = wb.addWorksheet('Gerencias');
+  wsGer.columns = [
+    { header: 'Empresa', key: 'empresa', width: 28 },
+    { header: 'Área', key: 'area', width: 22 },
+    { header: 'Cubierto', key: 'cubierto', width: 12 },
+    { header: 'Antigüedad', key: 'antiguedad', width: 12 },
+    { header: 'Calificado', key: 'calificado', width: 12 },
+    { header: 'Sueldo', key: 'sueldo', width: 16 },
+  ];
+  styleHeaderRow(wsGer, 1, wsGer.columns.length);
+  wsGer.views = [{ state: 'frozen', ySplit: 1 }];
+
+  entries.forEach((e, idx) => {
+    e.diagnostic.gerencias.forEach(g => {
+      const row = wsGer.addRow({
+        empresa: companyName(e),
+        area: g.area,
+        cubierto: g.cubierto ? (g.soyYo ? 'Soy Yo' : 'Sí') : 'No',
+        antiguedad: g.antiguedad ? `${g.antiguedad} años` : '—',
+        calificado: g.calificado === 'si' ? 'Sí' : g.calificado === 'no' ? 'No' : 'Por evaluar',
+        sueldo: g.rangoSueldo ?? '—',
+      });
+      row.eachCell(cell => {
+        cell.border = thinBorder();
+        cell.font = valueFont();
+        cell.alignment = { vertical: 'middle' };
+        if (idx % 2 === 1) cell.fill = zebraFill();
+      });
+    });
+  });
+
+  /* ── Sheet 5: Retos ── */
+  const wsRetos = wb.addWorksheet('Retos');
+  wsRetos.columns = [
+    { header: 'Empresa', key: 'empresa', width: 28 },
+    { header: 'Reto #', key: 'num', width: 10 },
+    { header: 'Descripción', key: 'texto', width: 50 },
+    { header: 'Urgencia', key: 'urgencia', width: 12 },
+  ];
+  styleHeaderRow(wsRetos, 1, wsRetos.columns.length);
+  wsRetos.views = [{ state: 'frozen', ySplit: 1 }];
+
+  entries.forEach((e, idx) => {
+    e.diagnostic.retos.filter(r => r).forEach((reto, i) => {
+      const row = wsRetos.addRow({
+        empresa: companyName(e),
+        num: i + 1,
+        texto: reto,
+        urgencia: e.diagnostic.urgenciaLevel,
+      });
+      row.eachCell(cell => {
+        cell.border = thinBorder();
+        cell.font = valueFont();
+        cell.alignment = { vertical: 'middle', wrapText: true };
+        if (idx % 2 === 1) cell.fill = zebraFill();
+      });
+    });
+  });
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const dateStr = new Date().toISOString().slice(0, 10);
+  saveAs(blob, `Radiografias_${entries.length}_clientes_${dateStr}.xlsx`);
 }
