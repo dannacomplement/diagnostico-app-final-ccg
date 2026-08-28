@@ -201,7 +201,7 @@ export default function ReportPage() {
           <MetricBox label="Empresa" value={datosGenerales.nombreComercial || '—'} />
           <MetricBox label="Sector" value={sectorLabel} />
           <MetricBox label="Tamaño" value={sizeResult?.size ?? '—'} highlight />
-          <MetricBox label="Productividad per capita" value={sizeResult ? `${currencyCode === 'USD' ? 'US$' : '$'}${sizeResult.productivityIndex.toFixed(2)} ${currencyCode === 'USD' ? 'M' : 'MDP'}` : '—'} />
+          <MetricBox label="Productividad per capita" value={sizeResult ? `${currencyCode === 'USD' ? 'US$' : '$'}${Math.round(sizeResult.productivityIndex).toLocaleString(currencyCode === 'USD' ? 'en-US' : 'es-MX')} ${currencyCode === 'USD' ? 'M' : 'MDP'}` : '—'} />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: '14px' }}>
           <MetricBox label="Empleados" value={situacionActual.empleadosTotales?.toString() ?? '—'} />
@@ -651,7 +651,7 @@ export default function ReportPage() {
           <div className="grid grid-cols-2" style={{ gap: '14px' }}>
             <div className="rounded-xl text-center bg-accent/5 border border-accent/10" style={{ padding: '18px 14px' }}>
               <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Productividad Per Capita</p>
-              <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-16)' }}>{currencyCode === 'USD' ? 'US$' : '$'}{sizeResult.productivityIndex.toFixed(2)} {currencyCode === 'USD' ? 'M' : 'MDP'}</p>
+              <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-16)' }}>{currencyCode === 'USD' ? 'US$' : '$'}{Math.round(sizeResult.productivityIndex).toLocaleString(currencyCode === 'USD' ? 'en-US' : 'es-MX')} {currencyCode === 'USD' ? 'M' : 'MDP'}</p>
             </div>
             <div className="rounded-xl text-center bg-pale border border-border/30" style={{ padding: '18px 14px' }}>
               <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Antiguedad</p>

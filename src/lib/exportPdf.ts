@@ -959,7 +959,7 @@ export function buildPdfDoc(diagnostic: SavedDiagnostic, currencyCode: CurrencyC
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(...NAVY);
-  doc.text(`${currencyCode === 'USD' ? 'US$' : '$'}${diagnostic.companySize.productivityIndex.toFixed(2)} ${currencyCode === 'USD' ? 'M' : 'MDP'}`, margin + metricHalfW / 2, y + 13, { align: 'center' });
+  doc.text(`${currencyCode === 'USD' ? 'US$' : '$'}${Math.round(diagnostic.companySize.productivityIndex).toLocaleString(currencyCode === 'USD' ? 'en-US' : 'es-MX')} ${currencyCode === 'USD' ? 'M' : 'MDP'}`, margin + metricHalfW / 2, y + 13, { align: 'center' });
 
   const antX = margin + metricHalfW + 4;
   drawRoundedRect(doc, antX, y, metricHalfW, 18, 2, LIGHT_BLUE);
