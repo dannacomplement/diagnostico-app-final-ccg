@@ -729,6 +729,45 @@ function ratingColor(rating: number): string {
   return rating <= 0 ? ERROR : rating <= 5 ? WARN : SUCCESS;
 }
 
+const DG_NIVEL_ESTUDIOS = [
+  { label: 'Sin estudios profesionales', value: 0 },
+  { label: 'Carrera técnica / trunca', value: 3 },
+  { label: 'Licenciatura', value: 6 },
+  { label: 'Posgrado / Maestría', value: 8 },
+  { label: 'Formación ejecutiva continua', value: 10 },
+];
+
+const DG_EXPERIENCIA = [
+  { label: 'Sin experiencia directiva', value: 0 },
+  { label: '1-2 años general', value: 2 },
+  { label: '1-2 años en el sector', value: 4 },
+  { label: '3-5 años general', value: 5 },
+  { label: '3-5 años en el sector', value: 7 },
+  { label: 'Más de 5 años general', value: 8 },
+  { label: 'Más de 5 años en el sector', value: 10 },
+];
+
+const DG_SEGUIMIENTO = [
+  { label: 'No da seguimiento a resultados', value: 0 },
+  { label: 'Revisa solo cuando hay problemas', value: 2 },
+  { label: 'Revisa de forma ocasional', value: 4 },
+  { label: 'Revisa periódicamente', value: 6 },
+  { label: 'Revisa con indicadores y responsables', value: 8 },
+  { label: 'Seguimiento formal con KPIs, responsables, fechas y acuerdos', value: 10 },
+];
+
+function dgOptionLabel(options: { label: string; value: number }[], value: number | null | undefined): string {
+  if (value == null) return '—';
+  return options.find(o => o.value === value)?.label ?? '—';
+}
+
+function dgScoreLabel(score: number): string {
+  if (score >= 8) return 'Excelente';
+  if (score >= 6) return 'Bueno';
+  if (score >= 4) return 'Regular';
+  return 'Bajo';
+}
+
 function styleHeaderRow(ws: ExcelJS.Worksheet, row: number, colCount: number) {
   for (let c = 1; c <= colCount; c++) {
     const cell = ws.getCell(row, c);
@@ -851,23 +890,39 @@ export async function exportSelectedDiagnosticsToExcel(entries: SelectedDiagEntr
   wsGer.columns = [
     { header: 'Empresa', key: 'empresa', width: 28 },
     { header: 'Área', key: 'area', width: 22 },
+    { header: 'Nombre', key: 'nombre', width: 24 },
     { header: 'Cubierto', key: 'cubierto', width: 12 },
+    { header: 'Es Familiar', key: 'esFamiliar', width: 12 },
     { header: 'Antigüedad', key: 'antiguedad', width: 12 },
     { header: 'Calificado', key: 'calificado', width: 12 },
     { header: 'Sueldo', key: 'sueldo', width: 16 },
+    { header: 'Nivel de Estudios', key: 'nivelEstudios', width: 24 },
+    { header: 'Experiencia Laboral', key: 'experiencia', width: 26 },
+    { header: 'Nivel de Gestión', key: 'gestion', width: 32 },
+    { header: 'Calificación', key: 'calificacion', width: 18 },
   ];
   styleHeaderRow(wsGer, 1, wsGer.columns.length);
   wsGer.views = [{ state: 'frozen', ySplit: 1 }];
 
   entries.forEach((e, idx) => {
     e.diagnostic.gerencias.forEach(g => {
+      const ev = g.dgEvaluation;
+      const score = ev && ev.nivelEstudios != null && ev.experienciaLaboral != null && ev.seguimientoResultados != null
+        ? ev.nivelEstudios * 0.4 + ev.experienciaLaboral * 0.4 + ev.seguimientoResultados * 0.2
+        : null;
       const row = wsGer.addRow({
         empresa: companyName(e),
         area: g.area,
+        nombre: g.nombre || '—',
         cubierto: g.cubierto ? (g.soyYo ? 'Soy Yo' : 'Sí') : 'No',
+        esFamiliar: g.esFamiliar === true ? 'Sí' : g.esFamiliar === false ? 'No' : '—',
         antiguedad: g.antiguedad ? `${g.antiguedad} años` : '—',
         calificado: g.calificado === 'si' ? 'Sí' : g.calificado === 'no' ? 'No' : 'Por evaluar',
         sueldo: g.rangoSueldo ?? '—',
+        nivelEstudios: dgOptionLabel(DG_NIVEL_ESTUDIOS, ev?.nivelEstudios),
+        experiencia: dgOptionLabel(DG_EXPERIENCIA, ev?.experienciaLaboral),
+        gestion: dgOptionLabel(DG_SEGUIMIENTO, ev?.seguimientoResultados),
+        calificacion: score != null ? `${score.toFixed(1)}/10 (${dgScoreLabel(score)})` : '—',
       });
       row.eachCell(cell => {
         cell.border = thinBorder();
@@ -876,6 +931,8 @@ export async function exportSelectedDiagnosticsToExcel(entries: SelectedDiagEntr
         if (idx % 2 === 1) cell.fill = zebraFill();
       });
     });
+    // Espacio en blanco entre empresa y empresa
+    if (idx < entries.length - 1) wsGer.addRow([]);
   });
 
   /* ── Sheet 5: Retos ── */
