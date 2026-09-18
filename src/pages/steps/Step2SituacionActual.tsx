@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useDiagnosticStore } from '../../store/diagnosticStore';
 import type { SocioDetail } from '../../lib/types';
-import { currencyUnitLabel, currencyPerEmployeeLabel } from '../../lib/money';
+import { currencyUnitLabel, currencyPerEmployeeLabel, normalizeMillonesValue } from '../../lib/money';
 import type { CurrencyCode } from '../../lib/types';
 
 /** Just the number, no currency prefix or unit — the unit is shown as a separate suffix label. */
 function formatPlainNumber(value: number | null, currencyCode: CurrencyCode): string {
   if (!value) return '0';
   const locale = currencyCode === 'USD' ? 'en-US' : 'es-MX';
-  if (value >= 1) {
-    return value.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const normalized = normalizeMillonesValue(value);
+  if (normalized >= 1) {
+    return Math.round(normalized).toLocaleString(locale);
   }
-  return `${(value * 1000).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} mil`;
+  return `${(normalized * 1000).toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} mil`;
 }
 
 const SIZE_COLORS = {
@@ -137,7 +138,7 @@ export default function Step2SituacionActual() {
               </div>
               <div className="rounded-xl border border-border text-center bg-pale" style={{ padding: '20px 16px' }}>
                 <p className="font-medium uppercase tracking-wide text-muted" style={{ fontSize: 'var(--fs-10)', marginBottom: '6px' }}>Productividad per capita</p>
-                <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{currencyCode === 'USD' ? 'US$' : '$'}{sizeResult.productivityIndex.toFixed(2)}</p>
+                <p className="font-bold text-ink" style={{ fontSize: 'var(--fs-18)' }}>{currencyCode === 'USD' ? 'US$' : '$'}{Math.round(sizeResult.productivityIndex).toLocaleString(currencyCode === 'USD' ? 'en-US' : 'es-MX')}</p>
                 <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '6px' }}>{currencyPerEmployeeLabel(currencyCode)}</p>
               </div>
               <div className="rounded-xl border border-border text-center bg-pale" style={{ padding: '20px 16px' }}>

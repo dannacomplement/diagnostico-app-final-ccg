@@ -14,6 +14,16 @@ interface FormatMonetaryValueParams {
 }
 
 /**
+ * A "millones" value this large (over 1,000 million) is never realistic for
+ * this app's clients — it means someone typed the full amount (e.g.
+ * 105000000) instead of the millions shorthand (105). Re-scale it so
+ * displays and calculations read sanely instead of showing a huge number.
+ */
+export function normalizeMillonesValue(value: number): number {
+  return value >= 1000 ? value / 1_000_000 : value;
+}
+
+/**
  * Single source of truth for money formatting across the app (forms,
  * cards, tables, dashboard, reports, PDF/PPTX). MXN output is byte-for-byte
  * identical to the previous per-file `formatMDP()` copies — this is a
@@ -30,10 +40,11 @@ export function formatMonetaryValue({ value, currencyCode, displayUnit = 'millon
   }
 
   const unitSuffix = currencyCode === 'USD' ? 'M' : 'MDP';
-  if (value >= 1) {
-    return `${prefix}${value.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${unitSuffix}`;
+  const normalized = normalizeMillonesValue(value);
+  if (normalized >= 1) {
+    return `${prefix}${Math.round(normalized).toLocaleString(locale)} ${unitSuffix}`;
   }
-  const thousands = value * 1000;
+  const thousands = normalized * 1000;
   return `${prefix}${thousands.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} mil`;
 }
 

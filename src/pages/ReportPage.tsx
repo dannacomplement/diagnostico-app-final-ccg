@@ -467,7 +467,7 @@ export default function ReportPage() {
                       </span>
                     )}
                     <div className="flex items-center text-muted" style={{ gap: '8px', fontSize: 'var(--fs-10)' }}>
-                      {g.antiguedad && <span>{g.antiguedad} anos</span>}
+                      {g.antiguedad && <span>{g.antiguedad} años</span>}
                       {(g as any).rangoSueldo && <span>{(g as any).rangoSueldo}</span>}
                       {(g as any).esFamiliar === true && <span className="text-accent font-medium">Familiar</span>}
                     </div>
@@ -589,11 +589,11 @@ export default function ReportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
           <DetailRow label="Sector" value={sectorLabel} />
           <DetailRow label="Ubicación" value={(datosGenerales as any).ubicacion || '—'} alt />
-          <DetailRow label="Antiguedad Constituida" value={datosGenerales.antiguedadConstituida ? `${datosGenerales.antiguedadConstituida} anos` : '—'} />
-          <DetailRow label="Antiguedad Operativa" value={datosGenerales.antiguedadOperativa ? `${datosGenerales.antiguedadOperativa} anos` : '—'} alt />
+          <DetailRow label="Antigüedad Constituida" value={datosGenerales.antiguedadConstituida ? `${datosGenerales.antiguedadConstituida} años` : '—'} />
+          <DetailRow label="Antigüedad Operativa" value={datosGenerales.antiguedadOperativa ? `${datosGenerales.antiguedadOperativa} años` : '—'} alt />
           <DetailRow label="Empresa Familiar" value={familiarLabel} />
           <DetailRow label="Respondente" value={datosGenerales.respondente || '—'} alt />
-          <DetailRow label="Correo electronico" value={datosGenerales.email || '—'} />
+          <DetailRow label="Correo electrónico" value={datosGenerales.email || '—'} />
           <DetailRow label="Puesto en la Empresa" value={datosGenerales.puestoEmpresa || '—'} alt />
           {isFamily && <DetailRow label="Puesto en la Familia" value={datosGenerales.puestoFamilia || '—'} />}
           <DetailRow label="Es socio?" value={datosGenerales.esSocio === 'si' ? `Si${datosGenerales.porcentajeAcciones ? ` — ${datosGenerales.porcentajeAcciones}%` : ''}` : datosGenerales.esSocio === 'no' ? 'No' : '—'} alt />
@@ -654,12 +654,12 @@ export default function ReportPage() {
               <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-16)' }}>{currencyCode === 'USD' ? 'US$' : '$'}{Math.round(sizeResult.productivityIndex).toLocaleString(currencyCode === 'USD' ? 'en-US' : 'es-MX')} {currencyCode === 'USD' ? 'M' : 'MDP'}</p>
             </div>
             <div className="rounded-xl text-center bg-pale border border-border/30" style={{ padding: '18px 14px' }}>
-              <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Antiguedad</p>
+              <p className="text-muted font-medium uppercase tracking-wide" style={{ fontSize: 'var(--fs-9)', marginBottom: '6px' }}>Antigüedad</p>
               <p className="font-bold text-navy" style={{ fontSize: 'var(--fs-14)' }}>
-                {datosGenerales.antiguedadConstituida ? `${datosGenerales.antiguedadConstituida} anos constituida` : datosGenerales.antiguedadOperativa ? `${datosGenerales.antiguedadOperativa} anos operativa` : '—'}
+                {datosGenerales.antiguedadConstituida ? `${datosGenerales.antiguedadConstituida} años constituida` : datosGenerales.antiguedadOperativa ? `${datosGenerales.antiguedadOperativa} años operativa` : '—'}
               </p>
               {datosGenerales.antiguedadConstituida && datosGenerales.antiguedadOperativa && (
-                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>{datosGenerales.antiguedadOperativa} anos operativa</p>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-10)', marginTop: '4px' }}>{datosGenerales.antiguedadOperativa} años operativa</p>
               )}
             </div>
           </div>
