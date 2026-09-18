@@ -19,7 +19,7 @@ import type {
 import { classifyCompanySize } from '../config/companySize';
 import { SERVICE_AREAS } from '../config/serviceAreas';
 import { SUELDO_RANGES, SUELDO_RANGES_USD } from '../config/constants';
-import { formatMonetaryValue } from './money';
+import { formatMonetaryValue, normalizeMillonesValue } from './money';
 
 export function calculateCompanySize(
   sector: Sector,
@@ -28,8 +28,9 @@ export function calculateCompanySize(
 ): CompanySizeResult | null {
   if (!employees || !salesMDP || employees <= 0 || salesMDP <= 0) return null;
 
-  const { size, tmcScore } = classifyCompanySize(sector, employees, salesMDP);
-  const productivityIndex = salesMDP / employees;
+  const normalizedSales = normalizeMillonesValue(salesMDP);
+  const { size, tmcScore } = classifyCompanySize(sector, employees, normalizedSales);
+  const productivityIndex = normalizedSales / employees;
 
   return { size, tmcScore: Math.round(tmcScore * 100) / 100, productivityIndex: Math.round(productivityIndex * 100) / 100 };
 }
